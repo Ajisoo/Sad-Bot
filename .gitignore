@@ -1,0 +1,5 @@
+.idea/
+bot.key
+chromedriver.exe
+__pycache__/*
+content/*

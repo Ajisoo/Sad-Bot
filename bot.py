@@ -5,6 +5,7 @@ import random
 import re
 
 import refresh
+import leaderboard_util
 
 prefix = "$"
 
@@ -21,8 +22,12 @@ birthdays = {225822313550053376: [3, 14],
 			 377691228977889283: [2,17]}
 
 valid = True
+patch_message_sent = False
 guess_answer = ""
 guess_answer_raw = ""
+
+patch_message = ("🎉 New patch today adds leaderboard functionality 🎉\n"
+				 "Use command `$lb` to check the Top 3 Leaderboards \n")
 
 @client.event
 async def on_ready():
@@ -33,6 +38,7 @@ async def on_message(message):
 	global valid
 	global guess_answer
 	global guess_answer_raw
+	global patch_message_sent
 	if message.guild is None:
 		return  #we are in PM
 
@@ -62,6 +68,10 @@ async def on_message(message):
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
 
+	if not patch_message_sent and now.month == 9 and now.day == 15:
+		await message.channel.send(patch_message)
+		patch_message_sent = True
+
 	if command == "help":
 		await message.author.send("😠 no help for you! 😠")
 
@@ -77,6 +87,9 @@ async def on_message(message):
 		await message.channel.send("Refreshing content. Expect failing commands until done.")
 		await refresh.cmd_refresh(message, args)
 		valid = True
+
+	if command == 'lb':
+		await message.channel.send(leaderboard_util.get_leaderboard())
 
 	if command == 'guess_ability' or command == 'ga':
 		if not valid:
@@ -115,6 +128,9 @@ async def on_message(message):
 			guess_answer_raw = ""
 			guess_answer = ""
 			await message.channel.send("<@" + str(message.author.id) + "> is Correct!")
+
+			leaderboard_util.update_leaderboards_file(message.author.id)
+
 			if not valid:
 				return
 			len_file = open(refresh.data_folder + "!len.txt", "r")

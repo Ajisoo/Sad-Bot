@@ -10,8 +10,17 @@ prefix = "$"
 
 client = discord.Client()
 
-birthdays = {225822313550053376: [3, 14], 167090536602140682: [7, 21], 191597928090042369: [8, 3], 193550776340185088: [11, 20], 363197965306953730: [9, 2], 182707904367820800: [11,2]}
+birthdays = {225822313550053376: [3, 14],
+			 167090536602140682: [7, 21],
+			 191597928090042369: [8, 3],
+			 193550776340185088: [11, 20],
+			 363197965306953730: [9, 2],
+			 182707904367820800: [11,2],
+			 190253188262133761: [4,17],
+			 285290000395010048: [7,30],
+			 377691228977889283: [2,17]}
 
+valid = True
 guess_answer = ""
 guess_answer_raw = ""
 
@@ -21,6 +30,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+	global valid
 	global guess_answer
 	global guess_answer_raw
 	if message.guild is None:
@@ -63,9 +73,14 @@ async def on_message(message):
 		await message.guild.get_member(client.user.id).edit(nick=":(")
 
 	if command == 'refresh':
+		valid = False
+		await message.channel.send("Refreshing content. Expect failing commands until done.")
 		await refresh.cmd_refresh(message, args)
+		valid = True
 
-	if command == 'guessability' or command == 'ga':
+	if command == 'guess_ability' or command == 'ga':
+		if not valid:
+			return
 		len_file = open(refresh.data_folder + "!len.txt", "r")
 		rand = random.randrange(int(len_file.readline()))
 		len_file.close()
@@ -89,6 +104,8 @@ async def on_message(message):
 		await message.channel.send(file=(discord.File(refresh.data_folder + str(rand) + "img.png")))
 
 	if command == 'guess' or command == 'g':
+		if not valid:
+			return
 		if len(guess_answer) == 0:
 			await message.channel.send("There's no ability to guess! Start with " + prefix + "guess_ability")
 			return
@@ -98,14 +115,63 @@ async def on_message(message):
 			guess_answer_raw = ""
 			guess_answer = ""
 			await message.channel.send("<@" + str(message.author.id) + "> is Correct!")
+			if not valid:
+				return
+			len_file = open(refresh.data_folder + "!len.txt", "r")
+			rand = random.randrange(int(len_file.readline()))
+			len_file.close()
+			info_file = open(refresh.data_folder + str(rand) + "info.txt", "r")
+			if len(args) > 0 and (
+					args[0].lower() == "c" or args[0].lower() == "champ" or args[0].lower() == "champion"):
+				info_file.readline()
+				guess_answer_raw = info_file.readline()
+				guess_answer = re.sub(r'[^a-z0-9]', '', guess_answer_raw.lower())
+				await message.channel.send("Guess the champion this ability belongs to!")
+			elif len(args) > 0 and (args[0].lower() == "k" or args[0].lower() == "key" or args[0].lower() == "button"):
+				info_file.readline()
+				info_file.readline()
+				guess_answer_raw = info_file.readline()
+				guess_answer = re.sub(r'[^a-z0-9]', '', guess_answer_raw.lower())
+				await message.channel.send("Guess the key (P, Q, W, E, R) this ability belongs to!")
+			else:
+				guess_answer_raw = info_file.readline()
+				guess_answer = re.sub(r'[^a-z0-9]', '', guess_answer_raw.lower())
+				await message.channel.send("Guess the name of this ability!")
+			info_file.close()
+			await message.channel.send(file=(discord.File(refresh.data_folder + str(rand) + "img.png")))
 
-	if command == 'giveup' or command == 'gu':
+	if command == 'giveup' or command == 'gu' or command == 'give_up':
+		if not valid:
+			return
 		if len(guess_answer) == 0:
 			await message.channel.send("There's no ability to guess! Start with " + prefix + "guess_ability")
 			return
 		await message.channel.send("Answer was: " + guess_answer_raw)
 		guess_answer_raw = ""
 		guess_answer = ""
+		if not valid:
+			return
+		len_file = open(refresh.data_folder + "!len.txt", "r")
+		rand = random.randrange(int(len_file.readline()))
+		len_file.close()
+		info_file = open(refresh.data_folder + str(rand) + "info.txt", "r")
+		if len(args) > 0 and (args[0].lower() == "c" or args[0].lower() == "champ" or args[0].lower() == "champion"):
+			info_file.readline()
+			guess_answer_raw = info_file.readline()
+			guess_answer = re.sub(r'[^a-z0-9]', '', guess_answer_raw.lower())
+			await message.channel.send("Guess the champion this ability belongs to!")
+		elif len(args) > 0 and (args[0].lower() == "k" or args[0].lower() == "key" or args[0].lower() == "button"):
+			info_file.readline()
+			info_file.readline()
+			guess_answer_raw = info_file.readline()
+			guess_answer = re.sub(r'[^a-z0-9]', '', guess_answer_raw.lower())
+			await message.channel.send("Guess the key (P, Q, W, E, R) this ability belongs to!")
+		else:
+			guess_answer_raw = info_file.readline()
+			guess_answer = re.sub(r'[^a-z0-9]', '', guess_answer_raw.lower())
+			await message.channel.send("Guess the name of this ability!")
+		info_file.close()
+		await message.channel.send(file=(discord.File(refresh.data_folder + str(rand) + "img.png")))
 
 
 key_file = open("bot.key", "r")

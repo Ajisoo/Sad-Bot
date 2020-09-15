@@ -15,7 +15,7 @@ async def cmd_refresh(message, args):
 	r = requests.get(website)
 	soup = BeautifulSoup(r.content, "html.parser")
 
-	ability_list = soup.find("a", {"class": "ability-list"}).find_all("a", {"class": "ability-list__item"})
+	ability_list = soup.find("div", {"class": "ability-list"}).find_all("a", {"class": "ability-list__item"})
 	counter = 0
 	for ability in ability_list:
 		champ_name = ability.find("img", {"class": "ability-list__item__champ"})["champ"].replace("\n", " ")
@@ -25,8 +25,8 @@ async def cmd_refresh(message, args):
 		ability_key = ability.find("div", {"class": "ability-list__item__keybind"}).text.replace("\n", " ")
 		if ability_key is None or len(ability_key.strip()) == 0:
 			ability_key = "P"
-		image_file = open(data_folder + str(counter) + "img.png", "w+")
-		image_file.write(requests.get(image).content)
+		image_file = open(data_folder + str(counter) + "img.png", "wb+")
+		image_file.write(requests.get(base_website + image).content)
 		image_file.close()
 
 		text_file = open(data_folder + str(counter) + "info.txt", "w+")
@@ -36,8 +36,9 @@ async def cmd_refresh(message, args):
 		counter += 1
 
 	host_file = open(data_folder + "!len.txt", "w+")
-	host_file.write(counter)
+	host_file.write(str(counter))
 	host_file.close()
+	await message.channel.send("All done")
 
 
 

@@ -6,11 +6,11 @@ import time
 base_website = "https://www.mobafire.com"
 website = base_website + "/league-of-legends/abilities"
 
-data_folder = "content/"
+data_folder = "content" + os.path.sep
 
 
 async def cmd_refresh(message, args):
-	if message.author.id != 182707904367820800:  # Me
+	if message.author.id not in [182707904367820800, 190253188262133761] :  # Us
 		return
 	r = requests.get(website)
 	soup = BeautifulSoup(r.content, "html.parser")

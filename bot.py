@@ -26,8 +26,11 @@ patch_message_sent = False
 guess_answer = ""
 guess_answer_raw = ""
 
-patch_message = ("🎉 New patch today adds leaderboard functionality 🎉\n"
-				 "Use command `$lb` to check the Top 3 Leaderboards \n")
+patch_message = ("🎉 New patch today 🎉\n"
+				 "Small bug fixes \n"
+				 "Nerfed Kayle AD by 5 \n")
+
+patch_day = (9, 16)
 
 @client.event
 async def on_ready():
@@ -39,6 +42,7 @@ async def on_message(message):
 	global guess_answer
 	global guess_answer_raw
 	global patch_message_sent
+	global patch_day
 	if message.guild is None:
 		return  #we are in PM
 
@@ -68,7 +72,7 @@ async def on_message(message):
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
 
-	if not patch_message_sent and now.month == 9 and now.day == 15:
+	if not patch_message_sent and now.month == patch_day[0] and now.day == patch_day[1]:
 		await message.channel.send(patch_message)
 		patch_message_sent = True
 
@@ -90,6 +94,9 @@ async def on_message(message):
 
 	if command == 'lb':
 		await message.channel.send(leaderboard_util.get_leaderboard())
+
+	if command == 'my_score':
+		await message.channel.send(leaderboard_util.get_my_points(message.author.id))
 
 	if command == 'guess_ability' or command == 'ga':
 		if not valid:

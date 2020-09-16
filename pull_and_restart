@@ -1,0 +1,14 @@
+#!/bin/bash
+
+PID_FILE="running_pid"
+
+if test -e "$PID_FILE"; then
+	old_pid=$(<"$PID_FILE")
+	kill -9 "$old_pid"
+	rm "$PID_FILE"
+fi
+
+git pull &>> logs.txt
+
+python3 bot.py &>> logs.txt &
+echo "$!" > "$PID_FILE"

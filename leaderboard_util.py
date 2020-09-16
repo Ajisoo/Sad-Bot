@@ -27,8 +27,6 @@ def update_leaderboards_file(user_id):
 	if not user_found:
 		lines.append('\t'.join([user_id, "1\n"]))
 
-	print(lines)
-
 	lines = list(sorted(lines, key=lambda x: int(x.strip().split("\t")[1]), reverse=True))
 
 	with open('leaderboard.txt', 'w') as leaders_file:

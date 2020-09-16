@@ -28,6 +28,7 @@ guess_answer_raw = ""
 
 patch_message = ("🎉 New patch today 🎉\n"
 				 "Small bug fixes \n"
+				 "Use `$my_score` to check your own score \n"
 				 "Nerfed Kayle AD by 5 \n")
 
 patch_day = (9, 16)

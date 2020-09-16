@@ -44,6 +44,14 @@ def get_leaderboard():
 			leaders_array.append([values[0], values[1]])
 		
 	# Convert points into message array
-	leaders_array = list(map(lambda x: f'<@{x[0]}> has {x[1]} points!', leaders_array))	
+	leaders_array = list(map(lambda x: f"<@{x[0]}> has {x[1]} point{'' if int(x[1]) == 1 else 's'}!", leaders_array))	
 
 	return "Leaderboard:\n" + "\n".join(leaders_array[0:3])
+
+def get_my_points(user_id):
+	with open("leaderboard.txt", "r") as lb_file:
+		for line in lb_file.readlines():
+			(user, points) = line.strip().split("\t")
+			if user == str(user_id):
+				return f"<@{user_id}>, you have {points} point{'' if int(points) == 1 else 's'}!"
+	return f"<@{user_id}>, you have no points. Zero. Zip. Nada."

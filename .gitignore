@@ -3,3 +3,6 @@ bot.key
 chromedriver.exe
 __pycache__/*
 content/*
+log.txt
+pull_and_restart
+running_pid

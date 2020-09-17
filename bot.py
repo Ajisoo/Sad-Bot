@@ -26,12 +26,12 @@ patch_message_sent = False
 guess_answer = ""
 guess_answer_raw = ""
 
-patch_message = ("🎉 New patch today 🎉\n"
-				 "Small bug fixes \n"
-				 "Use `$my_score` to check your own score \n"
-				 "Nerfed Kayle AD by 5 \n")
 
-patch_day = (9, 16)
+# Update the patch message and day whenever releasing a new patch
+patch_message = ("🎉 New patch today 🎉\n"
+				 "Use `$roll d<number>` to roll a die \n")
+
+patch_day = datetime.datetime(2020, 9, 16)
 
 @client.event
 async def on_ready():
@@ -73,7 +73,7 @@ async def on_message(message):
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
 
-	if not patch_message_sent and now.month == patch_day[0] and now.day == patch_day[1]:
+	if not patch_message_sent and now.date() == patch_day.date():
 		await message.channel.send(patch_message)
 		patch_message_sent = True
 
@@ -196,6 +196,19 @@ async def on_message(message):
 			await message.channel.send("Guess the name of this ability!")
 		info_file.close()
 		await message.channel.send(file=(discord.File(refresh.data_folder + str(rand) + "img.png")))
+
+	if command == 'roll':
+		dice = args[0]
+
+		if not re.match("d[1-9][0-9]*", dice):
+			await message.channel.send("Use format `roll d<number>` to roll a die.")
+			return
+		
+		die_number = int(dice[1:])
+		rand = random.randint(1, die_number)
+
+		await message.channel.send(f"<@{message.author.id}> rolled {rand}!")
+
 
 
 key_file = open("bot.key", "r")

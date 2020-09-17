@@ -7,6 +7,9 @@ import re
 import refresh
 import leaderboard_util
 
+from tictactoe_util import cmd_tictactoe
+from Franklin import get_franklin
+
 prefix = "$"
 
 client = discord.Client()
@@ -209,6 +212,22 @@ async def on_message(message):
 
 		await message.channel.send(f"<@{message.author.id}> rolled {rand}!")
 
+	if command == 'tictactoe' or command == 'ttt':
+		await cmd_tictactoe(client.user, message, args)
+
+
+@client.event
+async def on_raw_reaction_add(payload):
+	if client.user.id == payload.user_id: return
+	reaction = payload.emoji
+	message_id = payload.message_id
+	franklin = get_franklin(message_id)
+	if reaction.is_custom_emoji():
+		processed_emoji = client.get_emoji(reaction.id)
+	else:
+		processed_emoji = reaction.name
+	if franklin is not None:
+		await franklin.react(processed_emoji, payload.member)
 
 
 key_file = open("bot.key", "r")

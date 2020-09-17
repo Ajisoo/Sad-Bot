@@ -97,7 +97,7 @@ def generate_embed(name, data):
     return embed
 
 
-async def cmd_tictactoe(client, message, args):
+async def cmd_tictactoe(bot, client, message, args):
     global ttt_client
     ttt_client = client
     ttt_data = TTTData()
@@ -107,7 +107,7 @@ async def cmd_tictactoe(client, message, args):
     messages[message.author.id] = response
     reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣"]
     functions = [user_input] * 9
-    Franklin(response, reactions, functions, ttt_data)
+    Franklin(bot, response, reactions, functions, ttt_data)
     for reaction in reactions:
         await response.add_reaction(reaction)
 

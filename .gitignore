@@ -1,7 +1,7 @@
-.idea/
-bot.key
-chromedriver.exe
+.idea/*
 __pycache__/*
+*/__pycache__/*
 content/*
-logs.txt
-running_pid
+local/*
+
+bot.key

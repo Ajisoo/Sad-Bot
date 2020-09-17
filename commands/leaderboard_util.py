@@ -1,4 +1,4 @@
-
+from globals import *
 '''
 Leaderboards file is sorted and tab separated with format (user_id, points)
 
@@ -10,7 +10,7 @@ def update_leaderboards_file(user_id):
 	user_id = str(user_id)
 	# Update leaderboards file
 	lines = None
-	with open('leaderboard.txt', 'r') as leaders_file:
+	with open(GA_LEADERBOARD_FILE, 'r') as leaders_file:
 		lines = leaders_file.readlines()
 	
 	# Update user's score
@@ -29,12 +29,12 @@ def update_leaderboards_file(user_id):
 
 	lines = list(sorted(lines, key=lambda x: int(x.strip().split("\t")[1]), reverse=True))
 
-	with open('leaderboard.txt', 'w') as leaders_file:
+	with open(GA_LEADERBOARD_FILE, 'w') as leaders_file:
 		leaders_file.writelines(lines)	
 
 def get_leaderboard():
 	leaders_array = []
-	with open("leaderboard.txt", "r") as lb_file:
+	with open(GA_LEADERBOARD_FILE, "r") as lb_file:
 		lines = lb_file.readlines()
 		if len(lines) == 0:
 			return "Apparently no one has ever gotten anything right."
@@ -49,7 +49,7 @@ def get_leaderboard():
 	return "Leaderboard:\n" + "\n".join(leaders_array[0:3])
 
 def get_my_points(user_id):
-	with open("leaderboard.txt", "r") as lb_file:
+	with open(GA_LEADERBOARD_FILE, "r") as lb_file:
 		for line in lb_file.readlines():
 			(user, points) = line.strip().split("\t")
 			if user == str(user_id):

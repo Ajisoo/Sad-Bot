@@ -1,0 +1,19 @@
+#!/bin/bash
+
+PROJECT_HOME="/home/ajisoo/DiscordBot/"
+LOCAL="local"
+PID_FILE="$LOCAL/pid"
+LOG_FILE="$LOCAL/logs.txt"
+
+cd "$ROOT_FOLDER"
+
+if test -e "$PID_FILE"; then
+	old_pid=$(<"$PID_FILE")
+	kill -9 "$old_pid"
+	rm "$PID_FILE"
+fi
+
+git pull &>> "$LOG_FILE"
+
+python3 bot.py &>> "$LOG_FILE" &
+echo "$!" > "$PID_FILE"

@@ -22,7 +22,7 @@ PATCH_MESSAGE_HEADER = "🎉 New patch today 🎉\n"
 
 PATCH_MESSAGE = "Added $bm for when you die first in Among Us"
 
-PATCH_DAY = datetime(2020, 9, 16)
+PATCH_DAY = datetime(2020, 9, 17)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 

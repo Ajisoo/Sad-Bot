@@ -96,7 +96,10 @@ async def on_message(message):
 		await cmd_tictactoe(bot, client.user, message, args)
 
 	if command == 'bakamitai' or command == 'bm':
-		vc = await message.author.voice.channel.connect()
+		try:
+			vc = await message.author.voice.channel.connect()
+		except Exception:
+			pass
 		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=CONTENT_FOLDER + 'baka_mitai.mp3'))
 		while vc.is_playing():
 			await asyncio.sleep(1)
@@ -108,7 +111,10 @@ async def on_message(message):
 		await message.guild.voice_client.disconnect()
 
 	if command == 'join':
-		vc = await message.author.voice.channel.connect()
+		await message.author.voice.channel.connect()
+
+	if command == 'patch_notes' or command == 'pn':
+		await message.channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
 
 
 

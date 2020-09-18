@@ -7,3 +7,4 @@ class BotStatus:
 		self.ga_answer_raw = ""
 		self.patch_message_sent = False
 		self.current_Franklins = {}
+		self.listener = None

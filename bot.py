@@ -97,7 +97,7 @@ async def on_message(message):
 
 	if command == 'bakamitai' or command == 'bm':
 		vc = await message.author.voice.channel.connect()
-		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source='baka_mitai.mp3'))
+		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=CONTENT_FOLDER + 'baka_mitai.mp3'))
 		while vc.is_playing():
 			await asyncio.sleep(1)
 		# disconnect after the player has finished

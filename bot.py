@@ -95,6 +95,19 @@ async def on_message(message):
 	if command == 'tictactoe' or command == 'ttt':
 		await cmd_tictactoe(bot, client.user, message, args)
 
+	if command == 'bakamitai' or command == 'bm':
+		vc = await message.author.voice.channel.connect()
+		vc.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source='baka_mitai.mp3'))
+		while vc.is_playing():
+			await asyncio.sleep(1)
+		# disconnect after the player has finished
+		vc.stop()
+		await vc.disconnect()
+
+	if command == 'disconnect' or command == 'dc':
+		await message.guild.voice_client.disconnect()
+
+
 
 @client.event
 async def on_raw_reaction_add(payload):

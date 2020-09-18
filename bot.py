@@ -114,8 +114,7 @@ async def on_message(message):
 		await message.author.voice.channel.connect()
 
 	if command == 'patch_notes' or command == 'pn':
-		await message.channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
-
+		await message.channel.send(PATCH_MESSAGE)
 
 
 @client.event

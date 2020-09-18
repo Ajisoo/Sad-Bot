@@ -1,11 +1,11 @@
 #!/bin/bash
 
-PROJECT_HOME="/home/ajisoo/DiscordBot/"
+PROJECT_HOME="/home/ajisoo/DiscordBot"
 LOCAL="local"
 PID_FILE="$LOCAL/pid"
 LOG_FILE="$LOCAL/logs.txt"
 
-cd "$ROOT_FOLDER"
+cd "$PROJECT_HOME"
 
 if test -e "$PID_FILE"; then
 	old_pid=$(<"$PID_FILE")

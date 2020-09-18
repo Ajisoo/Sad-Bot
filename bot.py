@@ -107,6 +107,9 @@ async def on_message(message):
 	if command == 'disconnect' or command == 'dc':
 		await message.guild.voice_client.disconnect()
 
+	if command == 'join':
+		vc = await message.author.voice.channel.connect()
+
 
 
 @client.event

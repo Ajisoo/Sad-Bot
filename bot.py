@@ -3,10 +3,12 @@ import datetime
 import asyncio
 import random
 import re
+import threading
 
 from data.bot_status import BotStatus
 from commands import ga_util, leaderboard_util
 from commands.tictactoe_util import cmd_tictactoe
+from voiceRecognition import voice_recv_listener
 from Franklin import get_franklin
 from globals import *
 
@@ -106,9 +108,12 @@ async def on_message(message):
 	if command == 'bakamitai' or command == 'bm':
 		try:
 			vc = await message.author.voice.channel.connect()
+
 		except Exception:
-			pass
+
+			vc = client.voice_clients[0]
 		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=CONTENT_FOLDER + 'baka_mitai.mp3'))
+		asyncio.create_task(voice_recv_listener.listen(vc))
 		while vc.is_playing():
 			await asyncio.sleep(1)
 		# disconnect after the player has finished
@@ -119,7 +124,8 @@ async def on_message(message):
 		await message.guild.voice_client.disconnect()
 
 	if command == 'join':
-		await message.author.voice.channel.connect()
+		vc = await message.author.voice.channel.connect()
+		asyncio.create_task(voice_recv_listener.listen(vc))
 
 	if command == 'patch_notes' or command == 'pn':
 		await message.channel.send(PATCH_MESSAGE)

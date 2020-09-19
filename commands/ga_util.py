@@ -49,6 +49,11 @@ async def cmd_ga_guess(bot, message, args):
 		await message.channel.send("There's no ability to guess! Start with " + BOT_PREFIX + "guess_ability")
 		return
 
+	print(args)
+
+	# Ignore emotes
+	args = list(filter(lambda x: not (x.startswith(":") and x.endswith(":")), args))
+
 	guess_arg = re.sub(r'[^a-z0-9]', '', " ".join(args).lower())
 	if bot.ga_answer == guess_arg:
 		bot.ga_answer_raw = ""

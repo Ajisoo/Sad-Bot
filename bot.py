@@ -11,17 +11,25 @@ from Franklin import get_franklin
 from globals import *
 
 client = discord.Client()
-bot = BotStatus(client)
+bots = {}
+
+
+async def get_bot(guild_id):
+	global bots
+	return bots[guild_id]
 
 
 @client.event
 async def on_ready():
+	global bots
+	for guild in client.guilds:
+		bots[guild.id] = BotStatus(client)
 	print('We have logged in as {0.user}'.format(client))
 
 
 @client.event
 async def on_message(message):
-	global bot
+	bot = await get_bot(message.guild.id)
 
 	if message.guild is None:
 		return  #we are in PM
@@ -119,7 +127,9 @@ async def on_message(message):
 
 @client.event
 async def on_raw_reaction_add(payload):
-	global bot
+	if payload.guild_id is None:
+		return  # In PM
+	bot = await get_bot(payload.guild_id)
 
 	if client.user.id == payload.user_id:  # Don't respond to your own reactions
 		return

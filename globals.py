@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 
-CONTENT_FOLDER = "content" + os.path.sep
+
 
 BOT_PREFIX = "$"
 
@@ -26,9 +26,15 @@ PATCH_DAY = datetime(2020, 9, 17)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 
+# Folder names are relative to the location of bot.py, so if anything gets moved around make sure to update these
+
+CONTENT_FOLDER = "content" + os.path.sep
+
 GA_BASE_WEBSITE = "https://www.mobafire.com"
 GA_WEBSITE = GA_BASE_WEBSITE + "/league-of-legends/abilities"
 
 GA_FOLDER = CONTENT_FOLDER + "lol_ability_guesser" + os.path.sep
 GA_LEADERBOARD_FILE = GA_FOLDER + "leaderboard.txt"
 
+GS_FOLDER = CONTENT_FOLDER + "lol_splash_guesser" + os.path.sep
+GS_LEADERBOARD_FILE = GS_FOLDER + "leaderboard.txt"

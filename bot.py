@@ -6,7 +6,7 @@ import re
 import threading
 
 from data.bot_status import BotStatus
-from commands import ga_util, leaderboard_util
+from commands import ga_util, leaderboard_util, guess_splash_util
 from commands.tictactoe_util import cmd_tictactoe
 from voiceRecognition import voice_recv_listener
 from Franklin import get_franklin
@@ -129,6 +129,9 @@ async def on_message(message):
 
 	if command == 'patch_notes' or command == 'pn':
 		await message.channel.send(PATCH_MESSAGE)
+
+	if command == 'gsr':
+		await guess_splash_util.cmd_guess_splash_refresh(bot, message, args)
 
 
 @client.event

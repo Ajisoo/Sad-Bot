@@ -29,15 +29,15 @@ async def cmd_ga_refresh(bot, message, args):
 		if ability_key is None or len(ability_key.strip()) == 0:
 			ability_key = "P"
 
-		with open(GA_BASE_WEBSITE + str(counter) + "img.png", "wb+") as image_file:
+		with open(GA_FOLDER + str(counter) + "img.png", "wb+") as image_file:
 			image_file.write(requests.get(GA_BASE_WEBSITE + image).content)
 
-		with open(GA_BASE_WEBSITE + str(counter) + "info.txt", "w+") as text_file:
+		with open(GA_FOLDER + str(counter) + "info.txt", "w+") as text_file:
 			text_file.write(ability_name + "\n" + champ_name + "\n" + ability_key)
 
 		counter += 1
 
-	with open(GA_BASE_WEBSITE + "!len.txt", "w+") as length_file:
+	with open(GA_FOLDER + "!len.txt", "w+") as length_file:
 		length_file.write(str(counter))
 
 	bot.ga_valid = True

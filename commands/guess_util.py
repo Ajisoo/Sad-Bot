@@ -54,9 +54,7 @@ async def cmd_guess(bot, message, args):
 		await message.channel.send("There's nothing to guess! Start with " + BOT_PREFIX + "guess_ability or guess_splash")
 		return
 
-	print(args)
-
-	# Ignore emotes
+	# Ignore basic semotes
 	args = list(filter(lambda x: not (x.startswith(":") and x.endswith(":")), args))
 
 	guess_arg = re.sub(r'[^a-z0-9]', '', " ".join(args).lower())

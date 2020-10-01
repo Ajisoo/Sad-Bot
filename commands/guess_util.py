@@ -123,10 +123,15 @@ temp_image_name = "tempCroppedSplash.jpg"
 
 async def cmd_gs_refresh(bot, message, args):
 	if message.author.id not in [182707904367820800, 190253188262133761]:  # Us
+		await message.channel.send("You're not an admin")
 		return
 	
 	# Get the latest patch number
 	response = requests.get(versions_endpoint)
+
+	# Create the data directory if not exists
+	if not os.path.exists(GS_FOLDER):
+		os.makedirs(GS_FOLDER)
 	
 	open(latest_version_file, "a").close()
 
@@ -149,9 +154,6 @@ async def cmd_gs_refresh(bot, message, args):
 
 	bot.g_valid = False
 
-	# Create the data directory if not exists
-	if not os.path.exists(GS_FOLDER):
-		os.makedirs(GS_FOLDER)
 
 	# Get the data dragon dump
 	data_dragon_endpoint_full = data_dragon_endpoint_base + latest_version + ".tgz"

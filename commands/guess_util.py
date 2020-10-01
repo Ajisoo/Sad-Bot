@@ -164,7 +164,8 @@ async def cmd_gs_refresh(bot, message, args):
 	if response.status_code == 200:
 		print("Getting data dragon dump...")
 		with open(dumpfile_name, 'w+b') as f:
-			f.write(data_dump_response.raw.read())
+			for chunk in data_dump_response.iter_content(10000):
+				f.write(chunk)
 		print("Done downloading data dump!")
 
 		print("Unpacking data dump...")

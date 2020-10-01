@@ -152,9 +152,6 @@ async def on_message(message):
 
 	if command in ['guess_splash', 'gs']:
 		await guess_util.cmd_gs_start(bot, message, args)
-	
-	if command == 'gsguess':
-		await guess_util.cmd_guess_splash_guess(bot, message, args)
 
 
 @client.event

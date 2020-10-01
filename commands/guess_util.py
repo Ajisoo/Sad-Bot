@@ -128,6 +128,10 @@ async def cmd_gs_refresh(bot, message, args):
 	# Get the latest patch number
 	response = requests.get(versions_endpoint)
 	
+	# Create the data directory if not exists
+	if not os.path.exists(GS_FOLDER):
+		os.makedirs(GS_FOLDER)
+
 	open(latest_version_file, "a").close()
 
 	global latest_version
@@ -149,9 +153,6 @@ async def cmd_gs_refresh(bot, message, args):
 
 	bot.g_valid = False
 
-	# Create the data directory if not exists
-	if not os.path.exists(GS_FOLDER):
-		os.makedirs(GS_FOLDER)
 
 	# Get the data dragon dump
 	data_dragon_endpoint_full = data_dragon_endpoint_base + latest_version + ".tgz"
@@ -162,7 +163,7 @@ async def cmd_gs_refresh(bot, message, args):
 	data_dump_response = requests.get(data_dragon_endpoint_full, stream=True)
 	if response.status_code == 200:
 		print("Getting data dragon dump...")
-		with open(dumpfile_name, 'wb') as f:
+		with open(dumpfile_name, 'w+b') as f:
 			f.write(data_dump_response.raw.read())
 		print("Done downloading data dump!")
 

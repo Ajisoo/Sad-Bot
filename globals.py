@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 
-CONTENT_FOLDER = "content" + os.path.sep
+
 
 BOT_PREFIX = "$"
 
@@ -20,15 +20,34 @@ BIRTHDAYS = {225822313550053376: [3, 14],
 
 PATCH_MESSAGE_HEADER = "🎉 New patch today 🎉\n"
 
-PATCH_MESSAGE = "Added $bm for when you die first in Among Us"
+PATCH_MESSAGE = ("Welcome to the Boobs and Bulge Emporium! \n"
+				 "Step right up with `$gs` to get started on guessing your favorite champ skin splashes! \n"
+				 "There will be a separate leaderboard for these perverts. \n"
+				 "Further updates: `$ga` and `$gs` will start an ability / splash guess respectively, and \n"
+				 "`$g` will be used to take a guess at the most recent guessing round that has started. \n"
+				 "`$ga_lb`, `$gs_lb`, `$ga_my_score`, and `$gs_my_score` can be used to fetch scores. \n")
 
-PATCH_DAY = datetime(2020, 9, 17)
+PATCH_DAY = datetime(2020, 10, 1)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
+
+# Folder names are relative to the location of bot.py, so if anything gets moved around make sure to update these
+
+CONTENT_FOLDER = "content" + os.path.sep
 
 GA_BASE_WEBSITE = "https://www.mobafire.com"
 GA_WEBSITE = GA_BASE_WEBSITE + "/league-of-legends/abilities"
 
 GA_FOLDER = CONTENT_FOLDER + "lol_ability_guesser" + os.path.sep
-GA_LEADERBOARD_FILE = GA_FOLDER + "leaderboard.txt"
+GA_LEADERBOARD_FILE = GA_FOLDER + "leaderboard_ga.txt"
 
+GS_FOLDER = CONTENT_FOLDER + "lol_splash_guesser" + os.path.sep
+GS_LEADERBOARD_FILE = GS_FOLDER + "leaderboard_gs.txt"
+
+GS_LEADERBOARD_ID = "GS"
+GA_LEADERBOARD_ID = "GA"
+
+LEADERBOARDS = {
+	GS_LEADERBOARD_ID: GS_LEADERBOARD_FILE,
+	GA_LEADERBOARD_ID: GA_LEADERBOARD_ID
+}

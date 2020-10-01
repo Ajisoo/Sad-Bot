@@ -6,24 +6,42 @@ import re
 import threading
 
 from data.bot_status import BotStatus
-from commands import ga_util, leaderboard_util
+from commands import guess_util, leaderboard_util, guess_util
 from commands.tictactoe_util import cmd_tictactoe
 from voiceRecognition import voice_recv_listener
 from Franklin import get_franklin
 from globals import *
 
 client = discord.Client()
-bot = BotStatus(client)
+bots = {}
 
+
+async def get_bot(guild_id):
+	global bots
+	return bots[guild_id]
+
+
+def update_ga_leaderboard_file_name():
+	try:
+		open(GA_FOLDER + "leaderboard.txt", "r")
+	except Exception:
+		return
+
+	os.rename(GA_FOLDER + "leaderboard.txt", GA_LEADERBOARD_FILE)
 
 @client.event
 async def on_ready():
+	global bots
+	for guild in client.guilds:
+		bots[guild.id] = BotStatus(client)
 	print('We have logged in as {0.user}'.format(client))
+	if datetime.now().date() == PATCH_DAY.date():
+		update_ga_leaderboard_file_name()
 
 
 @client.event
 async def on_message(message):
-	global bot
+	bot = await get_bot(message.guild.id)
 
 	if message.guild is None:
 		return  #we are in PM
@@ -62,25 +80,34 @@ async def on_message(message):
 		await message.author.send(HELP_DEFAULT_MESSAGE)
 
 	if command == 'ga_refresh':
-		await ga_util.cmd_ga_refresh(bot, message, args)
+		await guess_util.cmd_ga_refresh(bot, message, args)
 
-	if command == 'ga_lb' or command == "lb":
-		await message.channel.send(leaderboard_util.get_leaderboard())
+	if command == 'gs_refresh':
+		await guess_util.cmd_gs_refresh(bot, message, args)
 
-	if command == 'ga_my_score' or command == "my_score":
-		await message.channel.send(leaderboard_util.get_my_points(message.author.id))
+	if command == 'ga_lb':
+		await message.channel.send(leaderboard_util.get_leaderboard(GA_LEADERBOARD_ID))
+
+	if command == 'gs_lb':
+		await message.channel.send(leaderboard_util.get_leaderboard(GS_LEADERBOARD_ID))
+
+	if command == 'ga_my_score':
+		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GA_LEADERBOARD_ID))
+	
+	if command == 'gs_my_score':
+		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GS_LEADERBOARD_ID))
 
 	if command == 'guess_ability' or command == 'ga':
 		if len(args) > 0 and args[0] == "refresh":
-			await ga_util.cmd_ga_refresh(bot, message, args)
+			await guess_util.cmd_ga_refresh(bot, message, args)
 			return
-		await ga_util.cmd_ga_start(bot, message, args)
+		await guess_util.cmd_ga_start(bot, message, args)
 
 	if command == 'guess' or command == 'g':
-		await ga_util.cmd_ga_guess(bot, message, args)
+		await guess_util.cmd_guess(bot, message, args)
 
 	if command == 'giveup' or command == 'gu' or command == 'give_up':
-		await ga_util.cmd_ga_give_up(bot, message, args)
+		await guess_util.cmd_give_up(bot, message, args)
 
 	if command == 'roll':
 		dice = args[0]
@@ -122,10 +149,15 @@ async def on_message(message):
 	if command == 'patch_notes' or command == 'pn':
 		await message.channel.send(PATCH_MESSAGE)
 
+	if command in ['guess_splash', 'gs']:
+		await guess_util.cmd_gs_start(bot, message, args)
+
 
 @client.event
 async def on_raw_reaction_add(payload):
-	global bot
+	if payload.guild_id is None:
+		return  # In PM
+	bot = await get_bot(payload.guild_id)
 
 	if client.user.id == payload.user_id:  # Don't respond to your own reactions
 		return
@@ -141,7 +173,6 @@ async def on_raw_reaction_add(payload):
 
 	if franklin is not None:
 		await franklin.react(processed_emoji, payload.member)
-
 
 key_file = open("bot.key", "r")
 key = key_file.readline().strip()

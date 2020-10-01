@@ -6,11 +6,13 @@ VERY IMPORTANT: leaderboard.txt should always have a newline at the end because 
 TODO: solve this in a smarter way  
 '''
 
-def update_leaderboards_file(user_id):
+def update_leaderboards_file(user_id, leaderboard_id):
 	user_id = str(user_id)
 	# Update leaderboards file
 	lines = None
-	with open(GA_LEADERBOARD_FILE, 'r') as leaders_file:
+
+	open(LEADERBOARDS[leaderboard_id], "a").close()
+	with open(LEADERBOARDS[leaderboard_id], 'r') as leaders_file:
 		lines = leaders_file.readlines()
 	
 	# Update user's score
@@ -29,12 +31,13 @@ def update_leaderboards_file(user_id):
 
 	lines = list(sorted(lines, key=lambda x: int(x.strip().split("\t")[1]), reverse=True))
 
-	with open(GA_LEADERBOARD_FILE, 'w') as leaders_file:
+	with open(LEADERBOARDS[leaderboard_id], 'w') as leaders_file:
 		leaders_file.writelines(lines)	
 
-def get_leaderboard():
+def get_leaderboard(leaderboard_id):
 	leaders_array = []
-	with open(GA_LEADERBOARD_FILE, "r") as lb_file:
+	open(LEADERBOARDS[leaderboard_id], "a").close()
+	with open(LEADERBOARDS[leaderboard_id], "r") as lb_file:
 		lines = lb_file.readlines()
 		if len(lines) == 0:
 			return "Apparently no one has ever gotten anything right."
@@ -48,8 +51,9 @@ def get_leaderboard():
 
 	return "Leaderboard:\n" + "\n".join(leaders_array[0:3])
 
-def get_my_points(user_id):
-	with open(GA_LEADERBOARD_FILE, "r") as lb_file:
+def get_my_points(user_id, leaderboard_id):
+	open(LEADERBOARDS[leaderboard_id], "a").close()
+	with open(LEADERBOARDS[leaderboard_id], "r") as lb_file:
 		for line in lb_file.readlines():
 			(user, points) = line.strip().split("\t")
 			if user == str(user_id):

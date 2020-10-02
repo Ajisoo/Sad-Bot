@@ -160,34 +160,32 @@ async def cmd_gs_refresh(bot, message, args):
 
 	await message.channel.send("Loading champ splashes...")
 
-	data_dump_response = requests.get(data_dragon_endpoint_full, stream=True)
-	if response.status_code == 200:
-		print("Getting data dragon dump...")
-		with open(dumpfile_name, 'w+b') as f:
-			for chunk in data_dump_response.iter_content(10000):
-				f.write(chunk)
-		print("Done downloading data dump!")
+	try:
+		with requests.get(data_dragon_endpoint_full, stream=True) as r:
+			r.raise_for_status()
+			with open(dumpfile_name, 'w+b') as f:
+				for chunk in r.iter_content(chunk_size=10000):
+					f.write(chunk)
+	except Exception as e:
+		print(e)
+		await message.channel.send("Error with getting champ splashes...")
 
-		print("Unpacking data dump...")
-		shutil.unpack_archive(dumpfile_name, GS_FOLDER)
-		print("Done unpacking data dump!")
+	print("Unpacking data dump...")
+	shutil.unpack_archive(dumpfile_name, GS_FOLDER)
+	print("Done unpacking data dump!")
 
-		# Remove tgz, dragonhead, languages, and lolpatch_*
-		print("Removing extraneous files...")
-		for file in os.listdir(GS_FOLDER):
-			if fnmatch(file, "lolpatch*"):
-				shutil.rmtree(GS_FOLDER + file, ignore_errors=True)
-			elif fnmatch(file, "*.json") or fnmatch(file, "*.js") or fnmatch(file, "dump.tgz"):
-				os.remove(GS_FOLDER + file)
-		print("Removed extraneous files!")
+	# Remove tgz, dragonhead, languages, and lolpatch_*
+	print("Removing extraneous files...")
+	for file in os.listdir(GS_FOLDER):
+		if fnmatch(file, "lolpatch*"):
+			shutil.rmtree(GS_FOLDER + file, ignore_errors=True)
+		elif fnmatch(file, "*.json") or fnmatch(file, "*.js") or fnmatch(file, "dump.tgz"):
+			os.remove(GS_FOLDER + file)
+	print("Removed extraneous files!")
 
-		print("Done, champ splashes are ready now!")
-		await message.channel.send("Champ splashes are ready now!")
+	print("Done, champ splashes are ready now!")
+	await message.channel.send("Champ splashes are ready now!")
 
-	else:
-		print("Error, here is response:" + str(response))
-		await message.channel.send("Error: " + str(response))	
-	
 	bot.g_valid = True 
 
 
@@ -232,7 +230,12 @@ async def cmd_gs_start(bot, message, args):
 	for skin in skins_array:
 		if skin["num"] == int(skin_number):
 			print(skin["name"])
-			bot.g_answer_raw = skin["name"]
+
+			if skin["name"] == "default":
+				bot.g_answer_raw = champ_name
+			else:
+				bot.g_answer_raw = skin["name"]
+			
 			bot.g_answer = re.sub(r'[^a-z0-9]', '', bot.g_answer_raw.lower())
 			break
 

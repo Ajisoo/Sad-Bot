@@ -55,6 +55,9 @@ async def on_message(message):
 	if message.author.id in BIRTHDAYS.keys() and BIRTHDAYS[message.author.id][0] == now.month and BIRTHDAYS[message.author.id][1] == now.day:
 		await message.add_reaction('🍰')
 
+	if now.month == 12 and now.day == 25:
+		await message.add_reaction('🎅')
+		
 	args = []
 	if message.content[:len(BOT_PREFIX)] == BOT_PREFIX:
 		args = message.content[len(BOT_PREFIX):].split(' ')

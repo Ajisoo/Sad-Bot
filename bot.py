@@ -5,7 +5,7 @@ import random
 import re
 
 from data.bot_status import BotStatus
-from commands import guess_util, leaderboard_util, guess_util
+from commands import guess_util, leaderboard_util, roll_color
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin
 from globals import *
@@ -35,6 +35,8 @@ async def on_ready():
 	print('We have logged in as {0.user}'.format(client))
 	if datetime.now().date() == PATCH_DAY.date():
 		update_ga_leaderboard_file_name()
+
+	roll_color.create_user_data_file()
 
 
 @client.event
@@ -148,10 +150,11 @@ async def on_message(message):
 	if command == 'patch_notes' or command == 'pn':
 		await message.channel.send(PATCH_MESSAGE)
 
-
 	if command in ['guess_splash', 'gs']:
 		await guess_util.cmd_gs_start(bot, message, args)
 
+	if command in ['roll_color', 'rc']:
+		await roll_color.cmd_roll(bot, message, args)
 
 @client.event
 async def on_raw_reaction_add(payload):

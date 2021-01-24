@@ -9,3 +9,5 @@ class BotStatus:
 		self.current_Franklins = {}
 		self.listener = None
 		self.guess_type = ""
+		self.start_date = None
+		self.roll_user_data = None

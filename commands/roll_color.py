@@ -29,11 +29,11 @@ async def cmd_roll(bot, message, args):
 			with open("content/roll_color/roll_start_date.txt", "w+") as f:
 				f.write(str(bot.start_date))
 
-	if (datetime.datetime.now() - bot.start_date).days >= 7:
+	if (datetime.datetime.now() - bot.start_date).days >= 1:
 		print("Updated date")
 		with open("content/roll_color/user_data.txt", "w+") as f:
 			bot.roll_user_data = None
-		bot.start_date = bot.start_date + datetime.timedelta(days=int((datetime.datetime.now() - bot.start_date).days / 7))
+		bot.start_date = bot.start_date + datetime.timedelta(days=int((datetime.datetime.now() - bot.start_date).days / 1))
 		with open("roll_start_date.txt", "w+") as f:
 			f.write(str(bot.start_date))
 
@@ -47,12 +47,12 @@ async def cmd_roll(bot, message, args):
 				data = line.split(":")[1]
 				bot.roll_user_data[int(user_id)] = data
 
-	if False and message.author.id in bot.roll_user_data.keys():
+	if message.author.id in bot.roll_user_data.keys():
 		data = bot.roll_user_data[message.author.id].split("|")
 		r = data[1]
 		g = data[2]
 		b = data[3]
-		if data[0] == 0:
+		if data[0] == "0":
 			embed = discord.Embed(title=message.author.name + ", you have already rolled!",
 								  description="You currently have a 0 star color. That's impressive.")
 		else:
@@ -78,27 +78,31 @@ async def cmd_roll(bot, message, args):
 
 		elif num < 0.35:
 			data[0] = "4"
-			r = random.randint(0, 4)
-			g = random.randint(0, 4)
-			b = random.randint(0, 4)
-			r *= 64
-			g *= 64
-			b *= 64
-			if r == 256:
-				r = 255
-			if g == 256:
-				g = 255
-			if b == 256:
-				b = 255
+			r,g,b = (0,0,0)
+			while not (r in [0, 255] and g in [0, 255] and b in [0, 255]):
+				r = random.randint(0, 4)
+				g = random.randint(0, 4)
+				b = random.randint(0, 4)
+				r *= 64
+				g *= 64
+				b *= 64
+				if r == 256:
+					r = 255
+				if g == 256:
+					g = 255
+				if b == 256:
+					b = 255
 			data[1] = str(r)
 			data[2] = str(g)
 			data[3] = str(b)
 
 		elif num < 0.995:
 			data[0] = "3"
-			r = random.randint(0, 255)
-			g = random.randint(0, 255)
-			b = random.randint(0, 255)
+			r, g, b = (0, 0, 0)
+			while not (r in [0, 64, 128, 192, 255] and g in [0, 64, 128, 192, 255] and b in [0, 64, 128, 192, 255]):
+				r = random.randint(0, 255)
+				g = random.randint(0, 255)
+				b = random.randint(0, 255)
 			data[1] = str(r)
 			data[2] = str(g)
 			data[3] = str(b)
@@ -108,7 +112,7 @@ async def cmd_roll(bot, message, args):
 		r = data[1]
 		g = data[2]
 		b = data[3]
-		if data[0] == 0:
+		if data[0] == "0":
 			embed = discord.Embed(title=message.author.name + ", you rolled a 0 star color! Impressive!",
 								  description="View it on the left.")
 		else:

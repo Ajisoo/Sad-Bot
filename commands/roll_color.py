@@ -66,9 +66,12 @@ async def cmd_roll(bot, message, args):
 		data = ["", "", "", ""]
 		if num < 0.05:
 			data[0] = "5"
-			r = random.randint(0, 255)
-			g = random.randint(0, 255)
-			b = random.randint(0, 255)
+			r = random.randint(0, 1)
+			g = random.randint(0, 1)
+			b = random.randint(0, 1)
+			r *= 255
+			g *= 255
+			b *= 255
 			data[1] = str(r)
 			data[2] = str(g)
 			data[3] = str(b)
@@ -92,17 +95,13 @@ async def cmd_roll(bot, message, args):
 			data[3] = str(b)
 
 		elif num < 0.995:
-			data[0] = "3"
-			r = random.randint(0, 1)
-			g = random.randint(0, 1)
-			b = random.randint(0, 1)
-			r *= 255
-			g *= 255
-			b *= 255
+			data[0] = "4"
+			r = random.randint(0, 255)
+			g = random.randint(0, 255)
+			b = random.randint(0, 255)
 			data[1] = str(r)
 			data[2] = str(g)
 			data[3] = str(b)
-
 		else:
 			data = ["0", "0", "0", "0"]
 

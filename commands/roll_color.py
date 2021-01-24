@@ -3,8 +3,8 @@ import datetime
 import discord
 import random
 
-# Example data: user_id:star_value:rgb
-# Example data: 12335123421:5|255|255|255
+# Example data: user_id:rolled_this_week: star_value|r|g|b, star_value|r|g|b
+# Example data: 12335123421:1:5|255|255|255,4|128|128|128
 
 
 def create_user_data_file():
@@ -16,26 +16,18 @@ def create_user_data_file():
 async def update_file(data):
 	with open("content/roll_color/user_data.txt", "w") as f:
 		for key in data.keys():
-			f.write(str(key) + ":" + data[key] + "\n")
+			f.write(str(key) + ":" + data[key][0] + ":" + ",".join(data[key][1]) + "\n")
 
 
 async def cmd_roll(bot, message, args):
 	if bot.start_date is None:
 		if os.path.exists("content/roll_color/roll_start_date.txt"):
 			with open("content/roll_color/roll_start_date.txt", "r") as f:
-				bot.start_date = datetime.datetime.strptime(f.readline(), '%Y-%m-%d %H:%M:%S')
+				bot.start_date = datetime.datetime.strptime(f.readline()[:-1], '%Y-%m-%d %H:%M:%S')
 		else:
 			bot.start_date = datetime.datetime.strptime('2021-01-17 00:00:00', '%Y-%m-%d %H:%M:%S')
 			with open("content/roll_color/roll_start_date.txt", "w+") as f:
-				f.write(str(bot.start_date))
-
-	if (datetime.datetime.now() - bot.start_date).days >= 1:
-		print("Updated date")
-		with open("content/roll_color/user_data.txt", "w+") as f:
-			bot.roll_user_data = None
-		bot.start_date = bot.start_date + datetime.timedelta(days=int((datetime.datetime.now() - bot.start_date).days / 1))
-		with open("roll_start_date.txt", "w+") as f:
-			f.write(str(bot.start_date))
+				f.write(str(bot.start_date) + "\n")
 
 	if bot.roll_user_data is None:
 		print("loading user data")
@@ -43,12 +35,25 @@ async def cmd_roll(bot, message, args):
 		with open("content/roll_color/user_data.txt", "r") as f:
 			lines = f.readlines()
 			for line in lines:
-				user_id = line.split(":")[0]
-				data = line.split(":")[1]
-				bot.roll_user_data[int(user_id)] = data
+				_line = line[:-1].split(":")
+				print(_line)
+				user_id = _line[0]
+				data = _line[1]
+				colors = _line[2]
+				bot.roll_user_data[int(user_id)] = (data, colors.split(","))
 
-	if message.author.id in bot.roll_user_data.keys():
-		data = bot.roll_user_data[message.author.id].split("|")
+	if (datetime.datetime.now() - bot.start_date).days >= 1:
+		print("Updated date")
+		with open("content/roll_color/user_data.txt", "w+") as f:
+			for key in bot.roll_user_data.keys():
+				bot.roll_user_data[key] = ("0", bot.roll_user_data[key][1])
+		await update_file(bot.roll_user_data)
+		bot.start_date = bot.start_date + datetime.timedelta(days=int((datetime.datetime.now() - bot.start_date).days / 1))
+		with open("content/roll_color/roll_start_date.txt", "w+") as f:
+			f.write(str(bot.start_date) + "\n")
+
+	if message.author.id in bot.roll_user_data.keys() and bot.roll_user_data[message.author.id][0] == "1":
+		data = bot.roll_user_data[message.author.id][1][0].split("|")
 		r = data[1]
 		g = data[2]
 		b = data[3]
@@ -121,5 +126,6 @@ async def cmd_roll(bot, message, args):
 									  0] + " star color! It has RGB value " + r + " " + g + " " + b + ". View it on the left of this message!",
 								  color=discord.Color.from_rgb(int(r), int(g), int(b)))
 		await message.channel.send(embed=embed)
-		bot.roll_user_data[message.author.id] = data[0] + "|" + data[1] + "|" + data[2] + "|" + data[3]
+		bot.roll_user_data[message.author.id] = ("1", bot.roll_user_data[message.author.id][1])
+		bot.roll_user_data[message.author.id][1].insert(0, data[0] + "|" + data[1] + "|" + data[2] + "|" + data[3])
 		await update_file(bot.roll_user_data)

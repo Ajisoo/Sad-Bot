@@ -66,11 +66,12 @@ async def cmd_list_color(bot, message, args):
 		prefix = "'s Colors:\n"
 		for i in range(len(bot.roll_user_data[message.author.id][1])):
 			valid.append((i, bot.roll_user_data[message.author.id][1][i]))
+
 	if len(args) > 0 and (args[0][0] == '-' or args[0][0].isdigit()) and (len(args[0]) == 1 or args[0][1:].isdigit()):
 		val = int(args[0])
 		if val < 0:
 			val += int(len(valid) / 20)
-		if val != 0 and val < 0 or val >= int(len(valid) / 20):
+		if val != 0 and (val < 0 or val >= int(len(valid) / 20)):
 			await message.channel.send("Bad index. Try again.")
 			return
 	else:

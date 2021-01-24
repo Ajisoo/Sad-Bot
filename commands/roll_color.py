@@ -79,7 +79,7 @@ async def cmd_roll(bot, message, args):
 		elif num < 0.35:
 			data[0] = "4"
 			r,g,b = (0,0,0)
-			while not (r in [0, 255] and g in [0, 255] and b in [0, 255]):
+			while r in [0, 255] and g in [0, 255] and b in [0, 255]:
 				r = random.randint(0, 4)
 				g = random.randint(0, 4)
 				b = random.randint(0, 4)
@@ -99,7 +99,7 @@ async def cmd_roll(bot, message, args):
 		elif num < 0.995:
 			data[0] = "3"
 			r, g, b = (0, 0, 0)
-			while not (r in [0, 64, 128, 192, 255] and g in [0, 64, 128, 192, 255] and b in [0, 64, 128, 192, 255]):
+			while r in [0, 64, 128, 192, 255] and g in [0, 64, 128, 192, 255] and b in [0, 64, 128, 192, 255]:
 				r = random.randint(0, 255)
 				g = random.randint(0, 255)
 				b = random.randint(0, 255)

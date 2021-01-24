@@ -154,7 +154,22 @@ async def on_message(message):
 		await guess_util.cmd_gs_start(bot, message, args)
 
 	if command in ['roll_color', 'rc']:
+		if bot.start_date is None or bot.roll_user_data is None:
+			await roll_color.first_time_setup(bot)
 		await roll_color.cmd_roll(bot, message, args)
+
+	if command in ['show_color', 'c', 'color']:
+		if bot.start_date is None or bot.roll_user_data is None:
+			await roll_color.first_time_setup(bot)
+		if len(args) > 0 and args[0] == 'list':
+			await roll_color.cmd_list_color(bot, message, args[1:])
+		else:
+			await roll_color.cmd_show_color(bot, message, args)
+
+	if command in ['color_list', 'list_color', 'cl', 'lc']:
+		if bot.start_date is None or bot.roll_user_data is None:
+			await roll_color.first_time_setup(bot)
+		await roll_color.cmd_list_color(bot, message, args)
 
 @client.event
 async def on_raw_reaction_add(payload):

@@ -95,7 +95,7 @@ async def cmd_roll(bot, message, args):
 			data[3] = str(b)
 
 		elif num < 0.995:
-			data[0] = "4"
+			data[0] = "3"
 			r = random.randint(0, 255)
 			g = random.randint(0, 255)
 			b = random.randint(0, 255)

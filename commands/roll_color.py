@@ -200,6 +200,8 @@ async def cmd_roll(bot, message, args):
 								  description="You currently have " + stars[data[0]] + " RGB " + r + " " + g + " " + b + ". View it on the left of this message!",
 								  color=discord.Color.from_rgb(int(r), int(g), int(b)))
 		await message.channel.send(embed=embed)
+		if message.author.id not in bot.roll_user_data.keys():
+			bot.roll_user_data[message.author.id] = ("0", [])
 		bot.roll_user_data[message.author.id] = ("1", bot.roll_user_data[message.author.id][1])
 		bot.roll_user_data[message.author.id][1].insert(0, data[0] + "|" + data[1] + "|" + data[2] + "|" + data[3])
 		await update_file(bot.roll_user_data)

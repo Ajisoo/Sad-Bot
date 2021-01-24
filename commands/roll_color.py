@@ -47,7 +47,7 @@ async def cmd_roll(bot, message, args):
 				data = line.split(":")[1]
 				bot.roll_user_data[int(user_id)] = data
 
-	if message.author.id in bot.roll_user_data.keys():
+	if False and message.author.id in bot.roll_user_data.keys():
 		data = bot.roll_user_data[message.author.id].split("|")
 		r = data[1]
 		g = data[2]

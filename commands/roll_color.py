@@ -82,7 +82,7 @@ async def cmd_list_color(bot, message, args):
 		return
 
 	limit = min(20*val + 20, len(valid))
-	data = valid[20*val-1:limit]
+	data = valid[20*val:limit]
 	string = message.author.name + "'s Colors:\n"
 	for index, thing in data:
 		_thing = thing.split("|")

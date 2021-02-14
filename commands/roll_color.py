@@ -81,8 +81,8 @@ async def cmd_list_color(bot, message, args):
 		await message.channel.send("No Results.")
 		return
 
-	limit = min(20*val + 20, len(valid[20*val:]))
-	data = valid[20*val:limit]
+	limit = min(20*val + 20, len(valid))
+	data = valid[20*val-1:limit]
 	string = message.author.name + "'s Colors:\n"
 	for index, thing in data:
 		_thing = thing.split("|")

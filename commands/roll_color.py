@@ -2,6 +2,7 @@ import os
 import datetime
 import discord
 import random
+import time
 from PIL import Image
 
 # Example data: user_id:rolled_this_week: star_value|r|g|b, star_value|r|g|b
@@ -192,6 +193,19 @@ async def cmd_roll(bot, message, args):
 		r = data[1]
 		g = data[2]
 		b = data[3]
+		base_embed = discord.Embed(title=message.author.name + ", you rolled :question: :question: :question:")
+		r_embed = discord.Embed(title=message.author.name + ", you rolled ***" + r + "*** :question: :question:")
+		g_embed = discord.Embed(title=message.author.name + ", you rolled ***" + r + "*** ***" + g + "*** :question:")
+		b_embed = discord.Embed(title=message.author.name + ", you rolled ***" + r + "*** ***" + g + "*** ***" + b + "***")
+
+		sent_embed = await message.channel.send(embed=base_embed)
+		time.sleep(1)
+		await sent_embed.edit(embed=r_embed)
+		time.sleep(1)
+		await sent_embed.edit(embed=g_embed)
+		time.sleep(1)
+		await sent_embed.edit(embed=b_embed)
+		time.sleep(1)
 		if data[0] == "0":
 			embed = discord.Embed(title=message.author.name + ", you rolled a 0 star color! Impressive!",
 								  description="View it on the left.")
@@ -199,7 +213,7 @@ async def cmd_roll(bot, message, args):
 			embed = discord.Embed(title=message.author.name + ", you rolled a " + data[0] + " star color!",
 								  description="You currently have " + stars[data[0]] + " RGB " + r + " " + g + " " + b + ". View it on the left of this message!",
 								  color=discord.Color.from_rgb(int(r), int(g), int(b)))
-		await message.channel.send(embed=embed)
+		await sent_embed.edit(embed=embed)
 		if message.author.id not in bot.roll_user_data.keys():
 			bot.roll_user_data[message.author.id] = ("0", [])
 		bot.roll_user_data[message.author.id] = ("1", bot.roll_user_data[message.author.id][1])

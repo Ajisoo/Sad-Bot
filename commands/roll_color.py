@@ -72,7 +72,7 @@ async def cmd_list_color(bot, message, args):
 		val = int(args[0])
 		if val < 0:
 			val += int(len(valid) / 20)
-		if val != 0 and (val < 0 or val >= int(len(valid) / 20)):
+		if val != 0 and (val < 0 or val > int(len(valid) / 20)):
 			await message.channel.send("Bad index. Try again.")
 			return
 	else:
@@ -82,7 +82,7 @@ async def cmd_list_color(bot, message, args):
 		await message.channel.send("No Results.")
 		return
 
-	limit = min(20*val + 20, len(valid[20*val:]))
+	limit = min(20*val + 20, len(valid))
 	data = valid[20*val:limit]
 	string = message.author.name + "'s Colors:\n"
 	for index, thing in data:

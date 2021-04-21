@@ -1,0 +1,7 @@
+1. add probability distributions for champ rolling 
+1.5. add a way to pre-process this info and store it in a file every time refresh is called, so it doesn't have to be calculated every time someone rolls
+2. add place to store who has what splash pieces 
+2.5. store completed splashes also 
+3. add special message for when someone completes a splash 
+4. trading?
+5. trading up system 

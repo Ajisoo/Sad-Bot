@@ -5,7 +5,7 @@ import random
 import re
 
 from data.bot_status import BotStatus
-from commands import guess_util, leaderboard_util, roll_color
+from commands import guess_util, leaderboard_util, roll_color, roll_splashes
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin
 from globals import *
@@ -13,6 +13,9 @@ from globals import *
 client = discord.Client()
 bots = {}
 
+# AND this variable with anything that isn't ready to be released yet
+# so the command won't trigger
+not_ready_for_release = False
 
 async def get_bot(guild_id):
 	global bots
@@ -85,7 +88,7 @@ async def on_message(message):
 	if command == 'ga_refresh':
 		await guess_util.cmd_ga_refresh(bot, message, args)
 
-	if command == 'gs_refresh':
+	if command in ['gs_refresh', 'rs_refresh']:
 		await guess_util.cmd_gs_refresh(bot, message, args)
 
 	if command == 'ga_lb':
@@ -100,16 +103,16 @@ async def on_message(message):
 	if command == 'gs_my_score':
 		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GS_LEADERBOARD_ID))
 
-	if command == 'guess_ability' or command == 'ga':
+	if command in ['guess_ability', 'ga']:
 		if len(args) > 0 and args[0] == "refresh":
 			await guess_util.cmd_ga_refresh(bot, message, args)
 			return
 		await guess_util.cmd_ga_start(bot, message, args)
 
-	if command == 'guess' or command == 'g':
+	if command in ['guess', 'g']:
 		await guess_util.cmd_guess(bot, message, args)
 
-	if command == 'giveup' or command == 'gu' or command == 'give_up':
+	if command in ['giveup', 'gu', 'give_up']:
 		await guess_util.cmd_give_up(bot, message, args)
 
 	if command == 'roll':
@@ -124,10 +127,10 @@ async def on_message(message):
 
 		await message.channel.send(f"<@{message.author.id}> rolled {rand}!")
 
-	if command == 'tictactoe' or command == 'ttt':
+	if command in ['tictactoe', 'ttt']:
 		await cmd_tictactoe(bot, client.user, message, args)
 
-	if command == 'bakamitai' or command == 'bm':
+	if command in ['bakamitai', 'bm']:
 		try:
 			vc = await message.author.voice.channel.connect()
 
@@ -141,13 +144,13 @@ async def on_message(message):
 		vc.stop()
 		await vc.disconnect()
 
-	if command == 'disconnect' or command == 'dc':
+	if command in ['disconnect', 'dc']:
 		await message.guild.voice_client.disconnect()
 
 	if command == 'join':
 		vc = await message.author.voice.channel.connect()
 
-	if command == 'patch_notes' or command == 'pn':
+	if command in ['patch_notes', 'pn']:
 		await message.channel.send(PATCH_MESSAGE)
 
 	if command in ['guess_splash', 'gs']:
@@ -167,6 +170,9 @@ async def on_message(message):
 	if command in ['color_list', 'list_color', 'cl', 'lc']:
 		await roll_color.first_time_setup(bot)
 		await roll_color.cmd_list_color(bot, message, args)
+	
+	if command in ['rs', 'roll_splash'] and not_ready_for_release:
+		await roll_splashes.cmd_splash_roll(bot, message, args)
 
 @client.event
 async def on_raw_reaction_add(payload):

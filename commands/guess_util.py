@@ -226,6 +226,11 @@ async def cmd_gs_start(bot, message, args):
 	with open(champ_data_folder + os.path.sep + "champion" + os.path.sep + champ_name + ".json", "r", encoding="utf-8") as f:
 		json_data = json.load(f)
 
+	''' If you're wondering why we don't just use the skin number
+	    as the index for this array, that's a good question. For some reason
+		they're not sequentially numbered like I checked and 16 came after 12
+		for some reason. So we go through the whole array. It's roughly O(1) anyways.
+	'''
 	skins_array = json_data["data"][champ_name]["skins"]
 	for skin in skins_array:
 		if skin["num"] == int(skin_number):

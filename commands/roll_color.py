@@ -11,6 +11,7 @@ from PIL import Image
 
 def create_user_data_file():
 	if not os.path.exists("content/roll_color/user_data.txt"):
+		os.makedirs("content/roll_color/")
 		with open("content/roll_color/user_data.txt", "w+") as f:
 			pass
 

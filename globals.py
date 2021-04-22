@@ -49,7 +49,7 @@ GS_FOLDER = CONTENT_FOLDER + "lol_splash_guesser" + os.path.sep
 GS_LEADERBOARD_FILE = GS_FOLDER + "leaderboard_gs.txt"
 
 GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
-GUM_LEADERBOARD_FILE = GUM_FOLDER + "leaderboard_gu.txt"
+GUM_LEADERBOARD_FILE = os.path.join(GUM_FOLDER, "leaderboard_gu.txt")
 
 GS_LEADERBOARD_ID = "GS"
 GA_LEADERBOARD_ID = "GA"

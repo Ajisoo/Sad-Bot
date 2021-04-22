@@ -271,16 +271,27 @@ UT_OST_FOLDER = os.path.join(GUM_FOLDER, "ost")
 # Every file starts with this - we could rename them but we're (I'm) lazy
 UT_PREFIX_LEN = len("toby fox - UNDERTALE Soundtrack - ")
 
-async def cmd_gum_start(bot, message, _args):
+async def _umq_try_join_vc(bot, message):
+	"""Returns a voice channel if it can connect; otherwise sends a warning and returns"""
 	if not os.path.exists(UT_OST_FOLDER):
-		print("UNDERTALE OST FOLDER DOESN'T EXIST, PLEASE REFRESH")
+		print("UNDERTALE OST FOLDER DOESN'T EXIST")
 		await message.channel.send("Please ask an admin to fix the undertale OST files!")
-		return
-	chosen_song_fn = random.choice(os.listdir(UT_OST_FOLDER))
+		return None
 	try:
-		vc = await message.author.voice.channel.connect()
+		voice = message.author.voice
+		if not voice:
+			await message.channel.send("You must be in a voice channel to start the quiz!")
+			return None
+		vc = await voice.channel.connect()
 	except Exception:
 		vc = message.guild.voice_client
+	return vc
+
+async def cmd_umq_start(bot, message, _args):
+	chosen_song_fn = random.choice(os.listdir(UT_OST_FOLDER))
+	vc = await _umq_try_join_vc(bot, message)
+	if not vc:
+		return
 	vc.stop()
 	vc.play(discord.FFmpegPCMAudio(
 		executable="./ffmpeg.exe",
@@ -296,15 +307,10 @@ async def cmd_gum_start(bot, message, _args):
 	print(bot.g_answer)
 	await message.channel.send("Guess the Undertale song!")
 
-async def cmd_gum_replay(bot, message, _args):
-	if not os.path.exists(UT_OST_FOLDER):
-		print("UNDERTALE OST FOLDER DOESN'T EXIST, PLEASE REFRESH")
-		await message.channel.send("Please ask an admin to fix the undertale OST files!")
+async def cmd_umq_replay(bot, message, _args):
+	vc = await _umq_try_join_vc(bot, message)
+	if not vc:
 		return
-	try:
-		vc = await message.author.voice.channel.connect()
-	except Exception:
-		vc = message.guild.voice_client
 	vc.stop()
 	chosen_song_fn = bot.gum_last_song_fn
 	if chosen_song_fn:

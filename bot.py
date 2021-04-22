@@ -150,11 +150,11 @@ async def on_message(message):
 		vc.stop()
 		await vc.disconnect()
 
-	if command in ['guess_undertale', 'gum']:
-		await guess_util.cmd_gum_start(bot, message, args)
+	if command in ['guess_undertale', 'gum', 'umq', 'undertale_music_quiz']:
+		await guess_util.cmd_umq_start(bot, message, args)
 
-	if command in ['guess_undertale_replay', 'gumr']:
-		await guess_util.cmd_gum_replay(bot, message, args)
+	if command in ['guess_undertale_replay', 'gumr', 'umqr']:
+		await guess_util.cmd_umq_replay(bot, message, args)
 
 	if command in ['disconnect', 'dc']:
 		await message.guild.voice_client.disconnect()

@@ -144,6 +144,9 @@ async def on_message(message):
 		vc.stop()
 		await vc.disconnect()
 
+	if command in ['guess_undertale', 'gum']:
+		await guess_util.cmd_gum_start(bot, message, args)
+
 	if command in ['disconnect', 'dc']:
 		await message.guild.voice_client.disconnect()
 

@@ -48,10 +48,11 @@ async def cmd_ga_refresh(bot, message, args):
 	bot.g_valid = True
 	await message.channel.send("All done")
 
+GUESS_UNSTARTED_PROMPT = "There's nothing to guess! Start with " + BOT_PREFIX + "guess_ability, guess_splash, or guess_undertale"
 
 async def cmd_guess(bot, message, args):
 	if len(bot.g_answer) == 0:
-		await message.channel.send("There's nothing to guess! Start with " + BOT_PREFIX + "guess_ability or guess_splash")
+		await message.channel.send(GUESS_UNSTARTED_PROMPT)
 		return
 
 	# Ignore basic semotes
@@ -68,7 +69,7 @@ async def cmd_guess(bot, message, args):
 
 async def cmd_give_up(bot, message, args):
 	if len(bot.g_answer) == 0:
-		await message.channel.send("There's nothing to guess! Start with " + prefix + "guess_ability or guess_splash")
+		await message.channel.send(GUESS_UNSTARTED_PROMPT)
 		return
 	await message.channel.send("Answer was: " + bot.g_answer_raw)
 	bot.g_answer_raw = ""
@@ -260,3 +261,26 @@ async def cmd_gs_start(bot, message, args):
 
 	bot.guess_type = GS_LEADERBOARD_ID
 	await message.channel.send("Guess the champion skin!")
+
+# ----------------------------------------------------------------------------------------------
+
+UT_OST_FOLDER = os.path.join(GUM_FOLDER, "ost")
+# Every file starts with this - we could rename them but we're (I'm) lazy
+UT_PREFIX_LEN = len("toby fox - UNDERTALE Soundtrack - ")
+
+async def cmd_gum_start(bot, message, _args):
+	if not os.path.exists(UT_OST_FOLDER):
+		print("UNDERTALE OST FOLDER DOESN'T EXIST, PLEASE REFRESH")
+		await message.channel.send("Please ask an admin to refresh the champ splashes!")
+		return
+	chosen_song_fn = random.choice(os.listdir(UT_OST_FOLDER))
+	try:
+		vc = await message.author.voice.channel.connect()
+	except Exception:
+		vc = client.voice_clients[0]
+	vc.play(discord.FFmpegPCMAudio(
+		executable="./ffmpeg.exe",
+		source=os.path.join(UT_OST_FOLDER, chosen_song_fn)
+	))
+	bot.guess_type = GUM_LEADERBOARD_ID
+	await message.channel.send("Guess the song!")

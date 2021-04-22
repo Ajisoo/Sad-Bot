@@ -173,6 +173,9 @@ async def on_message(message):
 	
 	if command in ['rs', 'roll_splash'] and not_ready_for_release:
 		await roll_splashes.cmd_splash_roll(bot, message, args)
+	
+	if command in ['get_skins'] and not_ready_for_release:
+		await guess_util.debug_get_cdragon_json(bot, message, args)
 
 @client.event
 async def on_raw_reaction_add(payload):

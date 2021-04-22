@@ -8,6 +8,7 @@ import shutil
 import os
 import random
 import json
+import bigjson
 from PIL import Image
 from fnmatch import fnmatch
 
@@ -105,13 +106,17 @@ async def cmd_ga_start(bot, message, args):
 # ----------------------------------------------------------------------------------------------
 
 
-#### GUESS SPLASH CONSTANTS #####
+#### SPLASH CONSTANTS #####
 
 latest_version = None
 
 versions_endpoint = 'https://ddragon.leagueoflegends.com/api/versions.json'
 data_dragon_endpoint_base = 'https://ddragon.leagueoflegends.com/cdn/dragontail-'
+cdragon_skins_url = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/skins.json'
+cdragon_champsummaries_url = 'http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json'
 
+cdragon_skins_fname = GS_FOLDER + 'skins.json'
+rarity_dist_file = GS_FOLDER + 'rarity-dist.json'
 dumpfile_name = GS_FOLDER + 'dump.tgz'
 champ_splashes_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
 champ_loadingsplash_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
@@ -119,7 +124,30 @@ latest_version_file = GS_FOLDER + "latest_version.txt"
 
 temp_image_name = "tempCroppedSplash.jpg"
 
-### GUESS SPLASH CONSTANTS END ###
+rarity_dist = {
+	"kNoRarity": {
+		'percentage': 0.75,
+		'rolls': []
+	},
+	"kEpic": {
+		'percentage': 0.20,
+		'rolls': []
+	},
+	"kLegendary": {
+		'percentage': 0.02,
+		'rolls': []
+	},
+	"kUltimate": {
+		'percentage': 0.01,
+		'rolls': []
+	},
+	"kMythic": {
+		'percentage': 0.02,
+		'rolls': []
+	} 
+}
+
+### SPLASH CONSTANTS END ###
 
 async def cmd_gs_refresh(bot, message, args):
 	if message.author.id not in [182707904367820800, 190253188262133761]:  # Us
@@ -147,6 +175,7 @@ async def cmd_gs_refresh(bot, message, args):
 		else:
 			print("Latest version already gotten")
 			await message.channel.send("Champ splashes are already refreshed!")
+			return
 		
 	except Exception as e:
 		print("Getting latest version has failed: " + str(e))
@@ -160,21 +189,16 @@ async def cmd_gs_refresh(bot, message, args):
 
 	await message.channel.send("Loading champ splashes...")
 
-	try:
-		with requests.get(data_dragon_endpoint_full, stream=True) as r:
-			r.raise_for_status()
-			with open(dumpfile_name, 'w+b') as f:
-				for chunk in r.iter_content(chunk_size=10000):
-					f.write(chunk)
-	except Exception as e:
-		print(e)
-		await message.channel.send("Error with getting champ splashes...")
+	await GET_remote_file(data_dragon_endpoint_full, dumpfile_name, message)
 
+	await message.channel.send("Unpacking data...")
 	print("Unpacking data dump...")
 	shutil.unpack_archive(dumpfile_name, GS_FOLDER)
 	print("Done unpacking data dump!")
+	
 
 	# Remove tgz, dragonhead, languages, and lolpatch_*
+	await message.channel.send("Removing extra files...")
 	print("Removing extraneous files...")
 	for file in os.listdir(GS_FOLDER):
 		if fnmatch(file, "lolpatch*"):
@@ -182,6 +206,55 @@ async def cmd_gs_refresh(bot, message, args):
 		elif fnmatch(file, "*.json") or fnmatch(file, "*.js") or fnmatch(file, "dump.tgz"):
 			os.remove(GS_FOLDER + file)
 	print("Removed extraneous files!")
+	
+
+	# Get skins json (which has rarity info)
+	await GET_remote_file(cdragon_skins_url, cdragon_skins_fname, message)
+
+	# Turn skins json into smaller version of itself
+	await message.channel.send("Getting skin data...")
+	global rarity_dist
+	new_skin_data = {}
+	with open(cdragon_skins_fname, "rb") as f:
+		skin_data = bigjson.load(f)
+		for k in rarity_dist.keys():
+			rarity_dist[k]['rolls'] = []
+		for k, v in skin_data.items():
+			if v['rarity'] == 'kRare':
+				# kRare only has Conqueror Nautilus and Alistar, just put them with not rare
+				rarity_dist['kNoRarity']['rolls'].append(v['id'])
+			else:
+				rarity_dist[v['rarity']]['rolls'].append(v['id'])
+			new_skin_data[k] = {key: v[key]
+                            for key in ['id', 'name', 'description', 'rarity']}
+	with open(cdragon_skins_fname, "w", encoding='utf-8') as f:
+		json.dump(new_skin_data, f, ensure_ascii=False)
+	with open(rarity_dist_file, "w", encoding='utf-8') as f:
+		json.dump(rarity_dist, f)
+
+
+	# Get champion summaries (which has ID to champ alias mappings)
+	await GET_remote_file(cdragon_champsummaries_url, RS_ID_TO_ALIAS_MAPPINGS_FILE, message)
+
+	# Turn champ summaries into a (name:id) mapping json
+	await message.channel.send("Creating some mappings...")
+	with open(RS_ID_TO_ALIAS_MAPPINGS_FILE, "r+", encoding="utf-8") as f:
+		summary_data = json.load(f)
+		
+		mapping = {str(summary_data[i]['id']):summary_data[i]['alias']
+                    for i in range(len(summary_data))}
+		del mapping['-1']  # Delete random placeholder
+
+		f.seek(0)
+		f.truncate()
+		json.dump(mapping, f)
+
+	# Make the probability distribution
+	'''
+		1. Find out how much of each rarity there is
+		2. Save the distribution model in a file 
+	'''
+	
 
 	print("Done, champ splashes are ready now!")
 	await message.channel.send("Champ splashes are ready now!")
@@ -260,3 +333,40 @@ async def cmd_gs_start(bot, message, args):
 
 	bot.guess_type = GS_LEADERBOARD_ID
 	await message.channel.send("Guess the champion skin!")
+
+
+
+
+async def debug_get_cdragon_json(bot, message, args):
+	# Get skins json (which has rarity info)
+	await GET_remote_file(cdragon_skins_url, cdragon_skins_fname, message)
+
+	# Turn skins json into smaller version of itself
+	global rarity_dist
+	new_skin_data = {}
+	with open(cdragon_skins_fname, "rb") as f:
+		skin_data = bigjson.load(f)
+		for k in rarity_dist.keys():
+			rarity_dist[k]['rolls'] = []
+		for k, v in skin_data.items():
+			if v['rarity'] == 'kRare':
+				# kRare only has Conqueror Nautilus and Alistar, just put them with not rare
+				rarity_dist['kNoRarity']['rolls'].append(v['id'])
+			else:
+				rarity_dist[v['rarity']]['rolls'].append(v['id'])
+	with open(rarity_dist_file, "w", encoding='utf-8') as f:
+		json.dump(rarity_dist, f)
+	await message.channel.send("got file!")
+
+# Try to get a big file from <url> and save as <fname>
+# <message> is used in case of error
+async def GET_remote_file(url, fname, message):
+	try:
+		with requests.get(url, stream=True) as r:
+			r.raise_for_status()
+			with open(fname, 'w+b') as f:
+				for chunk in r.iter_content(chunk_size=10000):
+					f.write(chunk)
+	except Exception as e:
+		print(e)
+		await message.channel.send("Error getting info from " + url)

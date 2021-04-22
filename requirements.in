@@ -2,3 +2,5 @@ discord
 beautifulsoup4
 requests
 Pillow
+bigjson
+numpy

@@ -12,6 +12,8 @@ attrs==20.3.0
     # via aiohttp
 beautifulsoup4==4.9.3
     # via -r requirements.in
+bigjson==1.0.6
+    # via -r requirements.in
 certifi==2020.12.5
     # via requests
 chardet==4.0.0
@@ -30,6 +32,8 @@ multidict==5.1.0
     # via
     #   aiohttp
     #   yarl
+numpy==1.20.2
+    # via -r requirements.in
 pillow==8.2.0
     # via -r requirements.in
 requests==2.25.1

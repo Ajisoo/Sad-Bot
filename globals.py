@@ -48,6 +48,8 @@ GA_LEADERBOARD_FILE = GA_FOLDER + "leaderboard_ga.txt"
 GS_FOLDER = CONTENT_FOLDER + "lol_splash_guesser" + os.path.sep
 GS_LEADERBOARD_FILE = GS_FOLDER + "leaderboard_gs.txt"
 
+RS_ID_TO_ALIAS_MAPPINGS_FILE = GS_FOLDER + "champion-summary.json"
+
 GS_LEADERBOARD_ID = "GS"
 GA_LEADERBOARD_ID = "GA"
 

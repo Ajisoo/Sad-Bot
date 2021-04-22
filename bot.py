@@ -97,7 +97,7 @@ async def on_message(message):
 	if command == 'gs_lb':
 		await message.channel.send(leaderboard_util.get_leaderboard(GS_LEADERBOARD_ID))
 
-	if command == 'gum_lb':
+	if command in ['gum_lb', 'umq_lb']:
 		await message.channel.send(leaderboard_util.get_leaderboard(GUM_LEADERBOARD_ID))
 
 	if command == 'ga_my_score':
@@ -106,7 +106,7 @@ async def on_message(message):
 	if command == 'gs_my_score':
 		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GS_LEADERBOARD_ID))
 
-	if command == 'gum_my_score':
+	if command == ['gum_my_score', 'umq_my_score']:
 		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GUM_LEADERBOARD_ID))
 
 	if command in ['guess_ability', 'ga']:

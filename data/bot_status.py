@@ -11,3 +11,4 @@ class BotStatus:
 		self.guess_type = ""
 		self.start_date = None
 		self.roll_user_data = None
+		self.gum_last_song_fn = None

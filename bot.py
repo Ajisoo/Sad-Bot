@@ -97,11 +97,17 @@ async def on_message(message):
 	if command == 'gs_lb':
 		await message.channel.send(leaderboard_util.get_leaderboard(GS_LEADERBOARD_ID))
 
+	if command == 'gum_lb':
+		await message.channel.send(leaderboard_util.get_leaderboard(GUM_LEADERBOARD_ID))
+
 	if command == 'ga_my_score':
 		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GA_LEADERBOARD_ID))
 	
 	if command == 'gs_my_score':
 		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GS_LEADERBOARD_ID))
+
+	if command == 'gum_my_score':
+		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GUM_LEADERBOARD_ID))
 
 	if command in ['guess_ability', 'ga']:
 		if len(args) > 0 and args[0] == "refresh":
@@ -146,6 +152,9 @@ async def on_message(message):
 
 	if command in ['guess_undertale', 'gum']:
 		await guess_util.cmd_gum_start(bot, message, args)
+
+	if command in ['guess_undertale_replay', 'gumr']:
+		await guess_util.cmd_gum_replay(bot, message, args)
 
 	if command in ['disconnect', 'dc']:
 		await message.guild.voice_client.disconnect()

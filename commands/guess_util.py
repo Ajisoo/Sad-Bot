@@ -74,7 +74,10 @@ async def cmd_give_up(bot, message, args):
 	await message.channel.send("Answer was: " + bot.g_answer_raw)
 	bot.g_answer_raw = ""
 	bot.g_answer = ""
-
+	# Uncomment these if giving up should stop the current song
+	# vc = message.guild.voice_client
+	# if vc:
+	# 	vc.stop()
 
 async def cmd_ga_start(bot, message, args):
 	if not bot.g_valid:
@@ -271,16 +274,44 @@ UT_PREFIX_LEN = len("toby fox - UNDERTALE Soundtrack - ")
 async def cmd_gum_start(bot, message, _args):
 	if not os.path.exists(UT_OST_FOLDER):
 		print("UNDERTALE OST FOLDER DOESN'T EXIST, PLEASE REFRESH")
-		await message.channel.send("Please ask an admin to refresh the champ splashes!")
+		await message.channel.send("Please ask an admin to fix the undertale OST files!")
 		return
 	chosen_song_fn = random.choice(os.listdir(UT_OST_FOLDER))
 	try:
 		vc = await message.author.voice.channel.connect()
 	except Exception:
-		vc = client.voice_clients[0]
+		vc = message.guild.voice_client
+	vc.stop()
 	vc.play(discord.FFmpegPCMAudio(
 		executable="./ffmpeg.exe",
 		source=os.path.join(UT_OST_FOLDER, chosen_song_fn)
 	))
 	bot.guess_type = GUM_LEADERBOARD_ID
-	await message.channel.send("Guess the song!")
+	# Trim mp3 suffix and album prefix
+	bot.g_answer_raw = chosen_song_fn[UT_PREFIX_LEN:-4]
+	# First token is always a track number
+	song_name = bot.g_answer_raw[bot.g_answer_raw.index(" "):] 
+	bot.g_answer = re.sub(r'[^a-z0-9]', '', song_name.lower())
+	bot.gum_last_song_fn = chosen_song_fn
+	print(bot.g_answer)
+	await message.channel.send("Guess the Undertale song!")
+
+async def cmd_gum_replay(bot, message, _args):
+	if not os.path.exists(UT_OST_FOLDER):
+		print("UNDERTALE OST FOLDER DOESN'T EXIST, PLEASE REFRESH")
+		await message.channel.send("Please ask an admin to fix the undertale OST files!")
+		return
+	try:
+		vc = await message.author.voice.channel.connect()
+	except Exception:
+		vc = message.guild.voice_client
+	vc.stop()
+	chosen_song_fn = bot.gum_last_song_fn
+	if chosen_song_fn:
+		vc.play(discord.FFmpegPCMAudio(
+			executable="./ffmpeg.exe",
+			source=os.path.join(UT_OST_FOLDER, chosen_song_fn)
+		))
+		await message.channel.send("Replaying last song...")
+	else:
+		await message.channel.send("No song to replay!")

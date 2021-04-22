@@ -18,11 +18,22 @@ champ_splashes_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champio
 champ_loadingsplash_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
 latest_version_file = GS_FOLDER + "latest_version.txt"
 
+ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/"
+
 temp_image_name = "tempCroppedSplash.jpg"
 
 percentages = None
 rolls = None
 id_to_alias_map = None
+
+rarity_colors = {
+	"kNoRarity": discord.Colour.from_rgb(255,255,255),
+	"kEpic": discord.Colour.from_rgb(4, 199, 248),
+	"kLegendary": discord.Colour.from_rgb(227, 48, 52),
+	"kUltimate": discord.Colour.from_rgb(226, 145, 20),
+	"kMythic": discord.Colour.from_rgb(183, 55, 182)
+}
+
 ### End Globals ###
 
 async def cmd_splash_roll(bot, message, args):
@@ -84,22 +95,24 @@ async def cmd_splash_roll(bot, message, args):
 	bottom = top + y / 2
 
 	cropped_img = im.crop((left, top, right, bottom))
-
 	cropped_img.save(temp_image_name, "jpeg")
-	await message.channel.send(file=(discord.File(temp_image_name)))
-	os.remove(temp_image_name)
 
-	msg = "**" + full_skin_name + "** (Piece " + piece_letter(left, top) + ")"
-	if rarity == 'kLegendary':
-		msg = ":star:  " + msg + "  :star:"
-	elif rarity in ['kMythic', 'kUltimate']:
-		msg = ":star2:  " + msg + "  :star2:"
-
+	title = "**" + full_skin_name + "** (Piece " + piece_letter(left, top) + ")"
+	title = decorated_title(title, rarity, bot)
+	
+	desc = ""
 	if champ_description is not None:
-		msg = msg + "\n_" + champ_description + "_"
+		desc = "_" + champ_description + "_"
+	
+	embed = discord.Embed(title=title, url=ddragon_baseurl + chosen_splash, 
+						  description=desc, color=rarity_colors[rarity]) \
+							.set_image(url="attachment://" + temp_image_name)
+	f = (discord.File(temp_image_name))
+	await message.channel.send(embed=embed, file=f)
+	os.remove(temp_image_name)
+	
 
-	await message.channel.send(msg)
-
+# Return letter corresponding to cropped corner
 def piece_letter(left, top):
 	if top == 0 and left == 0:
 		return 'A'
@@ -109,3 +122,29 @@ def piece_letter(left, top):
 		return 'C'
 	else:
 		return 'D'
+
+# Inverse of piece_letter
+def coordinates(letter, x, y):
+	if letter == 'A':
+		return (0, 0, x / 2, y / 2)
+	elif letter == 'B':
+		return (x / 2, 0, x, y / 2)
+	elif letter == 'C':
+		return (0, y / 2, 0, y)
+	elif letter == 'D':
+		return (x / 2, y / 2, x, y)
+
+def decorated_title(title, rarity, bot):
+	if rarity == 'kLegendary':
+		l_id = bot.rarity_emoji_ids['legendary']
+		title = f"<:legendary:{l_id}> " + title + f"  <:legendary:{l_id}>"
+	elif rarity == 'kMythic':
+		m_id = bot.rarity_emoji_ids['mythic']
+		title = f"<:mythic:{m_id}>  " + title + f"  <:mythic:{m_id}>"
+	elif rarity == 'kEpic':
+		e_id = bot.rarity_emoji_ids['epic']
+		title = f"<:epic:{e_id}>  " + title + f"  <:epic:{e_id}>"
+	elif rarity == 'kUltimate':
+		u_id = bot.rarity_emoji_ids['ultimate']
+		title = f"<:ultimate:{u_id}>  " + title + f"  <:ultimate:{u_id}>"
+	return title

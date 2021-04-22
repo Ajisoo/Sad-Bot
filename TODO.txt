@@ -7,4 +7,5 @@
 3. add special message for when someone completes a splash 
 4. trading?
 5. trading up system 
-6. DEBUGGING: add a way to force a specific champ roll 
+6. split bios into 4 pieces as well
+7. DEBUGGING: add a way to force a specific champ roll 

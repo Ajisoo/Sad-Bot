@@ -11,3 +11,10 @@ class BotStatus:
 		self.guess_type = ""
 		self.start_date = None
 		self.roll_user_data = None
+		self.rarity_emoji_ids = {}
+
+		for emoji in discord_client.emojis:
+			if emoji.name in ['epic', 'legendary', 'mythic', 'ultimate']:
+				self.rarity_emoji_ids[emoji.name] = emoji.id
+				if len(self.rarity_emoji_ids) >= 4:
+					break

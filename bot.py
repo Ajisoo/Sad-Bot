@@ -44,10 +44,10 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-	bot = await get_bot(message.guild.id)
-
 	if message.guild is None:
-		return  #we are in PM
+		return  # we are in PM
+
+	bot = await get_bot(message.guild.id)
 
 	if message.author == client.user:
 		return  # we are ourself

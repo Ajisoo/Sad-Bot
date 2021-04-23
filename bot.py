@@ -191,7 +191,7 @@ async def on_message(message):
 		else:
 			await roll_splashes.cmd_splash_roll(bot, message)
 	
-	if command in ['splash_list', 'list_splash', 'sl'] and not_ready_for_release(message.guild.id):
+	if command in ['harem'] and not_ready_for_release(message.guild.id):
 		await roll_splashes.cmd_splash_list(bot, message, args)
 
 	if command in ['test_skins'] and not_ready_for_release(message.guild.id):

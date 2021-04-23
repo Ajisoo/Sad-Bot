@@ -189,12 +189,20 @@ async def cmd_splash_list(bot, message, args):
 	else:
 		with open(skins_file, 'r') as f:
 			skin_data = json.load(f)
-			champs_list = ['#' + k[:-1] + ': ' + skin_data[k[:-1]]['name'] + 
-			               ' (Piece ' + k[-1] + ')' 
-			               for k in champs.keys()]
-
+			champs_dict = {}
+			for k in champs.keys():
+				a, b = k[:-1], k[-1]
+				if a in champs_dict:
+					champs_dict[a].append(b)
+				else:
+					champs_dict[a] = [b]
+			
+			champs_list = ['#' + k + ': ' + skin_data[k]['name'] + 
+			               ' (Pieces: ' + ', '.join(sorted(champs_dict[k])) + ')'
+			               for k in sorted(champs_dict, key=int)]
+	
 		# TODO: use cool reactable embed a la Mudae instead
-		champs_msg = '**Your champs**\n' + '\n'.join(champs_list)
+		champs_msg = f'**{message.author.name}\'s champs**\n' + '\n'.join(champs_list)
 		await message.channel.send(champs_msg)
 
 # Return letter corresponding to cropped corner

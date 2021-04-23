@@ -15,5 +15,8 @@ fi
 
 git pull &>> "$LOG_FILE"
 
+pip3 install pip-tools
+pip-compile requirements.in
+pip3 install -r requirements.txt
 python3 bot.py &>> "$LOG_FILE" &
 echo "$!" > "$PID_FILE"

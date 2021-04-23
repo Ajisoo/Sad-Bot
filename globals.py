@@ -48,6 +48,9 @@ GA_LEADERBOARD_FILE = GA_FOLDER + "leaderboard_ga.txt"
 GS_FOLDER = CONTENT_FOLDER + "lol_splash_guesser" + os.path.sep
 GS_LEADERBOARD_FILE = GS_FOLDER + "leaderboard_gs.txt"
 
+USER_INFO_FOLDER = CONTENT_FOLDER + "user_info" + os.path.sep
+SPLASH_HAREM_FILE = USER_INFO_FOLDER + 'splash-harems.json'
+
 RS_ID_TO_ALIAS_MAPPINGS_FILE = GS_FOLDER + "champion-summary.json"
 GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
 GUM_LEADERBOARD_FILE = os.path.join(GUM_FOLDER, "leaderboard_gum.txt")

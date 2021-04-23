@@ -7,10 +7,10 @@ import os
 import random
 import json
 from json.decoder import JSONDecodeError
-import bigjson
 from numpy.random import choice
-from PIL import Image
+from PIL import Image, ImageOps
 
+import time
 ### Globals ###
 
 latest_version = None
@@ -18,7 +18,6 @@ latest_version = None
 champ_splashes_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
 champ_loadingsplash_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
 latest_version_file = GS_FOLDER + "latest_version.txt"
-splash_harem_file = GS_FOLDER + 'splash-harem.json'
 skins_file = GS_FOLDER + 'skins.json'
 
 ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/"
@@ -42,10 +41,10 @@ rarity_colors = {
 
 
 def create_user_data_file():
-	if not os.path.exists(splash_harem_file):
-		if not os.path.exists(GS_FOLDER):
-			os.makedirs(GS_FOLDER)
-		with open(splash_harem_file, "w+") as f:
+	if not os.path.exists(SPLASH_HAREM_FILE):
+		if not os.path.exists(USER_INFO_FOLDER):
+			os.makedirs(USER_INFO_FOLDER)
+		with open(SPLASH_HAREM_FILE, "w+") as f:
 			print('making harem file')
 			json.dump({}, f)
 		
@@ -63,6 +62,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 		await message.channel.send("Champs can't be rolled right now. Please ask an admin to refresh the champ splashes!")
 		return
 
+	user_id = str(message.author.id)
 	'''
 		1. Pick a random thing out of the rarity-dist
 		2. The 3 rightmost numbers are the skin number
@@ -99,35 +99,57 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	full_skin_name = None
 	champ_description = None
 	rarity = None
-	with open(skins_file, 'rb') as f:
-		skin_data = bigjson.load(f)
+	with open(skins_file, 'r') as f:
+		skin_data = json.load(f)
 		champ_data = skin_data[str(full_champ_id)]
 		full_skin_name, champ_description = [champ_data["name"], champ_data["description"]]
 		rarity = champ_data["rarity"]
 	# ------------------------------
 
 	# Pick one of 4 pieces of the splash
-	if forced_piece == None:
-		im = Image.open(champ_loadingsplash_folder + chosen_splash)
-		x, y = im.size
+	im = Image.open(champ_loadingsplash_folder + chosen_splash)
+	x, y = im.size
 
+	if forced_piece == None:
 		left = random.choice([0, x / 2])
 		right = left + x / 2
 		top = random.choice([0, y / 2])
 		bottom = top + y / 2
 
-		cropped_img = im.crop((left, top, right, bottom))
-		cropped_img.save(temp_image_name, "jpeg")
-
 		letter = piece_letter(left, top)
+		crop_coords = (left, top, right, bottom)
 	else:
-		im = Image.open(champ_loadingsplash_folder + chosen_splash)
-		x, y = im.size
-
-		cropped_img = im.crop(coordinates(forced_piece, x, y))
-		cropped_img.save(temp_image_name, "jpeg")
 		letter = forced_piece
+		crop_coords = coordinates(forced_piece, x, y)
+
+	cropped_img = im.crop(crop_coords)
+	
 	# ------------------------------------------------
+
+	# Add to person's list
+	global splash_harems
+	if splash_harems == None:
+		with open(SPLASH_HAREM_FILE, 'r') as f:
+			try:
+				splash_harems = json.load(f)
+			except JSONDecodeError:
+				print("Harems file was empty, it never should be")
+				splash_harems = {}
+
+	splash_piece = str(full_champ_id) + letter
+	inventory = splash_harems.get(user_id, {})
+	if splash_piece in inventory:
+		inventory[splash_piece] += 1
+	else:
+		inventory[splash_piece] = 1
+	splash_harems[user_id] = inventory
+
+	with open(SPLASH_HAREM_FILE, 'w') as f:
+		json.dump(splash_harems, f)
+	
+	cropped_img = get_progress_img(splash_harems, user_id, full_champ_id, im, rarity)
+	cropped_img.save(temp_image_name, "jpeg")
+	# -------------------------------------
 
 	# Decorate the embed 
 	title = "**" + full_skin_name + "** (Piece " + letter + ")"
@@ -145,31 +167,9 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	os.remove(temp_image_name)
 	# ----------------------------------
 
-	# Add to person's list
-	global splash_harems
-	if splash_harems == None:
-		with open(splash_harem_file, 'r') as f:
-			try:
-				splash_harems = json.load(f)
-			except JSONDecodeError:
-				print("Harems file was empty, it never should be")
-				splash_harems = {}
-
-	splash_piece = str(full_champ_id) + letter
-	inventory = splash_harems.get(message.author.id, {})
-	if splash_piece in inventory:
-		inventory[splash_piece] += 1
-	else:
-		inventory[splash_piece] = 1
-	splash_harems[message.author.id] = inventory
-	
-	with open(splash_harem_file, 'w') as f:
-		json.dump(splash_harems, f)
-	# -------------------------------------
-
 
 async def cmd_splash_list(bot, message, args):
-	if not os.path.exists(splash_harem_file):
+	if not os.path.exists(SPLASH_HAREM_FILE):
 		print("SPLASH HAREMS FILE DOESN'T EXIST, RESTART BOT")
 		await message.channel.send("Splash harems aren't available right now, please contact an admin.")
 		return
@@ -178,20 +178,21 @@ async def cmd_splash_list(bot, message, args):
 		await message.channel.send("Skin info isn't available right now, please contact an admin.")
 		return
 	
-	user_id = message.author.id
+	user_id = str(message.author.id)
 
 	champs = {}
-	with open(splash_harem_file, 'r') as f:
-		champs = json.load(f).get(str(user_id), {})
+	with open(SPLASH_HAREM_FILE, 'r') as f:
+		champs = json.load(f).get(user_id, {})
 	if len(champs) == 0:
 		await message.channel.send("You have nothing.")
 		return
 	else:
-		with open(skins_file, 'rb') as f:
-			skin_data = bigjson.load(f)
+		with open(skins_file, 'r') as f:
+			skin_data = json.load(f)
 			champs_list = ['#' + k[:-1] + ': ' + skin_data[k[:-1]]['name'] + 
 			               ' (Piece ' + k[-1] + ')' 
 			               for k in champs.keys()]
+
 		# TODO: use cool reactable embed a la Mudae instead
 		champs_msg = '**Your champs**\n' + '\n'.join(champs_list)
 		await message.channel.send(champs_msg)
@@ -210,13 +211,13 @@ def piece_letter(left, top):
 # Inverse of piece_letter
 def coordinates(letter, x, y):
 	if letter == 'A':
-		return (0, 0, x / 2, y / 2)
+		return (0, 0, x // 2, y // 2)
 	elif letter == 'B':
-		return (x / 2, 0, x, y / 2)
+		return (x // 2, 0, x, y // 2)
 	elif letter == 'C':
-		return (0, y / 2, x / 2, y)
+		return (0, y // 2, x // 2, y)
 	elif letter == 'D':
-		return (x / 2, y / 2, x, y)
+		return (x // 2, y // 2, x, y)
 
 def decorated_title(title, rarity, bot):
 	if rarity == 'kLegendary':
@@ -232,3 +233,24 @@ def decorated_title(title, rarity, bot):
 		u_id = bot.rarity_emoji_ids['ultimate']
 		title = f"<:ultimate:{u_id}>  " + title + f"  <:ultimate:{u_id}>"
 	return title
+
+
+# show pieces the user has over a gray overlay 
+def get_progress_img(harems_data, user_id, skin_id, image_file: Image, rarity):
+	letters = ['A', 'B', 'C', 'D']
+
+	not_owned = list(filter(lambda l: str(skin_id) + l not in harems_data[user_id], letters))
+
+	x, y = image_file.size
+
+	for l in not_owned:
+		image_file.paste("#808080", coordinates(l, x, y))
+	if len(not_owned) == 0:
+		fill = '#' + hex(rarity_colors[rarity].value).replace('0x', '').zfill(6)
+		image_file = add_padding(image_file, 5, fill)
+
+	return image_file
+
+def add_padding(image_file: Image, p=5, fill='black') -> Image:
+	x, y = image_file.size
+	return ImageOps.expand(image_file.crop((p, p, x-p, y-p)), border=5, fill=fill)

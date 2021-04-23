@@ -9,7 +9,6 @@ import shutil
 import os
 import random
 import json
-import bigjson
 from PIL import Image
 from fnmatch import fnmatch
 
@@ -205,18 +204,6 @@ async def cmd_gs_refresh(bot, message, args):
 	print("Unpacking data dump...")
 	shutil.unpack_archive(dumpfile_name, GS_FOLDER)
 	print("Done unpacking data dump!")
-	
-
-	# Remove tgz, dragonhead, languages, and lolpatch_*
-	await message.channel.send("Removing extra files...")
-	print("Removing extraneous files...")
-	for file in os.listdir(GS_FOLDER):
-		if fnmatch(file, "lolpatch*"):
-			shutil.rmtree(GS_FOLDER + file, ignore_errors=True)
-		elif fnmatch(file, "*.json") or fnmatch(file, "*.js") or fnmatch(file, "dump.tgz"):
-			os.remove(GS_FOLDER + file)
-	print("Removed extraneous files!")
-	
 
 	# Get skins json (which has rarity info)
 	await get_skins
@@ -225,8 +212,8 @@ async def cmd_gs_refresh(bot, message, args):
 	await message.channel.send("Getting skin data...")
 	global rarity_dist
 	new_skin_data = {}
-	with open(skins_fname, "rb") as f:
-		skin_data = bigjson.load(f)
+	with open(skins_fname, "r") as f:
+		skin_data = json.load(f)
 		for k in rarity_dist.keys():
 			rarity_dist[k]['rolls'] = []
 		for k, v in skin_data.items():
@@ -245,7 +232,7 @@ async def cmd_gs_refresh(bot, message, args):
 	await get_aliases
 
 	# Turn champ summaries into a (name:id) mapping json
-	await message.channel.send("Creating some mappings...")
+	await message.channel.send("Creating some mappings, almost done...")
 	print("Creating some mappings")
 	with open(RS_ID_TO_ALIAS_MAPPINGS_FILE, "r+", encoding="utf-8") as f:
 		summary_data = json.load(f)
@@ -355,8 +342,8 @@ async def debug_get_cdragon_json(bot, message, args):
 	# Turn skins json into smaller version of itself
 	global rarity_dist
 	new_skin_data = {}
-	with open(skins_fname, "rb") as f:
-		skin_data = bigjson.load(f)
+	with open(skins_fname, "r") as f:
+		skin_data = json.load(f)
 		for k in rarity_dist.keys():
 			rarity_dist[k]['rolls'] = []
 		for k, v in skin_data.items():

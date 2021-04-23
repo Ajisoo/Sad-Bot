@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from globals import *
 from random import randrange
 import discord
+import ffmpeg
 import re
 import shutil
 import os
@@ -48,10 +49,11 @@ async def cmd_ga_refresh(bot, message, args):
 	bot.g_valid = True
 	await message.channel.send("All done")
 
+GUESS_UNSTARTED_PROMPT = "There's nothing to guess! Start with " + BOT_PREFIX + "guess_ability, guess_splash, or guess_undertale"
 
 async def cmd_guess(bot, message, args):
 	if len(bot.g_answer) == 0:
-		await message.channel.send("There's nothing to guess! Start with " + BOT_PREFIX + "guess_ability or guess_splash")
+		await message.channel.send(GUESS_UNSTARTED_PROMPT)
 		return
 
 	# Ignore basic semotes
@@ -68,12 +70,15 @@ async def cmd_guess(bot, message, args):
 
 async def cmd_give_up(bot, message, args):
 	if len(bot.g_answer) == 0:
-		await message.channel.send("There's nothing to guess! Start with " + prefix + "guess_ability or guess_splash")
+		await message.channel.send(GUESS_UNSTARTED_PROMPT)
 		return
 	await message.channel.send("Answer was: " + bot.g_answer_raw)
 	bot.g_answer_raw = ""
 	bot.g_answer = ""
-
+	# Uncomment these if giving up should stop the current song
+	# vc = message.guild.voice_client
+	# if vc:
+	# 	vc.stop()
 
 async def cmd_ga_start(bot, message, args):
 	if not bot.g_valid:
@@ -260,3 +265,72 @@ async def cmd_gs_start(bot, message, args):
 
 	bot.guess_type = GS_LEADERBOARD_ID
 	await message.channel.send("Guess the champion skin!")
+
+# ----------------------------------------------------------------------------------------------
+
+UT_OST_FOLDER = os.path.join(GUM_FOLDER, "ost")
+# Every file starts with this - we could rename them but we're (I'm) lazy
+UT_PREFIX_LEN = len("toby fox - UNDERTALE Soundtrack - ")
+
+async def _umq_try_join_vc(bot, message):
+	"""Returns a voice channel if it can connect; otherwise sends a warning and returns"""
+	if not os.path.exists(UT_OST_FOLDER):
+		print("UNDERTALE OST FOLDER DOESN'T EXIST")
+		await message.channel.send("Please ask an admin to fix the undertale OST files!")
+		return None
+	try:
+		voice = message.author.voice
+		if not voice:
+			await message.channel.send("You must be in a voice channel to start the quiz!")
+			return None
+		vc = await voice.channel.connect()
+	except Exception:
+		vc = message.guild.voice_client
+	return vc
+
+async def cmd_umq_start(bot, message, _args):
+	chosen_song_fn = random.choice(os.listdir(UT_OST_FOLDER))
+	vc = await _umq_try_join_vc(bot, message)
+	if not vc:
+		return
+	vc.stop()
+	song_path = os.path.join(UT_OST_FOLDER, chosen_song_fn)
+	# The starting point is at least 15 seconds away before the end of the song
+	duration = int(float(ffmpeg.probe(song_path)['format']['duration']))
+	ts_secs = random.randint(0, max(0, duration - 15))
+	ts_mm = ts_secs // 60
+	ts_ss = ts_secs % 60
+	ts = "00:{:02d}:{:02d}".format(ts_mm, ts_ss)
+
+	vc.play(discord.FFmpegPCMAudio(
+		executable="./ffmpeg.exe",
+		source=song_path,
+		options="-ss " + ts
+	))
+	bot.guess_type = GUM_LEADERBOARD_ID
+	# Trim mp3 suffix and album prefix
+	bot.g_answer_raw = chosen_song_fn[UT_PREFIX_LEN:-4]
+	# First token is always a track number
+	song_name = bot.g_answer_raw[bot.g_answer_raw.index(" "):] 
+	bot.g_answer = re.sub(r'[^a-z0-9]', '', song_name.lower())
+	bot.umq_last_song_fn = chosen_song_fn
+	bot.umq_last_song_ts = ts
+	print(bot.g_answer + " @ " + ts)
+	await message.channel.send("Guess the Undertale song!")
+
+async def cmd_umq_replay(bot, message, _args):
+	vc = await _umq_try_join_vc(bot, message)
+	if not vc:
+		return
+	vc.stop()
+	chosen_song_fn = bot.umq_last_song_fn
+	song_path = os.path.join(UT_OST_FOLDER, chosen_song_fn)
+	if chosen_song_fn:
+		vc.play(discord.FFmpegPCMAudio(
+			executable="./ffmpeg.exe",
+			source=song_path,
+			options="-ss " + bot.umq_last_song_ts
+		))
+		await message.channel.send("Replaying last song...")
+	else:
+		await message.channel.send("No song to replay!")

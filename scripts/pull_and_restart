@@ -15,5 +15,7 @@ fi
 
 git pull &>> "$LOG_FILE"
 
+source ./venv/bin/activate
+python3 -m pip install requirements.txt
 python3 bot.py &>> "$LOG_FILE" &
 echo "$!" > "$PID_FILE"

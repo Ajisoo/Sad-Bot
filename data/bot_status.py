@@ -18,3 +18,5 @@ class BotStatus:
 				self.rarity_emoji_ids[emoji.name] = emoji.id
 				if len(self.rarity_emoji_ids) >= 4:
 					break
+		self.umq_last_song_fn = None
+		self.umq_last_song_ts = None

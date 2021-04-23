@@ -99,11 +99,17 @@ async def on_message(message):
 	if command == 'gs_lb':
 		await message.channel.send(leaderboard_util.get_leaderboard(GS_LEADERBOARD_ID))
 
+	if command in ['gum_lb', 'umq_lb']:
+		await message.channel.send(leaderboard_util.get_leaderboard(GUM_LEADERBOARD_ID))
+
 	if command == 'ga_my_score':
 		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GA_LEADERBOARD_ID))
 	
 	if command == 'gs_my_score':
 		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GS_LEADERBOARD_ID))
+
+	if command == ['gum_my_score', 'umq_my_score']:
+		await message.channel.send(leaderboard_util.get_my_points(message.author.id, GUM_LEADERBOARD_ID))
 
 	if command in ['guess_ability', 'ga']:
 		if len(args) > 0 and args[0] == "refresh":
@@ -145,6 +151,12 @@ async def on_message(message):
 		# disconnect after the player has finished
 		vc.stop()
 		await vc.disconnect()
+
+	if command in ['guess_undertale', 'gum', 'umq', 'undertale_music_quiz']:
+		await guess_util.cmd_umq_start(bot, message, args)
+
+	if command in ['guess_undertale_replay', 'gumr', 'umqr']:
+		await guess_util.cmd_umq_replay(bot, message, args)
 
 	if command in ['disconnect', 'dc']:
 		await message.guild.voice_client.disconnect()

@@ -1,6 +1,8 @@
 discord
 beautifulsoup4
+ffmpeg-python
 requests
 Pillow
 bigjson
 numpy
+pynacl

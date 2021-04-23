@@ -1,5 +1,6 @@
 discord
 beautifulsoup4
+ffmpeg-python
 requests
 pynacl
 Pillow

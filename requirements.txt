@@ -24,6 +24,10 @@ discord.py==1.7.1
     # via discord
 discord==1.0.1
     # via -r requirements.in
+ffmpeg-python==0.2.0
+    # via -r requirements.in
+future==0.18.2
+    # via ffmpeg-python
 idna==2.10
     # via
     #   requests

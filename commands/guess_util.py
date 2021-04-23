@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from globals import *
 from random import randrange
 import discord
+import ffmpeg
 import re
 import shutil
 import os
@@ -293,9 +294,18 @@ async def cmd_umq_start(bot, message, _args):
 	if not vc:
 		return
 	vc.stop()
+	song_path = os.path.join(UT_OST_FOLDER, chosen_song_fn)
+	# The starting point is at least 15 seconds away before the end of the song
+	duration = int(float(ffmpeg.probe(song_path)['format']['duration']))
+	ts_secs = random.randint(0, max(0, duration - 15))
+	ts_mm = ts_secs // 60
+	ts_ss = ts_secs % 60
+	ts = "00:{:02d}:{:02d}".format(ts_mm, ts_ss)
+
 	vc.play(discord.FFmpegPCMAudio(
 		executable="./ffmpeg.exe",
-		source=os.path.join(UT_OST_FOLDER, chosen_song_fn)
+		source=song_path,
+		options="-ss " + ts
 	))
 	bot.guess_type = GUM_LEADERBOARD_ID
 	# Trim mp3 suffix and album prefix
@@ -303,8 +313,9 @@ async def cmd_umq_start(bot, message, _args):
 	# First token is always a track number
 	song_name = bot.g_answer_raw[bot.g_answer_raw.index(" "):] 
 	bot.g_answer = re.sub(r'[^a-z0-9]', '', song_name.lower())
-	bot.gum_last_song_fn = chosen_song_fn
-	print(bot.g_answer)
+	bot.umq_last_song_fn = chosen_song_fn
+	bot.umq_last_song_ts = ts
+	print(bot.g_answer + " @ " + ts)
 	await message.channel.send("Guess the Undertale song!")
 
 async def cmd_umq_replay(bot, message, _args):
@@ -312,11 +323,13 @@ async def cmd_umq_replay(bot, message, _args):
 	if not vc:
 		return
 	vc.stop()
-	chosen_song_fn = bot.gum_last_song_fn
+	chosen_song_fn = bot.umq_last_song_fn
+	song_path = os.path.join(UT_OST_FOLDER, chosen_song_fn)
 	if chosen_song_fn:
 		vc.play(discord.FFmpegPCMAudio(
 			executable="./ffmpeg.exe",
-			source=os.path.join(UT_OST_FOLDER, chosen_song_fn)
+			source=song_path,
+			options="-ss " + bot.umq_last_song_ts
 		))
 		await message.channel.send("Replaying last song...")
 	else:

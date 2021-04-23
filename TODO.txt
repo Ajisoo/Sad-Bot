@@ -1,11 +1,15 @@
 --- DONE ---
 1. add probability distributions for champ rolling
 1.5. add a way to pre-process this info and store it in a file every time refresh is called, so it doesn't have to be calculated every time someone rolls
-------------
 2. add place to store who has what splash pieces 
+------------
 2.5. store completed splashes also 
+2.7. limit rolls per hour
 3. add special message for when someone completes a splash 
-4. trading?
-5. trading up system 
-6. split bios into 4 pieces as well
 7. DEBUGGING: add a way to force a specific champ roll 
+4. trading?
+5. use reactable embed for champ splash list instead of text
+5. trading up system 
+8. stretch goal: add some sort of 'quality' for each roll
+6. split bios into 4 pieces as well
+

@@ -14,8 +14,9 @@ client = discord.Client()
 bots = {}
 
 # AND this variable with anything that isn't ready to be released yet
-# so the command won't trigger
-not_ready_for_release = False
+# so the command can only be triggered in the test server
+def not_ready_for_release(guild_id):
+	return guild_id == TEST_SERVER_GUILD_ID
 
 async def get_bot(guild_id):
 	global bots
@@ -40,6 +41,7 @@ async def on_ready():
 		update_ga_leaderboard_file_name()
 
 	roll_color.create_user_data_file()
+	roll_splashes.create_user_data_file()
 
 
 @client.event
@@ -171,10 +173,16 @@ async def on_message(message):
 		await roll_color.first_time_setup(bot)
 		await roll_color.cmd_list_color(bot, message, args)
 	
-	if command in ['rs', 'roll_splash'] and not_ready_for_release:
-		await roll_splashes.cmd_splash_roll(bot, message, args)
+	if command in ['rs', 'roll_splash'] and not_ready_for_release(message.guild.id):
+		if len(args) > 0 and not_ready_for_release(message.guild.id):
+			await roll_splashes.force_roll(bot, message, args[0])
+		else:
+			await roll_splashes.cmd_splash_roll(bot, message)
 	
-	if command in ['get_skins'] and not_ready_for_release:
+	if command in ['splash_list', 'list_splash', 'sl'] and not_ready_for_release(message.guild.id):
+		await roll_splashes.cmd_splash_list(bot, message, args)
+
+	if command in ['test_skins'] and not_ready_for_release(message.guild.id):
 		await guess_util.debug_get_cdragon_json(bot, message, args)
 
 @client.event

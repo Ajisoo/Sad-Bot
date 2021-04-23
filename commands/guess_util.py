@@ -115,7 +115,7 @@ data_dragon_endpoint_base = 'https://ddragon.leagueoflegends.com/cdn/dragontail-
 cdragon_skins_url = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/skins.json'
 cdragon_champsummaries_url = 'http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json'
 
-cdragon_skins_fname = GS_FOLDER + 'skins.json'
+skins_fname = GS_FOLDER + 'skins.json'
 rarity_dist_file = GS_FOLDER + 'rarity-dist.json'
 dumpfile_name = GS_FOLDER + 'dump.tgz'
 champ_splashes_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
@@ -191,6 +191,11 @@ async def cmd_gs_refresh(bot, message, args):
 
 	await GET_remote_file(data_dragon_endpoint_full, dumpfile_name, message)
 
+	# GET tasks
+	get_skins = GET_remote_file(cdragon_skins_url, skins_fname, message)
+	get_aliases = GET_remote_file(cdragon_champsummaries_url,
+	                RS_ID_TO_ALIAS_MAPPINGS_FILE, message)
+
 	await message.channel.send("Unpacking data...")
 	print("Unpacking data dump...")
 	shutil.unpack_archive(dumpfile_name, GS_FOLDER)
@@ -209,13 +214,13 @@ async def cmd_gs_refresh(bot, message, args):
 	
 
 	# Get skins json (which has rarity info)
-	await GET_remote_file(cdragon_skins_url, cdragon_skins_fname, message)
+	await get_skins
 
 	# Turn skins json into smaller version of itself
 	await message.channel.send("Getting skin data...")
 	global rarity_dist
 	new_skin_data = {}
-	with open(cdragon_skins_fname, "rb") as f:
+	with open(skins_fname, "rb") as f:
 		skin_data = bigjson.load(f)
 		for k in rarity_dist.keys():
 			rarity_dist[k]['rolls'] = []
@@ -227,34 +232,37 @@ async def cmd_gs_refresh(bot, message, args):
 				rarity_dist[v['rarity']]['rolls'].append(v['id'])
 			new_skin_data[k] = {key: v[key]
                             for key in ['id', 'name', 'description', 'rarity']}
-	with open(cdragon_skins_fname, "w", encoding='utf-8') as f:
-		json.dump(new_skin_data, f, ensure_ascii=False)
 	with open(rarity_dist_file, "w", encoding='utf-8') as f:
 		json.dump(rarity_dist, f)
 
 
 	# Get champion summaries (which has ID to champ alias mappings)
-	await GET_remote_file(cdragon_champsummaries_url, RS_ID_TO_ALIAS_MAPPINGS_FILE, message)
+	await get_aliases
 
 	# Turn champ summaries into a (name:id) mapping json
 	await message.channel.send("Creating some mappings...")
+	print("Creating some mappings")
 	with open(RS_ID_TO_ALIAS_MAPPINGS_FILE, "r+", encoding="utf-8") as f:
 		summary_data = json.load(f)
 		
-		mapping = {str(summary_data[i]['id']):summary_data[i]['alias']
+		aliases = {str(summary_data[i]['id']):summary_data[i]['alias']
                     for i in range(len(summary_data))}
-		del mapping['-1']  # Delete random placeholder
+		del aliases['-1']  # Delete random placeholder
+
+		# Add image names to skins.json
+		# After this point we won't really need champion-summaries.json anymore
+		# because the mappings are all consolidated in one file
+		for k,v in new_skin_data.items():
+			alias = aliases[k[:-3]]
+			skin_number = k[-3:].lstrip('0')
+			new_skin_data[k]['splash_name'] = alias + "_" + skin_number + ".jpg"
 
 		f.seek(0)
 		f.truncate()
-		json.dump(mapping, f)
-
-	# Make the probability distribution
-	'''
-		1. Find out how much of each rarity there is
-		2. Save the distribution model in a file 
-	'''
-	
+		json.dump(aliases, f)
+	with open(skins_fname, "w", encoding='utf-8') as f:
+		json.dump(new_skin_data, f, ensure_ascii=False)
+	print("Finished with mappings")
 
 	print("Done, champ splashes are ready now!")
 	await message.channel.send("Champ splashes are ready now!")
@@ -339,12 +347,12 @@ async def cmd_gs_start(bot, message, args):
 
 async def debug_get_cdragon_json(bot, message, args):
 	# Get skins json (which has rarity info)
-	await GET_remote_file(cdragon_skins_url, cdragon_skins_fname, message)
+	await GET_remote_file(cdragon_skins_url, skins_fname, message)
 
 	# Turn skins json into smaller version of itself
 	global rarity_dist
 	new_skin_data = {}
-	with open(cdragon_skins_fname, "rb") as f:
+	with open(skins_fname, "rb") as f:
 		skin_data = bigjson.load(f)
 		for k in rarity_dist.keys():
 			rarity_dist[k]['rolls'] = []

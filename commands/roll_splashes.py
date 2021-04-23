@@ -6,6 +6,7 @@ import re
 import os
 import random
 import json
+from json.decoder import JSONDecodeError
 import bigjson
 from numpy.random import choice
 from PIL import Image
@@ -17,6 +18,8 @@ latest_version = None
 champ_splashes_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
 champ_loadingsplash_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
 latest_version_file = GS_FOLDER + "latest_version.txt"
+splash_harem_file = GS_FOLDER + 'splash-harem.json'
+skins_file = GS_FOLDER + 'skins.json'
 
 ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/"
 
@@ -25,6 +28,7 @@ temp_image_name = "tempCroppedSplash.jpg"
 percentages = None
 rolls = None
 id_to_alias_map = None
+splash_harems = None
 
 rarity_colors = {
 	"kNoRarity": discord.Colour.from_rgb(255,255,255),
@@ -36,7 +40,20 @@ rarity_colors = {
 
 ### End Globals ###
 
-async def cmd_splash_roll(bot, message, args):
+
+def create_user_data_file():
+	if not os.path.exists(splash_harem_file):
+		if not os.path.exists(GS_FOLDER):
+			os.makedirs(GS_FOLDER)
+		with open(splash_harem_file, "w+") as f:
+			print('making harem file')
+			json.dump({}, f)
+		
+# id_with_piece has format <id>[A|B|C|D]
+async def force_roll(bot, message, id_with_piece):
+	await cmd_splash_roll(bot, message, forced_id=id_with_piece[:-1], forced_piece=id_with_piece[-1].upper())
+
+async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	if not os.path.exists(champ_loadingsplash_folder):
 		print("CHAMP SPLASHES FOLDER DOESN'T EXIST, PLEASE REFRESH")
 		await message.channel.send("Please ask an admin to refresh the champ splashes!")
@@ -54,17 +71,20 @@ async def cmd_splash_roll(bot, message, args):
 		5. Combine <Alias_SkinNumber> to get the jpg
 		6. Query skins.json to get full skin name and description
 	'''
-	global percentages, rolls 
-	if percentages == None or rolls == None:
-		with open(GS_FOLDER + 'rarity-dist.json', 'r') as f:
-			rarity_dist = json.load(f)
-			loot_pools = [(v['percentage'], v['rolls']) for v in rarity_dist.values()]
-			percentages, rolls = [list(t) for t in zip(*loot_pools)]
+	if forced_id == None:
+		global percentages, rolls 
+		if percentages == None or rolls == None:
+			with open(GS_FOLDER + 'rarity-dist.json', 'r') as f:
+				rarity_dist = json.load(f)
+				loot_pools = [(v['percentage'], v['rolls']) for v in rarity_dist.values()]
+				percentages, rolls = [list(t) for t in zip(*loot_pools)]
 
-	res_index = choice(len(rolls), p=percentages)
-	chosen_pool = rolls[res_index]
+		res_index = choice(len(rolls), p=percentages)
+		chosen_pool = rolls[res_index]
 
-	full_champ_id = choice(chosen_pool)
+		full_champ_id = choice(chosen_pool)
+	else:
+		full_champ_id = int(forced_id)
 	champ_id, skin_number = [full_champ_id // 1000, full_champ_id % 1000]
 	
 	global id_to_alias_map
@@ -79,25 +99,38 @@ async def cmd_splash_roll(bot, message, args):
 	full_skin_name = None
 	champ_description = None
 	rarity = None
-	with open(GS_FOLDER + 'skins.json', 'rb') as f:
+	with open(skins_file, 'rb') as f:
 		skin_data = bigjson.load(f)
 		champ_data = skin_data[str(full_champ_id)]
 		full_skin_name, champ_description = [champ_data["name"], champ_data["description"]]
 		rarity = champ_data["rarity"]
+	# ------------------------------
 
 	# Pick one of 4 pieces of the splash
-	im = Image.open(champ_loadingsplash_folder + chosen_splash)
-	x, y = im.size
+	if forced_piece == None:
+		im = Image.open(champ_loadingsplash_folder + chosen_splash)
+		x, y = im.size
 
-	left = random.choice([0, x / 2])
-	right = left + x / 2
-	top = random.choice([0, y / 2])
-	bottom = top + y / 2
+		left = random.choice([0, x / 2])
+		right = left + x / 2
+		top = random.choice([0, y / 2])
+		bottom = top + y / 2
 
-	cropped_img = im.crop((left, top, right, bottom))
-	cropped_img.save(temp_image_name, "jpeg")
+		cropped_img = im.crop((left, top, right, bottom))
+		cropped_img.save(temp_image_name, "jpeg")
 
-	title = "**" + full_skin_name + "** (Piece " + piece_letter(left, top) + ")"
+		letter = piece_letter(left, top)
+	else:
+		im = Image.open(champ_loadingsplash_folder + chosen_splash)
+		x, y = im.size
+
+		cropped_img = im.crop(coordinates(forced_piece, x, y))
+		cropped_img.save(temp_image_name, "jpeg")
+		letter = forced_piece
+	# ------------------------------------------------
+
+	# Decorate the embed 
+	title = "**" + full_skin_name + "** (Piece " + letter + ")"
 	title = decorated_title(title, rarity, bot)
 	
 	desc = ""
@@ -110,7 +143,58 @@ async def cmd_splash_roll(bot, message, args):
 	f = (discord.File(temp_image_name))
 	await message.channel.send(embed=embed, file=f)
 	os.remove(temp_image_name)
+	# ----------------------------------
+
+	# Add to person's list
+	global splash_harems
+	if splash_harems == None:
+		with open(splash_harem_file, 'r') as f:
+			try:
+				splash_harems = json.load(f)
+			except JSONDecodeError:
+				print("Harems file was empty, it never should be")
+				splash_harems = {}
+
+	splash_piece = str(full_champ_id) + letter
+	inventory = splash_harems.get(message.author.id, {})
+	if splash_piece in inventory:
+		inventory[splash_piece] += 1
+	else:
+		inventory[splash_piece] = 1
+	splash_harems[message.author.id] = inventory
 	
+	with open(splash_harem_file, 'w') as f:
+		json.dump(splash_harems, f)
+	# -------------------------------------
+
+
+async def cmd_splash_list(bot, message, args):
+	if not os.path.exists(splash_harem_file):
+		print("SPLASH HAREMS FILE DOESN'T EXIST, RESTART BOT")
+		await message.channel.send("Splash harems aren't available right now, please contact an admin.")
+		return
+	if not os.path.exists(skins_file):
+		print("SKINS FILE DOESN'T EXIST, RESTART BOT")
+		await message.channel.send("Skin info isn't available right now, please contact an admin.")
+		return
+	
+	user_id = message.author.id
+
+	champs = {}
+	with open(splash_harem_file, 'r') as f:
+		champs = json.load(f).get(str(user_id), {})
+	if len(champs) == 0:
+		await message.channel.send("You have nothing.")
+		return
+	else:
+		with open(skins_file, 'rb') as f:
+			skin_data = bigjson.load(f)
+			champs_list = ['#' + k[:-1] + ': ' + skin_data[k[:-1]]['name'] + 
+			               ' (Piece ' + k[-1] + ')' 
+			               for k in champs.keys()]
+		# TODO: use cool reactable embed a la Mudae instead
+		champs_msg = '**Your champs**\n' + '\n'.join(champs_list)
+		await message.channel.send(champs_msg)
 
 # Return letter corresponding to cropped corner
 def piece_letter(left, top):
@@ -130,7 +214,7 @@ def coordinates(letter, x, y):
 	elif letter == 'B':
 		return (x / 2, 0, x, y / 2)
 	elif letter == 'C':
-		return (0, y / 2, 0, y)
+		return (0, y / 2, x / 2, y)
 	elif letter == 'D':
 		return (x / 2, y / 2, x, y)
 

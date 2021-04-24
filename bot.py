@@ -191,8 +191,14 @@ async def on_message(message):
 		else:
 			await roll_splashes.cmd_splash_roll(bot, message)
 	
-	if command in ['harem'] and not_ready_for_release(message.guild.id):
+	if command == 'harem' and not_ready_for_release(message.guild.id):
 		await roll_splashes.cmd_splash_list(bot, message, args)
+	
+	if command in ['ds', 'divorce_splash'] and not_ready_for_release(message.guild.id):
+		if len(args) > 0:
+			await roll_splashes.divorce_splash(message, args)
+		else:
+			await message.channel.send("Divorcee(s) not specified!")
 
 	if command in ['test_skins'] and not_ready_for_release(message.guild.id):
 		await guess_util.debug_get_cdragon_json(bot, message, args)

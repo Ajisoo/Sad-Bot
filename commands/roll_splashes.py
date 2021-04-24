@@ -30,7 +30,7 @@ id_to_alias_map = None
 splash_harems = None
 
 rarity_colors = {
-	"kNoRarity": discord.Colour.from_rgb(255,255,255),
+	"kNoRarity": discord.Colour.from_rgb(255,255,254),
 	"kEpic": discord.Colour.from_rgb(4, 199, 248),
 	"kLegendary": discord.Colour.from_rgb(227, 48, 52),
 	"kUltimate": discord.Colour.from_rgb(226, 145, 20),
@@ -138,10 +138,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 
 	splash_piece = str(full_champ_id) + letter
 	inventory = splash_harems.get(user_id, {})
-	if splash_piece in inventory:
-		inventory[splash_piece] += 1
-	else:
-		inventory[splash_piece] = 1
+	inventory[splash_piece] = full_skin_name
 	splash_harems[user_id] = inventory
 
 	with open(SPLASH_HAREM_FILE, 'w') as f:
@@ -196,14 +193,45 @@ async def cmd_splash_list(bot, message, args):
 					champs_dict[a].append(b)
 				else:
 					champs_dict[a] = [b]
-			
-			champs_list = ['#' + k + ': ' + skin_data[k]['name'] + 
-			               ' (Pieces: ' + ', '.join(sorted(champs_dict[k])) + ')'
-			               for k in sorted(champs_dict, key=int)]
-	
+			champs_list = []
+			for k in sorted(champs_dict, key=int):
+				pieces = sorted(champs_dict[k])
+				if len(pieces) == 4:
+					champs_list.append('#' + k + ': ' + skin_data[k]['name'] +
+                                            ' (**Complete**)')
+				else:
+					champs_list.append('#' + k + ': ' + skin_data[k]['name'] +
+                                            ' (Pieces: ' + ', '.join(pieces) + ')')
+
 		# TODO: use cool reactable embed a la Mudae instead
 		champs_msg = f'**{message.author.name}\'s champs**\n' + '\n'.join(champs_list)
 		await message.channel.send(champs_msg)
+
+# Precondition: len(args) > 0, contains list of divorcees in format <id>[A|B|C|D]
+async def divorce_splash(message, args):
+	with open(SPLASH_HAREM_FILE, 'r+') as f:
+		harems = json.load(f)
+		user_harem = harems.get(str(message.author.id), {})
+		if len(user_harem) > 0:
+			msgs = []
+			for d in args:
+				d = d.upper()
+				if d in user_harem:
+					msgs.append(message.channel.send("Divorced %s!" % (user_harem[d] + " (Piece " + d[-1] + ')')))
+					del user_harem[d]
+				else:
+					msgs.append(message.channel.send("You don't own %s!" % (d)))
+			harems[message.author.id] = user_harem
+			f.seek(0)
+			f.truncate()
+			json.dump(harems, f)
+			for m in msgs:
+				await m
+		else:
+			await message.channel.send("You have no one to divorce!")
+			return
+
+
 
 # Return letter corresponding to cropped corner
 def piece_letter(left, top):

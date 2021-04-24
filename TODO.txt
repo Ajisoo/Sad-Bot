@@ -6,10 +6,21 @@
 9. update people's progress on their collection
 3. add special message for when someone completes a splash 
 --- END DONE ----
+12. "divorce" option
+    - notes: should remove from 'rolled' set when that becomes a thing
+             should remove from harems.json
+
+11. make everything non-dupe 
+    - (note: should forced rolls be allowed to create dupes?)
+    - no longer store multiple copies of a skin in harems.json
+    - add a 'rolled' set so even through refreshes, we know what's already taken
+    - implementation: 
+        1. we remove it from pool: note: upon refreshes, immediately update the pool to reflect rolled set
+        2. add to rolled set and if someone rolls something in rolled set, we simply keep rolling until they get unclaimed one
 2.5. store completed splashes also 
+5. use reactable embed for champ splash list instead of text
 2.7. limit rolls per hour
 4. trading?
-5. use reactable embed for champ splash list instead of text
 5. trading up system 
 8. stretch goal: add some sort of 'quality' for each roll
 6. split bios into 4 pieces as well

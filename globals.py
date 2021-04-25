@@ -2,6 +2,15 @@ from datetime import datetime
 import os
 
 
+# AND this function with anything that isn't ready to be released yet
+# so the command can only be triggered in the test server
+def only_for_testing_server(guild_id) -> bool:
+	return guild_id == TEST_SERVER_GUILD_ID
+
+
+ADMINS = [182707904367820800, # ajisoo
+          190253188262133761  # josh
+		]
 
 BOT_PREFIX = "$"
 

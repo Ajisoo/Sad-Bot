@@ -13,11 +13,6 @@ from globals import *
 client = discord.Client()
 bots = {}
 
-# AND this variable with anything that isn't ready to be released yet
-# so the command can only be triggered in the test server
-def not_ready_for_release(guild_id):
-	return guild_id == TEST_SERVER_GUILD_ID
-
 async def get_bot(guild_id):
 	global bots
 	return bots[guild_id]
@@ -45,7 +40,7 @@ async def on_ready():
 
 
 @client.event
-async def on_message(message):
+async def on_message(message: discord.Message):
 	if message.guild is None:
 		return  # we are in PM
 
@@ -185,22 +180,22 @@ async def on_message(message):
 		await roll_color.first_time_setup(bot)
 		await roll_color.cmd_list_color(bot, message, args)
 	
-	if command in ['rs', 'roll_splash'] and not_ready_for_release(message.guild.id):
-		if len(args) > 0 and not_ready_for_release(message.guild.id):
+	if command in ['rs', 'roll_splash'] and only_for_testing_server(message.guild.id):
+		if len(args) > 0 and only_for_testing_server(message.guild.id):
 			await roll_splashes.force_roll(bot, message, args[0])
 		else:
 			await roll_splashes.cmd_splash_roll(bot, message)
 	
-	if command == 'harem' and not_ready_for_release(message.guild.id):
+	if command == 'harem' and only_for_testing_server(message.guild.id):
 		await roll_splashes.cmd_splash_list(bot, message, args)
 	
-	if command in ['ds', 'divorce_splash'] and not_ready_for_release(message.guild.id):
+	if command in ['ds', 'divorce_splash'] and only_for_testing_server(message.guild.id):
 		if len(args) > 0:
 			await roll_splashes.divorce_splash(message, args)
 		else:
 			await message.channel.send("Divorcee(s) not specified!")
 
-	if command in ['test_skins'] and not_ready_for_release(message.guild.id):
+	if command in ['test_skins'] and only_for_testing_server(message.guild.id):
 		await guess_util.debug_get_cdragon_json(bot, message, args)
 
 @client.event

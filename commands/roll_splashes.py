@@ -67,7 +67,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	user_id = str(message.author.id)
 
 	ttr = time_left(user_id)
-	if ttr > 0:
+	if ttr > 0 and not only_for_testing_server(message.guild.id):
 		await message.channel.send(f"You can't roll yet! You have {ttr} minutes left!")
 		return 
 

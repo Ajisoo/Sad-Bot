@@ -10,12 +10,11 @@ import os
 import random
 import json
 from PIL import Image
-from fnmatch import fnmatch
 
 import commands.leaderboard_util
 
 async def cmd_ga_refresh(bot, message, args):
-	if message.author.id not in [182707904367820800, 190253188262133761]:  # Us
+	if message.author.id not in ADMINS:  # Us
 		return
 
 	bot.g_valid = False
@@ -154,7 +153,7 @@ rarity_dist = {
 ### SPLASH CONSTANTS END ###
 
 async def cmd_gs_refresh(bot, message, args):
-	if message.author.id not in [182707904367820800, 190253188262133761]:  # Us
+	if message.author.id not in ADMINS:  # Us
 		return
 	
 	# Get the latest patch number

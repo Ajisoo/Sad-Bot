@@ -9,6 +9,8 @@
 2.7. limit rolls per hour
 --- END DONE ----
 13. info command (shows full champion) (problem: search by id)
+7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent
+   but also we're mainly using this just on Lounge anyways
 4. trading?
 
 2.5. store completed splashes also 

@@ -133,7 +133,7 @@ async def on_message(message):
 		die_number = int(dice[1:])
 		rand = random.randint(1, die_number)
 
-		await message.channel.send(f"<@{message.author.id}> rolled {rand}!")
+		await message.channel.send(f"<@{message.author.id}> rolled 1!")
 
 	if command in ['tictactoe', 'ttt']:
 		await cmd_tictactoe(bot, client.user, message, args)

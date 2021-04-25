@@ -1,13 +1,11 @@
 import os
 from globals import *
-from random import randrange
+from random import randrange, choice, choices
 import discord
 import re
 import os
-import random
 import json
 from json.decoder import JSONDecodeError
-from numpy.random import choice
 from PIL import Image, ImageOps
 
 import time
@@ -79,10 +77,10 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 				loot_pools = [(v['percentage'], v['rolls']) for v in rarity_dist.values()]
 				percentages, rolls = [list(t) for t in zip(*loot_pools)]
 
-		res_index = choice(len(rolls), p=percentages)
+		res_index = choices(range(len(rolls)), weights=[100 * p for p in percentages])[0]
 		chosen_pool = rolls[res_index]
 
-		full_champ_id = choice(chosen_pool)
+		full_champ_id = choices(chosen_pool)[0]
 	else:
 		full_champ_id = int(forced_id)
 	champ_id, skin_number = [full_champ_id // 1000, full_champ_id % 1000]
@@ -111,9 +109,9 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	x, y = im.size
 
 	if forced_piece == None:
-		left = random.choice([0, x / 2])
+		left = choice([0, x / 2])
 		right = left + x / 2
-		top = random.choice([0, y / 2])
+		top = choice([0, y / 2])
 		bottom = top + y / 2
 
 		letter = piece_letter(left, top)

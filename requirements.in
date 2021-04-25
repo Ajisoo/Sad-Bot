@@ -3,5 +3,4 @@ beautifulsoup4
 ffmpeg-python
 requests
 Pillow
-numpy
 pynacl

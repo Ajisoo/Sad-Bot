@@ -101,17 +101,11 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 
 	if forced_piece == None:
 		left = choice([0, x / 2])
-		right = left + x / 2
 		top = choice([0, y / 2])
-		bottom = top + y / 2
 
 		letter = piece_letter(left, top)
-		crop_coords = (left, top, right, bottom)
 	else:
 		letter = forced_piece
-		crop_coords = coordinates(forced_piece, x, y)
-
-	cropped_img = im.crop(crop_coords)
 	
 	# ------------------------------------------------
 
@@ -138,23 +132,12 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	with open(SPLASH_HAREM_FILE, 'w') as f:
 		json.dump(splash_harems, f)
 	
-	pieces_counts = splash_harems[user_id][id_string]["pieces"]
-	cropped_img = get_progress_img(pieces_counts, im, rarity)
-	cropped_img.save(TEMP_IMAGE_FNAME, "jpeg")
 	# -------------------------------------
 
-	# Decorate the embed 
-	title = "**" + full_skin_name + "** (Piece " + letter + ")"
-	title = decorated_title(title, rarity, bot)
-	
-	desc = ""
-	if champ_description is not None:
-		desc = "_" + champ_description + "_"
-	
-	embed = discord.Embed(title=title, url=ddragon_baseurl + chosen_splash, 
-						  description=desc, color=rarity_colors[rarity]) \
-							.set_image(url="attachment://" + TEMP_IMAGE_FNAME)
-	f = (discord.File(TEMP_IMAGE_FNAME))
+	# Create the embed
+	pieces_counts = splash_harems[user_id][id_string]["pieces"]
+	embed, f = create_progress_embed(full_skin_name, champ_description, rarity, chosen_splash,
+	 								pieces_counts, im, bot)
 	embed_msg = message.channel.send(embed=embed, file=f)
 	os.remove(TEMP_IMAGE_FNAME)
 	await embed_msg
@@ -223,22 +206,30 @@ async def cmd_splash_list(bot, message, args):
 
 # Precondition: len(args) > 0, contains list of divorcees in format <id>[A|B|C|D]
 async def divorce_splash(bot, message, args):
+	user_id = str(message.author.id)
 	with open(SPLASH_HAREM_FILE, 'r+') as f:
 		harems = json.load(f)
-		user_harem = harems.get(str(message.author.id), {})
+		user_harem = harems.get(user_id, {})
 		if len(user_harem) > 0:
 			msgs = []
 			for d in args:
 				d = d.upper()
+				if re.match("\d{4,}[ABCD]", d) is None:
+					msgs.append(message.channel.send("Please divorce by valid ID"))
+					break
 				skin_id, l = d[:-1], d[-1]
 				if skin_id in user_harem:
 					msgs.append(message.channel.send("Divorced %s!" % (user_harem[skin_id]["name"] + " (Piece " + l + ')')))
 					if user_harem[skin_id]["pieces"][l] == 0:
-						msgs.append(message.channel.send("You don't own %s!" % (d)))
+						msgs.append(message.channel.send("You don't own #%s!" % (d)))
 					else:
 						user_harem[skin_id]["pieces"][l] -= 1
+						if not all(user_harem[skin_id]["pieces"].values()):
+							del user_harem[skin_id]
+				else:
+					msgs.append(message.channel.send("You don't own #%s!" % (d)))
 					
-			harems[message.author.id] = user_harem
+			harems[user_id] = user_harem
 			f.seek(0)
 			f.truncate()
 			json.dump(harems, f)
@@ -249,40 +240,71 @@ async def divorce_splash(bot, message, args):
 			return
 
 async def info_splash(bot, message, args):
+	user_id = str(message.author.id)
 	# combine args into single space-separated string
 	# do an equals check on everything in skins.json
 	# show embed for champion
-	skin_name = ' '.join(args)
+	m = re.match("\d{4,}", args[0])
+	search_by_id = False
+	if m is not None:
+		skin_id = m.group(0)
+		search_by_id = True
+	else:
+		skin_name = ' '.join(args)
 
-	full_skin_name = None
-	champ_description = None
-	rarity = None
-	splash_fname = None
+	global splash_harems
+	if splash_harems == None:
+		with open(SPLASH_HAREM_FILE, 'r') as f:
+			splash_harems = json.load(f)
+	
+	your_harem = splash_harems.get(user_id, None)
+	if your_harem is None:
+		await message.channel.send("You own nothing")
+		return
+	
 	with open(SKINS_DATAFILE, 'r') as f:
 		skins_info = json.load(f)
-		for v in skins_info.values():
-			if skin_name.lower() == v['name'].lower():
-				# this is mostly copied from splash_roll code, minus the cropping stuff
-				# TODO: refactor this into a function or something
-				full_skin_name, champ_description, rarity, splash_fname = [v["name"], v["description"], v["rarity"], v["splash_name"]]
-				title = decorated_title("**" + full_skin_name + "**", rarity, bot)
-				desc = ""
-				if champ_description is not None:
-					desc = "_" + champ_description + "_"
-				im = Image.open(CHAMP_SPLASH_FOLDER + splash_fname)
-				im.save(TEMP_IMAGE_FNAME, "jpeg")
-				embed = discord.Embed(title=title, url=ddragon_baseurl + splash_fname,
-                                    description=desc, color=rarity_colors[rarity]) \
-                                    .set_image(url="attachment://" + TEMP_IMAGE_FNAME)
-				f = (discord.File(TEMP_IMAGE_FNAME))
-				embed_msg = message.channel.send(embed=embed, file=f)
-				os.remove(TEMP_IMAGE_FNAME)
-				await embed_msg
-				return
+		
+		if search_by_id:
+			v = your_harem.get(skin_id, None)
+		else:  # Else, search by name
+			v = next(filter(lambda s: skin_name.lower() ==
+                            s[1]['name'].lower(), your_harem.items()), None)
+			skin_id = v[0] if v is not None else None
 
-	await message.channel.send(f"{skin_name} is not a champion!")
+		if v is None:
+			await message.channel.send("You don't have that!")
+			return
 
-	
+		this_skin = skins_info[skin_id]
+		splash_fname = this_skin["splash_name"]
+		skin_id = str(this_skin["id"])
+
+		im = Image.open(CHAMP_SPLASH_FOLDER + splash_fname)
+		pieces_counts = your_harem[skin_id]["pieces"]
+
+		embed, f = create_progress_embed(this_skin["name"], this_skin["description"], this_skin["rarity"], splash_fname,
+										pieces_counts, im, bot)
+		
+		embed_msg = message.channel.send(embed=embed, file=f)
+		os.remove(TEMP_IMAGE_FNAME)
+		await embed_msg
+
+# Creates an embed with a progress picture given an image and piece counts
+def create_progress_embed(skin_name, description, rarity, splash_fname, pieces_counts, im, bot):
+	cropped_img = get_progress_img(pieces_counts, im, rarity)
+	cropped_img.save(TEMP_IMAGE_FNAME, "jpeg")
+
+	title = decorated_title("**" + skin_name + "**", rarity, bot)
+	desc = ""
+	if description is not None:
+		desc = "_" + description + "_"
+
+	embed = discord.Embed(title=title, url=ddragon_baseurl + splash_fname,
+					description=desc, color=rarity_colors[rarity]) \
+				.set_image(url="attachment://" + TEMP_IMAGE_FNAME)
+	f = (discord.File(TEMP_IMAGE_FNAME))
+	return (embed, f)
 
 
 # Return letter corresponding to cropped corner

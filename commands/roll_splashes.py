@@ -4,6 +4,7 @@ from random import choice, choices
 import discord
 import os
 import json
+import re
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from PIL import Image, ImageOps
@@ -77,7 +78,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 				loot_pools = [(v['percentage'], v['rolls']) for v in rarity_dist.values()]
 				percentages, rolls = [list(t) for t in zip(*loot_pools)]
 
-		res_index = choices(range(len(rolls)), weights=[100 * p for p in percentages])[0]
+		res_index = choices(range(len(rolls)), weights=percentages)[0]
 		chosen_pool = rolls[res_index]
 
 		full_champ_id = choices(chosen_pool)[0]
@@ -173,13 +174,21 @@ async def cmd_splash_list(bot, message, args):
 		await message.channel.send("Skin info isn't available right now, please contact an admin.")
 		return
 	
-	user_id = str(message.author.id)
+	if len(args) == 1:
+		m = re.match("<@!(\d+)>", args[0])
+		if m is not None:
+			user_id = m.group(1)
+		else:
+			await message.channel.send("That user doesn't exist!")
+			return
+	else:
+		user_id = str(message.author.id)
 
 	champs = {}
 	with open(SPLASH_HAREM_FILE, 'r') as f:
 		champs = json.load(f).get(user_id, {})
 	if len(champs) == 0:
-		await message.channel.send("You have nothing.")
+		await message.channel.send("This harem is empty.")
 		return
 	else:
 		with open(SKINS_DATAFILE, 'r') as f:

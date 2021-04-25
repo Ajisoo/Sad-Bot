@@ -201,7 +201,7 @@ async def on_message(message: discord.Message):
 		else:
 			await message.channel.send("Requested champ not specified!")
 
-	if command in ['test_skins'] and only_for_testing_server(message.guild.id):
+	if command in ['test'] and only_for_testing_server(message.guild.id):
 		await guess_util.debug_get_cdragon_json(bot, message, args)
 
 @client.event

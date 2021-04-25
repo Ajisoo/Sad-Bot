@@ -7,18 +7,18 @@
 3. add special message for when someone completes a splash 
 12. "divorce" option
 2.7. limit rolls per hour
-13. info command (shows full champion) (problem: search by id is O(1) but no one knows ID, search by name is O(n))
+13. info command (shows full champion)
+1. show other people's harems with ($harem <@otherperson>)
 --- END DONE ----
 4. trading? use a trading embed to show that or something
 6. store dupes of same piece (if someone has one and rolls another, they'll have two - alter data structure for this)
 
+5. use reactable embed for champ splash list instead of text
+9. stretch goal: do animation for progress pic a la roll color
 7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent
    but also we're mainly using this just on Lounge anyways
-2.5. store completed splashes also 
-9. Consider having multiple of the same piece
-5. use reactable embed for champ splash list instead of text
+2.5. store completed splashes also
 5. trading up system 
-9. stretch goal: do animation for progress pic a la roll color
 8. stretch goal: add some sort of 'quality' for each roll
 6. split bios into 4 pieces as well
 ???. change harem.json architecture to {user_id:champ_id:{A?,B?,C?,D?}} where A-D are counts?

@@ -332,25 +332,7 @@ async def cmd_gs_start(bot, message, args):
 
 
 async def debug_get_cdragon_json(bot, message, args):
-	# Get skins json (which has rarity info)
-	await GET_remote_file(cdragon_skins_url, SKINS_DATAFILE, message)
-
-	# Turn skins json into smaller version of itself
-	global rarity_dist
-	new_skin_data = {}
-	with open(SKINS_DATAFILE, "r") as f:
-		skin_data = json.load(f)
-		for k in rarity_dist.keys():
-			rarity_dist[k]['rolls'] = []
-		for k, v in skin_data.items():
-			if v['rarity'] == 'kRare':
-				# kRare only has Conqueror Nautilus and Alistar, just put them with not rare
-				rarity_dist['kNoRarity']['rolls'].append(v['id'])
-			else:
-				rarity_dist[v['rarity']]['rolls'].append(v['id'])
-	with open(rarity_dist_file, "w", encoding='utf-8') as f:
-		json.dump(rarity_dist, f)
-	await message.channel.send("got file!")
+	print(args[0])
 
 # Try to get a big file from <url> and save as <fname>
 # <message> is used in case of error

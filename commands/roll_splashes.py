@@ -125,15 +125,21 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 				print("Harems file was empty, it never should be")
 				splash_harems = {}
 
-	splash_piece = str(full_champ_id) + letter
+	id_string = str(full_champ_id)
 	inventory = splash_harems.get(user_id, {})
-	inventory[splash_piece] = full_skin_name
+	if id_string in inventory:
+		inventory[id_string]["pieces"][letter] += 1
+	else:
+		starting_counts = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
+		starting_counts[letter] += 1
+		inventory[id_string] = {"name": full_skin_name, "pieces": starting_counts}
 	splash_harems[user_id] = inventory
 
 	with open(SPLASH_HAREM_FILE, 'w') as f:
 		json.dump(splash_harems, f)
 	
-	cropped_img = get_progress_img(splash_harems, user_id, full_champ_id, im, rarity)
+	pieces_counts = splash_harems[user_id][id_string]["pieces"]
+	cropped_img = get_progress_img(pieces_counts, im, rarity)
 	cropped_img.save(TEMP_IMAGE_FNAME, "jpeg")
 	# -------------------------------------
 
@@ -174,41 +180,42 @@ async def cmd_splash_list(bot, message, args):
 		await message.channel.send("Skin info isn't available right now, please contact an admin.")
 		return
 	
+	show_number = False
+	user_id = str(message.author.id)
 	if len(args) == 1:
-		m = re.match("<@!(\d+)>", args[0])
-		if m is not None:
-			user_id = m.group(1)
-		else:
-			await message.channel.send("That user doesn't exist!")
-			return
-	else:
-		user_id = str(message.author.id)
+		if (args[0] == 'c'):      # show counts
+			show_number = True
+		else:                     # check for user id
+			m = re.match("<@!(\d+)>", args[0])
+			if m is not None:
+				user_id = m.group(1)
+			else:
+				await message.channel.send("That user doesn't exist!")
+				return
 
-	champs = {}
 	with open(SPLASH_HAREM_FILE, 'r') as f:
 		champs = json.load(f).get(user_id, {})
 	if len(champs) == 0:
 		await message.channel.send("This harem is empty.")
 		return
 	else:
-		with open(SKINS_DATAFILE, 'r') as f:
-			skin_data = json.load(f)
-			champs_dict = {}
-			for k in champs.keys():
-				a, b = k[:-1], k[-1]
-				if a in champs_dict:
-					champs_dict[a].append(b)
-				else:
-					champs_dict[a] = [b]
-			champs_list = []
-			for k in sorted(champs_dict, key=int):
-				pieces = sorted(champs_dict[k])
-				if len(pieces) == 4:
-					champs_list.append('#' + k + ': ' + skin_data[k]['name'] +
-                                            ' (**Complete**)')
-				else:
-					champs_list.append('#' + k + ': ' + skin_data[k]['name'] +
-                                            ' (Pieces: ' + ', '.join(pieces) + ')')
+		champs_list = []
+		for k in sorted(champs, key=int):
+			pieces_count = champs[k]["pieces"]
+			pieces = []
+			for p in sorted(pieces_count):
+				count = pieces_count[p]
+				if count > 0:
+					if show_number:
+						pieces.append(p + ' (' + str(count) + ')')
+					else:
+						pieces.append(p)
+			if all(pieces_count.values()) and not show_number:
+				champs_list.append('#' + k + ': ' + champs[k]["name"] +
+										' (**Complete**)')
+			else:
+				champs_list.append('#' + k + ': ' + champs[k]["name"] +
+										' (Pieces: ' + ', '.join(pieces) + ')')
 
 		# TODO: use cool reactable embed a la Mudae instead
 		champs_msg = f'**{message.author.name}\'s champs**\n' + '\n'.join(champs_list)
@@ -223,11 +230,14 @@ async def divorce_splash(bot, message, args):
 			msgs = []
 			for d in args:
 				d = d.upper()
-				if d in user_harem:
-					msgs.append(message.channel.send("Divorced %s!" % (user_harem[d] + " (Piece " + d[-1] + ')')))
-					del user_harem[d]
-				else:
-					msgs.append(message.channel.send("You don't own %s!" % (d)))
+				skin_id, l = d[:-1], d[-1]
+				if skin_id in user_harem:
+					msgs.append(message.channel.send("Divorced %s!" % (user_harem[skin_id]["name"] + " (Piece " + l + ')')))
+					if user_harem[skin_id]["pieces"][l] == 0:
+						msgs.append(message.channel.send("You don't own %s!" % (d)))
+					else:
+						user_harem[skin_id]["pieces"][l] -= 1
+					
 			harems[message.author.id] = user_harem
 			f.seek(0)
 			f.truncate()
@@ -314,10 +324,10 @@ def decorated_title(title, rarity, bot):
 
 
 # show pieces the user has over a gray overlay 
-def get_progress_img(harems_data, user_id, skin_id, image_file: Image, rarity) -> Image:
+def get_progress_img(pieces_counts, image_file: Image, rarity) -> Image:
 	letters = ['A', 'B', 'C', 'D']
 
-	not_owned = list(filter(lambda l: str(skin_id) + l not in harems_data[user_id], letters))
+	not_owned = list(filter(lambda l: pieces_counts[l] == 0, letters))
 
 	x, y = image_file.size
 
@@ -347,4 +357,3 @@ def time_left(user_id: str) -> int:
 				return int(60 - (hour_diff * 60))
 		else:  # they've never rolled before
 			return 0
-

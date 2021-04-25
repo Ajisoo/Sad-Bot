@@ -6,9 +6,9 @@
 9. update people's progress on their collection
 3. add special message for when someone completes a splash 
 12. "divorce" option
+2.7. limit rolls per hour
 --- END DONE ----
 13. info command (shows full champion) (problem: search by id)
-2.7. limit rolls per hour
 4. trading?
 
 2.5. store completed splashes also 

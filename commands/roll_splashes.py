@@ -2,13 +2,12 @@ import os
 from globals import *
 from random import randrange, choice, choices
 import discord
-import re
 import os
 import json
+from datetime import datetime
 from json.decoder import JSONDecodeError
 from PIL import Image, ImageOps
 
-import time
 ### Globals ###
 
 latest_version = None
@@ -35,17 +34,22 @@ rarity_colors = {
 	"kMythic": discord.Colour.from_rgb(183, 55, 182)
 }
 
+time_format = "%m/%d/%Y, %H:%M"
 ### End Globals ###
 
 
-def create_user_data_file():
+def create_user_data_files():
 	if not os.path.exists(SPLASH_HAREM_FILE):
 		if not os.path.exists(USER_INFO_FOLDER):
 			os.makedirs(USER_INFO_FOLDER)
 		with open(SPLASH_HAREM_FILE, "w+") as f:
 			print('making harem file')
 			json.dump({}, f)
-		
+	if not os.path.exists(SPLASH_ROLL_TIMERS_FILE):
+		with open(SPLASH_ROLL_TIMERS_FILE, "w+") as f:
+			print('making rolls file')
+			json.dump({}, f)
+
 # id_with_piece has format <id>[A|B|C|D]
 async def force_roll(bot, message, id_with_piece):
 	await cmd_splash_roll(bot, message, forced_id=id_with_piece[:-1], forced_piece=id_with_piece[-1].upper())
@@ -61,6 +65,12 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 		return
 
 	user_id = str(message.author.id)
+
+	ttr = time_left(user_id)
+	if ttr > 0:
+		await message.channel.send(f"You can't roll yet! You have {ttr} minutes left!")
+		return 
+
 	'''
 		1. Pick a random thing out of the rarity-dist
 		2. The 3 rightmost numbers are the skin number
@@ -158,9 +168,19 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 						  description=desc, color=rarity_colors[rarity]) \
 							.set_image(url="attachment://" + temp_image_name)
 	f = (discord.File(temp_image_name))
-	await message.channel.send(embed=embed, file=f)
+	embed_msg = message.channel.send(embed=embed, file=f)
 	os.remove(temp_image_name)
+	await embed_msg
 	# ----------------------------------
+
+	# Add time to rolls json
+	with open(SPLASH_ROLL_TIMERS_FILE, 'r+') as f:
+		rolls_info = json.load(f)
+		rolls_info[user_id] = datetime.now().strftime(time_format)
+		f.seek(0)
+		f.truncate()
+		json.dump(rolls_info, f)
+	# ----------------------
 
 
 async def cmd_splash_list(bot, message, args):
@@ -270,7 +290,7 @@ def decorated_title(title, rarity, bot):
 
 
 # show pieces the user has over a gray overlay 
-def get_progress_img(harems_data, user_id, skin_id, image_file: Image, rarity):
+def get_progress_img(harems_data, user_id, skin_id, image_file: Image, rarity) -> Image:
 	letters = ['A', 'B', 'C', 'D']
 
 	not_owned = list(filter(lambda l: str(skin_id) + l not in harems_data[user_id], letters))
@@ -288,3 +308,19 @@ def get_progress_img(harems_data, user_id, skin_id, image_file: Image, rarity):
 def add_padding(image_file: Image, p=5, fill='black') -> Image:
 	x, y = image_file.size
 	return ImageOps.expand(image_file.crop((p, p, x-p, y-p)), border=5, fill=fill)
+
+def time_left(user_id: str) -> int:
+	with open(SPLASH_ROLL_TIMERS_FILE, 'r') as f:
+		rolls_info = json.load(f)
+		if user_id in rolls_info:
+			earlier_roll_str = rolls_info[user_id]
+			earlier_roll = datetime.strptime(earlier_roll_str, time_format)
+			hour_diff = (datetime.now() - earlier_roll).seconds / 3600
+
+			if hour_diff >= 1:
+				return 0
+			else:
+				return int(60 - (hour_diff * 60))
+		else:  # they've never rolled before
+			return 0
+		

@@ -41,7 +41,7 @@ async def on_ready():
 		update_ga_leaderboard_file_name()
 
 	roll_color.create_user_data_file()
-	roll_splashes.create_user_data_file()
+	roll_splashes.create_user_data_files()
 
 
 @client.event

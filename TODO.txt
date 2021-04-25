@@ -10,6 +10,7 @@
 13. info command (shows full champion) (problem: search by id is O(1) but no one knows ID, search by name is O(n))
 --- END DONE ----
 4. trading? use a trading embed to show that or something
+6. store dupes of same piece (if someone has one and rolls another, they'll have two - alter data structure for this)
 
 7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent
    but also we're mainly using this just on Lounge anyways

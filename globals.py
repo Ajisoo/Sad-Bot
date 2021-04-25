@@ -56,6 +56,10 @@ GA_LEADERBOARD_FILE = GA_FOLDER + "leaderboard_ga.txt"
 
 GS_FOLDER = CONTENT_FOLDER + "lol_splash_guesser" + os.path.sep
 GS_LEADERBOARD_FILE = GS_FOLDER + "leaderboard_gs.txt"
+CHAMP_SPLASH_FOLDER = GS_FOLDER + "img" + os.path.sep + \
+	"champion" + os.path.sep + "loading" + os.path.sep
+SKINS_DATAFILE = GS_FOLDER + 'skins.json'
+TEMP_IMAGE_FNAME = "tempCroppedSplash.jpg"
 
 USER_INFO_FOLDER = CONTENT_FOLDER + "user_info" + os.path.sep
 SPLASH_HAREM_FILE = USER_INFO_FOLDER + 'splash-harems.json'

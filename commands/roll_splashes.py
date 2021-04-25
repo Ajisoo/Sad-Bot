@@ -1,6 +1,6 @@
 import os
 from globals import *
-from random import randrange, choice, choices
+from random import choice, choices
 import discord
 import os
 import json
@@ -9,16 +9,7 @@ from json.decoder import JSONDecodeError
 from PIL import Image, ImageOps
 
 ### Globals ###
-
-latest_version = None
-
-champ_splashes_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
-champ_loadingsplash_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
-skins_file = GS_FOLDER + 'skins.json'
-
 ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/"
-
-temp_image_name = "tempCroppedSplash.jpg"
 
 percentages = None
 rolls = None
@@ -38,9 +29,9 @@ time_format = "%m/%d/%Y, %H:%M"
 
 
 def create_user_data_files():
+	if not os.path.exists(USER_INFO_FOLDER):
+		os.makedirs(USER_INFO_FOLDER)
 	if not os.path.exists(SPLASH_HAREM_FILE):
-		if not os.path.exists(USER_INFO_FOLDER):
-			os.makedirs(USER_INFO_FOLDER)
 		with open(SPLASH_HAREM_FILE, "w+") as f:
 			print('making harem file')
 			json.dump({}, f)
@@ -54,7 +45,7 @@ async def force_roll(bot, message, id_with_piece):
 	await cmd_splash_roll(bot, message, forced_id=id_with_piece[:-1], forced_piece=id_with_piece[-1].upper())
 
 async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
-	if not os.path.exists(champ_loadingsplash_folder):
+	if not os.path.exists(CHAMP_SPLASH_FOLDER):
 		print("CHAMP SPLASHES FOLDER DOESN'T EXIST, PLEASE REFRESH")
 		await message.channel.send("Please ask an admin to refresh the champ splashes!")
 		return
@@ -96,7 +87,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	full_skin_name = None
 	champ_description = None
 	rarity = None
-	with open(skins_file, 'r') as f:
+	with open(SKINS_DATAFILE, 'r') as f:
 		skin_data = json.load(f)
 		champ_data = skin_data[str(full_champ_id)]
 		full_skin_name, champ_description = [champ_data["name"], champ_data["description"]]
@@ -104,7 +95,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	# ------------------------------
 
 	# Pick one of 4 pieces of the splash
-	im = Image.open(champ_loadingsplash_folder + chosen_splash)
+	im = Image.open(CHAMP_SPLASH_FOLDER + chosen_splash)
 	x, y = im.size
 
 	if forced_piece == None:
@@ -142,7 +133,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 		json.dump(splash_harems, f)
 	
 	cropped_img = get_progress_img(splash_harems, user_id, full_champ_id, im, rarity)
-	cropped_img.save(temp_image_name, "jpeg")
+	cropped_img.save(TEMP_IMAGE_FNAME, "jpeg")
 	# -------------------------------------
 
 	# Decorate the embed 
@@ -155,10 +146,10 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	
 	embed = discord.Embed(title=title, url=ddragon_baseurl + chosen_splash, 
 						  description=desc, color=rarity_colors[rarity]) \
-							.set_image(url="attachment://" + temp_image_name)
-	f = (discord.File(temp_image_name))
+							.set_image(url="attachment://" + TEMP_IMAGE_FNAME)
+	f = (discord.File(TEMP_IMAGE_FNAME))
 	embed_msg = message.channel.send(embed=embed, file=f)
-	os.remove(temp_image_name)
+	os.remove(TEMP_IMAGE_FNAME)
 	await embed_msg
 	# ----------------------------------
 
@@ -177,7 +168,7 @@ async def cmd_splash_list(bot, message, args):
 		print("SPLASH HAREMS FILE DOESN'T EXIST, RESTART BOT")
 		await message.channel.send("Splash harems aren't available right now, please contact an admin.")
 		return
-	if not os.path.exists(skins_file):
+	if not os.path.exists(SKINS_DATAFILE):
 		print("SKINS FILE DOESN'T EXIST, RESTART BOT")
 		await message.channel.send("Skin info isn't available right now, please contact an admin.")
 		return
@@ -191,7 +182,7 @@ async def cmd_splash_list(bot, message, args):
 		await message.channel.send("You have nothing.")
 		return
 	else:
-		with open(skins_file, 'r') as f:
+		with open(SKINS_DATAFILE, 'r') as f:
 			skin_data = json.load(f)
 			champs_dict = {}
 			for k in champs.keys():
@@ -248,7 +239,7 @@ async def info_splash(bot, message, args):
 	champ_description = None
 	rarity = None
 	splash_fname = None
-	with open(skins_file, 'r') as f:
+	with open(SKINS_DATAFILE, 'r') as f:
 		skins_info = json.load(f)
 		for v in skins_info.values():
 			if skin_name.lower() == v['name'].lower():
@@ -259,14 +250,14 @@ async def info_splash(bot, message, args):
 				desc = ""
 				if champ_description is not None:
 					desc = "_" + champ_description + "_"
-				im = Image.open(champ_loadingsplash_folder + splash_fname)
-				im.save(temp_image_name, "jpeg")
+				im = Image.open(CHAMP_SPLASH_FOLDER + splash_fname)
+				im.save(TEMP_IMAGE_FNAME, "jpeg")
 				embed = discord.Embed(title=title, url=ddragon_baseurl + splash_fname,
                                     description=desc, color=rarity_colors[rarity]) \
-                                    .set_image(url="attachment://" + temp_image_name)
-				f = (discord.File(temp_image_name))
+                                    .set_image(url="attachment://" + TEMP_IMAGE_FNAME)
+				f = (discord.File(TEMP_IMAGE_FNAME))
 				embed_msg = message.channel.send(embed=embed, file=f)
-				os.remove(temp_image_name)
+				os.remove(TEMP_IMAGE_FNAME)
 				await embed_msg
 				return
 

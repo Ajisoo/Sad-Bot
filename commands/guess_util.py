@@ -118,14 +118,11 @@ data_dragon_endpoint_base = 'https://ddragon.leagueoflegends.com/cdn/dragontail-
 cdragon_skins_url = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/skins.json'
 cdragon_champsummaries_url = 'http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json'
 
-skins_fname = GS_FOLDER + 'skins.json'
 rarity_dist_file = GS_FOLDER + 'rarity-dist.json'
 dumpfile_name = GS_FOLDER + 'dump.tgz'
-champ_splashes_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
-champ_loadingsplash_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
 latest_version_file = GS_FOLDER + "latest_version.txt"
 
-temp_image_name = "tempCroppedSplash.jpg"
+
 
 rarity_dist = {
 	"kNoRarity": {
@@ -195,7 +192,7 @@ async def cmd_gs_refresh(bot, message, args):
 	await GET_remote_file(data_dragon_endpoint_full, dumpfile_name, message)
 
 	# GET tasks
-	get_skins = GET_remote_file(cdragon_skins_url, skins_fname, message)
+	get_skins = GET_remote_file(cdragon_skins_url, SKINS_DATAFILE, message)
 	get_aliases = GET_remote_file(cdragon_champsummaries_url,
 	                RS_ID_TO_ALIAS_MAPPINGS_FILE, message)
 
@@ -211,7 +208,7 @@ async def cmd_gs_refresh(bot, message, args):
 	await message.channel.send("Getting skin data...")
 	global rarity_dist
 	new_skin_data = {}
-	with open(skins_fname, "r") as f:
+	with open(SKINS_DATAFILE, "r") as f:
 		skin_data = json.load(f)
 		for k in rarity_dist.keys():
 			rarity_dist[k]['rolls'] = []
@@ -251,7 +248,7 @@ async def cmd_gs_refresh(bot, message, args):
 		f.seek(0)
 		f.truncate()
 		json.dump(aliases, f)
-	with open(skins_fname, "w", encoding='utf-8') as f:
+	with open(SKINS_DATAFILE, "w", encoding='utf-8') as f:
 		json.dump(new_skin_data, f, ensure_ascii=False)
 	print("Finished with mappings")
 
@@ -262,12 +259,12 @@ async def cmd_gs_refresh(bot, message, args):
 
 
 async def cmd_gs_start(bot, message, args):
-	if not os.path.exists(champ_loadingsplash_folder):
+	if not os.path.exists(CHAMP_SPLASH_FOLDER):
 		print("CHAMP SPLASHES FOLDER DOESN'T EXIST, PLEASE REFRESH")
 		await message.channel.send("Please ask an admin to refresh the champ splashes!")
 		return
 	
-	chosen_splash = random.choice(os.listdir(champ_loadingsplash_folder))
+	chosen_splash = random.choice(os.listdir(CHAMP_SPLASH_FOLDER))
 
 	# First get the champ + skin number (i.e. Aatrox_2 or Kaisa_3)
 	# Then we match this against the data JSON to find the actual skin name
@@ -316,7 +313,7 @@ async def cmd_gs_start(bot, message, args):
 			bot.g_answer = re.sub(r'[^a-z0-9]', '', bot.g_answer_raw.lower())
 			break
 
-	im = Image.open(champ_loadingsplash_folder + chosen_splash)
+	im = Image.open(CHAMP_SPLASH_FOLDER + chosen_splash)
 	x, y = im.size
 	
 	left = random.randint(0, x / 2)
@@ -326,9 +323,9 @@ async def cmd_gs_start(bot, message, args):
 
 	cropped_img = im.crop((left, top, right, bottom))
 
-	cropped_img.save(temp_image_name, "jpeg")
-	await message.channel.send(file=(discord.File(temp_image_name)))
-	os.remove(temp_image_name)
+	cropped_img.save(TEMP_IMAGE_FNAME, "jpeg")
+	await message.channel.send(file=(discord.File(TEMP_IMAGE_FNAME)))
+	os.remove(TEMP_IMAGE_FNAME)
 
 	bot.guess_type = GS_LEADERBOARD_ID
 	await message.channel.send("Guess the champion skin!")
@@ -336,12 +333,12 @@ async def cmd_gs_start(bot, message, args):
 
 async def debug_get_cdragon_json(bot, message, args):
 	# Get skins json (which has rarity info)
-	await GET_remote_file(cdragon_skins_url, skins_fname, message)
+	await GET_remote_file(cdragon_skins_url, SKINS_DATAFILE, message)
 
 	# Turn skins json into smaller version of itself
 	global rarity_dist
 	new_skin_data = {}
-	with open(skins_fname, "r") as f:
+	with open(SKINS_DATAFILE, "r") as f:
 		skin_data = json.load(f)
 		for k in rarity_dist.keys():
 			rarity_dist[k]['rolls'] = []

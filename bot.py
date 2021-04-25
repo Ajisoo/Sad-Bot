@@ -191,9 +191,15 @@ async def on_message(message: discord.Message):
 	
 	if command in ['ds', 'divorce_splash'] and only_for_testing_server(message.guild.id):
 		if len(args) > 0:
-			await roll_splashes.divorce_splash(message, args)
+			await roll_splashes.divorce_splash(bot, message, args)
 		else:
 			await message.channel.send("Divorcee(s) not specified!")
+
+	if command in ['is', 'info_splash'] and only_for_testing_server(message.guild.id):
+		if len(args) > 0:
+			await roll_splashes.info_splash(bot, message, args)
+		else:
+			await message.channel.send("Requested champ not specified!")
 
 	if command in ['test_skins'] and only_for_testing_server(message.guild.id):
 		await guess_util.debug_get_cdragon_json(bot, message, args)

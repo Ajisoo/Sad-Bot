@@ -12,9 +12,8 @@ from PIL import Image, ImageOps
 
 latest_version = None
 
-champ_splashes_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
-champ_loadingsplash_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
-latest_version_file = GS_FOLDER + "latest_version.txt"
+champ_splashes_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
+champ_loadingsplash_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
 skins_file = GS_FOLDER + 'skins.json'
 
 ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/"
@@ -93,16 +92,6 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 		full_champ_id = choices(chosen_pool)[0]
 	else:
 		full_champ_id = int(forced_id)
-	champ_id, skin_number = [full_champ_id // 1000, full_champ_id % 1000]
-	
-	global id_to_alias_map
-	if id_to_alias_map == None:
-		with open(RS_ID_TO_ALIAS_MAPPINGS_FILE, "r") as f:
-			id_to_alias_map = json.load(f)
-	
-	champ_alias = id_to_alias_map[str(champ_id)]
-
-	chosen_splash = champ_alias + "_" + str(skin_number) + ".jpg"
 
 	full_skin_name = None
 	champ_description = None
@@ -111,7 +100,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 		skin_data = json.load(f)
 		champ_data = skin_data[str(full_champ_id)]
 		full_skin_name, champ_description = [champ_data["name"], champ_data["description"]]
-		rarity = champ_data["rarity"]
+		rarity, chosen_splash = [champ_data["rarity"], champ_data["splash_name"]]
 	# ------------------------------
 
 	# Pick one of 4 pieces of the splash
@@ -226,7 +215,7 @@ async def cmd_splash_list(bot, message, args):
 		await message.channel.send(champs_msg)
 
 # Precondition: len(args) > 0, contains list of divorcees in format <id>[A|B|C|D]
-async def divorce_splash(message, args):
+async def divorce_splash(bot, message, args):
 	with open(SPLASH_HAREM_FILE, 'r+') as f:
 		harems = json.load(f)
 		user_harem = harems.get(str(message.author.id), {})
@@ -249,6 +238,41 @@ async def divorce_splash(message, args):
 			await message.channel.send("You have no one to divorce!")
 			return
 
+async def info_splash(bot, message, args):
+	# combine args into single space-separated string
+	# do an equals check on everything in skins.json
+	# show embed for champion
+	skin_name = ' '.join(args)
+
+	full_skin_name = None
+	champ_description = None
+	rarity = None
+	splash_fname = None
+	with open(skins_file, 'r') as f:
+		skins_info = json.load(f)
+		for v in skins_info.values():
+			if skin_name.lower() == v['name'].lower():
+				# this is mostly copied from splash_roll code, minus the cropping stuff
+				# TODO: refactor this into a function or something
+				full_skin_name, champ_description, rarity, splash_fname = [v["name"], v["description"], v["rarity"], v["splash_name"]]
+				title = decorated_title("**" + full_skin_name + "**", rarity, bot)
+				desc = ""
+				if champ_description is not None:
+					desc = "_" + champ_description + "_"
+				im = Image.open(champ_loadingsplash_folder + splash_fname)
+				im.save(temp_image_name, "jpeg")
+				embed = discord.Embed(title=title, url=ddragon_baseurl + splash_fname,
+                                    description=desc, color=rarity_colors[rarity]) \
+                                    .set_image(url="attachment://" + temp_image_name)
+				f = (discord.File(temp_image_name))
+				embed_msg = message.channel.send(embed=embed, file=f)
+				os.remove(temp_image_name)
+				await embed_msg
+				return
+
+	await message.channel.send(f"{skin_name} is not a champion!")
+
+	
 
 
 # Return letter corresponding to cropped corner
@@ -323,4 +347,4 @@ def time_left(user_id: str) -> int:
 				return int(60 - (hour_diff * 60))
 		else:  # they've never rolled before
 			return 0
-		
+

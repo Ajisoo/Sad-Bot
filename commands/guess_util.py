@@ -121,8 +121,8 @@ cdragon_champsummaries_url = 'http://raw.communitydragon.org/latest/plugins/rcp-
 skins_fname = GS_FOLDER + 'skins.json'
 rarity_dist_file = GS_FOLDER + 'rarity-dist.json'
 dumpfile_name = GS_FOLDER + 'dump.tgz'
-champ_splashes_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
-champ_loadingsplash_folder = GS_FOLDER + os.path.sep + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
+champ_splashes_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "splash" + os.path.sep
+champ_loadingsplash_folder = GS_FOLDER + "img" + os.path.sep + "champion" + os.path.sep + "loading" + os.path.sep
 latest_version_file = GS_FOLDER + "latest_version.txt"
 
 temp_image_name = "tempCroppedSplash.jpg"
@@ -245,7 +245,7 @@ async def cmd_gs_refresh(bot, message, args):
 		# because the mappings are all consolidated in one file
 		for k,v in new_skin_data.items():
 			alias = aliases[k[:-3]]
-			skin_number = k[-3:].lstrip('0')
+			skin_number = str(int(k[-3:]))
 			new_skin_data[k]['splash_name'] = alias + "_" + skin_number + ".jpg"
 
 		f.seek(0)
@@ -289,7 +289,7 @@ async def cmd_gs_start(bot, message, args):
 			return
 
 	# Load the data JSON into memory 
-	champ_data_folder = GS_FOLDER + os.path.sep + latest_version + os.path.sep + "data" + os.path.sep + "en_US" + os.path.sep
+	champ_data_folder = GS_FOLDER + latest_version + os.path.sep + "data" + os.path.sep + "en_US" + os.path.sep
 	if not os.path.exists(champ_data_folder):
 		await message.channel.send("Champ data folder doesn't exist, ask admin to refresh")
 		return

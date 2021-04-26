@@ -1,19 +1,20 @@
-import requests
-from bs4 import BeautifulSoup
-from globals import *
+import json
+import random
 from random import randrange
+import re
+import os
+import shutil
+
+from bs4 import BeautifulSoup
 import discord
 import ffmpeg
-import re
-import shutil
-import os
-import random
-import json
 from PIL import Image
+import requests
 
 import commands.leaderboard_util
+from globals import *
 
-async def cmd_ga_refresh(bot, message, args):
+async def cmd_ga_refresh(bot, message, _args):
 	if message.author.id not in ADMINS:  # Us
 		return
 
@@ -34,21 +35,21 @@ async def cmd_ga_refresh(bot, message, args):
 		if ability_key is None or len(ability_key.strip()) == 0:
 			ability_key = "P"
 
-		with open(GA_FOLDER + str(counter) + "img.png", "wb+") as image_file:
+		with open(os.path.join(GA_FOLDER, f"{counter}img.png"), "wb+") as image_file:
 			image_file.write(requests.get(GA_BASE_WEBSITE + image).content)
 
-		with open(GA_FOLDER + str(counter) + "info.txt", "w+") as text_file:
+		with open(os.path.join(GA_FOLDER, f"{counter}info.txt"), "w+") as text_file:
 			text_file.write(ability_name + "\n" + champ_name + "\n" + ability_key)
 
 		counter += 1
 
-	with open(GA_FOLDER + "!len.txt", "w+") as length_file:
+	with open(os.path.join(GA_FOLDER, "!len.txt"), "w+") as length_file:
 		length_file.write(str(counter))
 
 	bot.g_valid = True
 	await message.channel.send("All done")
 
-GUESS_UNSTARTED_PROMPT = "There's nothing to guess! Start with " + BOT_PREFIX + "guess_ability, guess_splash, or guess_undertale"
+GUESS_UNSTARTED_PROMPT = f"There's nothing to guess! Start with {BOT_PREFIX}guess_ability, guess_splash, or guess_undertale"
 
 async def cmd_guess(bot, message, args):
 	if len(bot.g_answer) == 0:
@@ -62,12 +63,12 @@ async def cmd_guess(bot, message, args):
 	if bot.g_answer == guess_arg:
 		bot.g_answer_raw = ""
 		bot.g_answer = ""
-		await message.channel.send("<@" + str(message.author.id) + "> is Correct!")
+		await message.channel.send(f"<@{message.author.id}> is Correct!")
 
 		commands.leaderboard_util.update_leaderboards_file(message.author.id, bot.guess_type)
 
 
-async def cmd_give_up(bot, message, args):
+async def cmd_give_up(bot, message, _args):
 	if len(bot.g_answer) == 0:
 		await message.channel.send(GUESS_UNSTARTED_PROMPT)
 		return
@@ -82,10 +83,10 @@ async def cmd_give_up(bot, message, args):
 async def cmd_ga_start(bot, message, args):
 	if not bot.g_valid:
 		return
-	len_file = open(GA_FOLDER + "!len.txt", "r")
+	len_file = open(os.path.join(GA_FOLDER, "!len.txt"), "r")
 	rand = randrange(int(len_file.readline()))
 	len_file.close()
-	info_file = open(GA_FOLDER + str(rand) + "info.txt", "r")
+	info_file = open(os.path.join(GA_FOLDER, f"{rand}info.txt"), "r")
 	if len(args) > 0 and (args[0].lower() == "c" or args[0].lower() == "champ" or args[0].lower() == "champion"):
 		info_file.readline()
 		bot.g_answer_raw = info_file.readline()
@@ -103,7 +104,7 @@ async def cmd_ga_start(bot, message, args):
 		await message.channel.send("Guess the name of this ability!")
 	info_file.close()
 	bot.guess_type = GA_LEADERBOARD_ID
-	await message.channel.send(file=(discord.File(GA_FOLDER + str(rand) + "img.png")))
+	await message.channel.send(file=(discord.File(os.path.join(GA_FOLDER, f"{rand}img.png"))))
 
 
 # ----------------------------------------------------------------------------------------------
@@ -118,9 +119,9 @@ data_dragon_endpoint_base = 'https://ddragon.leagueoflegends.com/cdn/dragontail-
 cdragon_skins_url = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/skins.json'
 cdragon_champsummaries_url = 'http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json'
 
-rarity_dist_file = GS_FOLDER + 'rarity-dist.json'
-dumpfile_name = GS_FOLDER + 'dump.tgz'
-latest_version_file = GS_FOLDER + "latest_version.txt"
+rarity_dist_file = os.path.join(GS_FOLDER, 'rarity-dist.json')
+dumpfile_name = os.path.join(GS_FOLDER, 'dump.tgz')
+latest_version_file = os.path.join(GS_FOLDER, "latest_version.txt")
 
 
 
@@ -149,7 +150,7 @@ rarity_dist = {
 
 ### SPLASH CONSTANTS END ###
 
-async def cmd_gs_refresh(bot, message, args):
+async def cmd_gs_refresh(bot, message, _args):
 	if message.author.id not in ADMINS:  # Us
 		return
 	
@@ -178,7 +179,7 @@ async def cmd_gs_refresh(bot, message, args):
 			return
 		
 	except Exception as e:
-		print("Getting latest version has failed: " + str(e))
+		print(f"Getting latest version has failed: {e}")
 
 	bot.g_valid = False
 
@@ -258,7 +259,7 @@ async def cmd_gs_refresh(bot, message, args):
 	bot.g_valid = True 
 
 
-async def cmd_gs_start(bot, message, args):
+async def cmd_gs_start(bot, message, _args):
 	if not os.path.exists(CHAMP_SPLASH_FOLDER):
 		print("CHAMP SPLASHES FOLDER DOESN'T EXIST, PLEASE REFRESH")
 		await message.channel.send("Please ask an admin to refresh the champ splashes!")
@@ -276,23 +277,23 @@ async def cmd_gs_start(bot, message, args):
 	print(skin_number)
 
 	global latest_version
-	if latest_version == None:
+	if latest_version is None:
 		try:
 			with open(latest_version_file, "r") as f:
 				latest_version = f.readline().strip()
-		except Exception as e:
+		except Exception as _e:
 			print("Latest version file doesn't exist, please refresh")
 			await message.channel.send("Latest version file doesn't exist, please refresh")
 			return
 
 	# Load the data JSON into memory 
-	champ_data_folder = GS_FOLDER + latest_version + os.path.sep + "data" + os.path.sep + "en_US" + os.path.sep
+	champ_data_folder = os.path.join(GS_FOLDER, latest_version, "data", "en_US")
 	if not os.path.exists(champ_data_folder):
 		await message.channel.send("Champ data folder doesn't exist, ask admin to refresh")
 		return
 
 	json_data = None
-	with open(champ_data_folder + os.path.sep + "champion" + os.path.sep + champ_name + ".json", "r", encoding="utf-8") as f:
+	with open(os.path.join(champ_data_folder, "champion", f"{champ_name}.json"), "r", encoding="utf-8") as f:
 		json_data = json.load(f)
 
 	''' If you're wondering why we don't just use the skin number
@@ -313,7 +314,7 @@ async def cmd_gs_start(bot, message, args):
 			bot.g_answer = re.sub(r'[^a-z0-9]', '', bot.g_answer_raw.lower())
 			break
 
-	im = Image.open(CHAMP_SPLASH_FOLDER + chosen_splash)
+	im = Image.open(os.path.join(CHAMP_SPLASH_FOLDER, chosen_splash))
 	x, y = im.size
 	
 	left = random.randint(0, x / 2)
@@ -331,7 +332,7 @@ async def cmd_gs_start(bot, message, args):
 	await message.channel.send("Guess the champion skin!")
 
 
-async def debug_get_cdragon_json(bot, message, args):
+async def debug_get_cdragon_json(_bot, _message, args):
 	print(args[0])
 
 # Try to get a big file from <url> and save as <fname>
@@ -352,7 +353,7 @@ UT_OST_FOLDER = os.path.join(GUM_FOLDER, "ost")
 # Every file starts with this - we could rename them but we're (I'm) lazy
 UT_PREFIX_LEN = len("toby fox - UNDERTALE Soundtrack - ")
 
-async def _umq_try_join_vc(bot, message):
+async def _umq_try_join_vc(_bot, message):
 	"""Returns a voice channel if it can connect; otherwise sends a warning and returns"""
 	if not os.path.exists(UT_OST_FOLDER):
 		print("UNDERTALE OST FOLDER DOESN'T EXIST")

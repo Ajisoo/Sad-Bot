@@ -1,6 +1,6 @@
 # Sad-Bot
 
-0. Have `python 3.5` or above and know how to code a bit. 
+0. Have `python 3.7` or above and know how to code a bit. 
 
 1. Clone repo.
 2. Get your own token from the [Discord Developer Portal](https://discord.com/developers/docs/intro) and team permissions from Ajisoo on said portal.

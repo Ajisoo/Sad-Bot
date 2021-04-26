@@ -201,6 +201,18 @@ async def on_message(message: discord.Message):
 		else:
 			await message.channel.send("Requested champ not specified!")
 
+	if command in ['ts', 'trade_splash'] and only_for_testing_server(message.guild.id):
+		if len(args) in [1,3]:
+			await roll_splashes.trade_splashes(bot, message, args)
+		else:
+			await message.channel.send(("Please follow one of the trading formats:\n"
+										"Trade initiation:\n"
+			 							"`[$ts | $trade_splash] <@tradee> <skin_to_trade_id> <skin_to_receive_id>`\n\n"
+										"Trade response:\n"
+										"`[$ts] <y|yes|n|no>`"))
+
+	#TODO: add command to see current trade on you?
+
 	if command in ['test'] and only_for_testing_server(message.guild.id):
 		await guess_util.debug_get_cdragon_json(bot, message, args)
 

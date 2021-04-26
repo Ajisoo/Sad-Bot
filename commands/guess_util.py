@@ -323,9 +323,9 @@ async def cmd_gs_start(bot, message, args):
 
 	cropped_img = im.crop((left, top, right, bottom))
 
-	cropped_img.save(TEMP_IMAGE_FNAME, "jpeg")
-	await message.channel.send(file=(discord.File(TEMP_IMAGE_FNAME)))
-	os.remove(TEMP_IMAGE_FNAME)
+	cropped_img.save(CROPPED_IMAGE_FNAME, "jpeg")
+	await message.channel.send(file=(discord.File(CROPPED_IMAGE_FNAME)))
+	os.remove(CROPPED_IMAGE_FNAME)
 
 	bot.guess_type = GS_LEADERBOARD_ID
 	await message.channel.send("Guess the champion skin!")

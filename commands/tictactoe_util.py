@@ -1,5 +1,6 @@
-import discord
 import random
+
+import discord
 
 from Franklin import *
 
@@ -97,7 +98,7 @@ def generate_embed(name, data):
     return embed
 
 
-async def cmd_tictactoe(bot, client, message, args):
+async def cmd_tictactoe(bot, client, message, _args):
     global ttt_client
     ttt_client = client
     ttt_data = TTTData()
@@ -111,5 +112,5 @@ async def cmd_tictactoe(bot, client, message, args):
     for reaction in reactions:
         await response.add_reaction(reaction)
 
-    await response.remove_reaction(str(i+1) + "⃣", ttt_client)
+    await response.remove_reaction(str(i + 1) + "⃣", ttt_client)
     await response.edit(embed=generate_embed(message.author.name, ttt_data))

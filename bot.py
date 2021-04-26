@@ -1,8 +1,9 @@
-import discord
 import datetime
 import asyncio
 import random
 import re
+
+import discord
 
 from data.bot_status import BotStatus
 from commands import guess_util, leaderboard_util, roll_color, roll_splashes
@@ -14,24 +15,23 @@ client = discord.Client()
 bots = {}
 
 async def get_bot(guild_id):
-	global bots
 	return bots[guild_id]
 
 
 def update_ga_leaderboard_file_name():
 	try:
-		open(GA_FOLDER + "leaderboard.txt", "r")
+		open(os.path.join(GA_FOLDER, "leaderboard.txt"), "r")
 	except Exception:
 		return
 
-	os.rename(GA_FOLDER + "leaderboard.txt", GA_LEADERBOARD_FILE)
+	os.rename(os.path.join(GA_FOLDER, "leaderboard.txt"), GA_LEADERBOARD_FILE)
 
 @client.event
 async def on_ready():
 	global bots
 	for guild in client.guilds:
 		bots[guild.id] = BotStatus(client)
-	print('We have logged in as {0.user}'.format(client))
+	print(f"'We have logged in as {client.user}")
 	if datetime.now().date() == PATCH_DAY.date():
 		update_ga_leaderboard_file_name()
 

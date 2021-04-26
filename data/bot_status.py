@@ -12,6 +12,7 @@ class BotStatus:
 		self.start_date = None
 		self.roll_user_data = None
 		self.rarity_emoji_ids = {}
+		self.active_trades = {}
 
 		for emoji in discord_client.emojis:
 			if emoji.name in ['epic', 'legendary', 'mythic', 'ultimate']:

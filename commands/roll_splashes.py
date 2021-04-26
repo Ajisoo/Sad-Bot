@@ -5,6 +5,7 @@ import discord
 import os
 import json
 import re
+# import asyncio
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from PIL import Image, ImageOps
@@ -26,6 +27,8 @@ rarity_colors = {
 }
 
 time_format = "%m/%d/%Y, %H:%M"
+skin_id_regex = "\d{4,}[ABCD]"
+attachment_prefix = "attachment://"
 ### End Globals ###
 
 
@@ -124,9 +127,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	if id_string in inventory:
 		inventory[id_string]["pieces"][letter] += 1
 	else:
-		starting_counts = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
-		starting_counts[letter] += 1
-		inventory[id_string] = {"name": full_skin_name, "pieces": starting_counts}
+		inventory[id_string] = get_starting_pieces(full_skin_name, letter)
 	splash_harems[user_id] = inventory
 
 	with open(SPLASH_HAREM_FILE, 'w') as f:
@@ -139,7 +140,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	embed, f = create_progress_embed(full_skin_name, champ_description, rarity, chosen_splash,
 	 								pieces_counts, im, bot)
 	embed_msg = message.channel.send(embed=embed, file=f)
-	os.remove(TEMP_IMAGE_FNAME)
+	os.remove(CROPPED_IMAGE_FNAME)
 	await embed_msg
 	# ----------------------------------
 
@@ -214,7 +215,7 @@ async def divorce_splash(bot, message, args):
 			msgs = []
 			for d in args:
 				d = d.upper()
-				if re.match("\d{4,}[ABCD]", d) is None:
+				if re.match(skin_id_regex, d) is None:
 					msgs.append(message.channel.send("Please divorce by valid ID"))
 					break
 				skin_id, l = d[:-1], d[-1]
@@ -281,19 +282,133 @@ async def info_splash(bot, message, args):
 		skin_id = str(this_skin["id"])
 
 		im = Image.open(CHAMP_SPLASH_FOLDER + splash_fname)
+		# im.save(FULL_IMAGE_FNAME, "jpeg")
 		pieces_counts = your_harem[skin_id]["pieces"]
 
 		embed, f = create_progress_embed(this_skin["name"], this_skin["description"], this_skin["rarity"], splash_fname,
 										pieces_counts, im, bot)
 		
-		embed_msg = message.channel.send(embed=embed, file=f)
-		os.remove(TEMP_IMAGE_FNAME)
-		await embed_msg
+		# f2 = discord.File(FULL_IMAGE_FNAME)
+		embed_msg = await message.channel.send(embed=embed, file=f)
+		# await asyncio.sleep(1)
+		# await embed_msg.edit(embed=embed.set_image(url=attachment_prefix + FULL_IMAGE_FNAME))
+
+		# os.remove(FULL_IMAGE_FNAME)
+		os.remove(CROPPED_IMAGE_FNAME)
+
+
+async def trade_splashes(bot, message, args):
+	user_id = str(message.author.id)
+	# Figure out if we're initiating or responding to a trade
+	if len(args) == 3:
+		# initiate trade
+		m = re.match("<@!(\d+)>", args[0])
+		if m is None:
+			print(args[0], 'this is the mention that broke')
+			await message.channel.send("Must @ who you want to trade with")
+			return
+		
+		tradee_id = m.group(1)
+		if bot.active_trades.get(tradee_id, None) is not None:
+			await message.channel.send("Active trade in progress with that user already! Try again later.")
+			return
+		
+		# m1 and m2 are of form <id[ABCD]>
+		args = list(map(lambda x: x.upper(), args))
+		m1 = re.match(skin_id_regex, args[1])
+		m2 = re.match(skin_id_regex, args[2])
+		if m1 is None or m2 is None:
+			await message.channel.send("Must be valid skin IDs")
+			return
+		bot.active_trades[tradee_id] = {"trader_id": user_id, 
+										"trader_offer": args[1], 
+										"tradee_offer": args[2]}
+
+
+		with open(SKINS_DATAFILE, 'r') as f:
+			skins_data = json.load(f)
+		
+		trader_offer = skins_data[args[1][:-1]]['name']
+		trader_piece = args[1][-1]
+		tradee_offer = skins_data[args[2][:-1]]['name']
+		tradee_piece = args[2][-1]
+
+		await message.channel.send((f"<@{tradee_id}>, {trader_offer} (Piece {trader_piece}) is being"
+									f" offered to you in exchange for {tradee_offer} (Piece {tradee_piece})."
+									" Use `[$ts|$trade_splash] [y|yes|n|no]` to respond."))
+	elif len(args) == 1:
+		# respond
+		trade = bot.active_trades.get(user_id, None)
+		if trade is None:
+			await message.channel.send("No one is trading with you right now!")
+			return
+
+		response = args[0]
+
+		if response in ['y', 'yes']:
+			with open(SPLASH_HAREM_FILE, 'r+') as f:
+				harems = json.load(f)
+				trader_skin_id, trader_piece = [trade["trader_offer"][:-1], trade["trader_offer"][-1]]
+				their_offer = harems.get(trade["trader_id"], {}).get(trader_skin_id, {}).get("pieces", {}).get(trader_piece)
+				if their_offer == 0 or their_offer is None:
+					await message.channel.send("Trader doesn't have their offer, please no bamboozle >:(. Cancelling trade.")
+					del bot.active_trades[user_id]
+					return
+
+				tradee_skin_id, tradee_piece = [trade["tradee_offer"][:-1], trade["tradee_offer"][-1]]
+				your_offer = harems.get(user_id, {}).get(tradee_skin_id, {}).get("pieces", {}).get(tradee_piece)
+				if your_offer == 0 or your_offer is None:
+					await message.channel.send("YOU don't have your offer, bamboozling is strictly prohibited. Trade cancelled.")
+					del bot.active_trades[user_id]
+					return
+				
+				# Both people have their offers, commence trade
+				# Remove pieces
+				your_harem, their_harem = [harems[user_id], harems[trade["trader_id"]]]
+				your_harem[tradee_skin_id]["pieces"][tradee_piece] -= 1
+				their_harem[trader_skin_id]["pieces"][trader_piece] -= 1
+
+				with open(SKINS_DATAFILE, 'r') as f:
+					skins_data = json.load(f)
+					trader_skin_name = skins_data[trader_skin_id]["name"]
+					tradee_skin_name = skins_data[tradee_skin_id]["name"]
+
+				# Add pieces
+				if tradee_skin_id in their_harem:
+					their_harem[tradee_skin_id]["pieces"][tradee_piece] += 1
+				else:
+					their_harem[tradee_skin_id]["pieces"] = get_starting_pieces(tradee_skin_name, tradee_piece)
+				
+				if trader_skin_id in your_harem:
+					your_harem[trader_skin_id]["pieces"][trader_piece] += 1
+				else:
+					your_harem[trader_skin_id]["pieces"] = get_starting_pieces(trader_skin_name, trader_piece)
+
+				# If any skin piece counts ended up empty, delete.
+				if not all(your_harem[tradee_skin_id]["pieces"].values()):
+					del your_harem[tradee_skin_id]
+				if not all(their_harem[trader_skin_id]["pieces"].values()):
+					del their_harem[trader_skin_id]
+				
+				await message.channel.send("Trade successful!")
+
+		elif response in ['n', 'no']:
+			await message.channel.send("Trade declined.")
+			del bot.active_trades[user_id]
+		else: 
+			await message.channel.send("Invalid response.")
+
+	else:
+		await message.channel.send("Incorrect usage of trade command")
+
+
+# --------------------  END MAIN METHODS     ----------------------- #
+# --------------------  HELPER METHODS BELOW ----------------------- #
 
 # Creates an embed with a progress picture given an image and piece counts
 def create_progress_embed(skin_name, description, rarity, splash_fname, pieces_counts, im, bot):
 	cropped_img = get_progress_img(pieces_counts, im, rarity)
-	cropped_img.save(TEMP_IMAGE_FNAME, "jpeg")
+	cropped_img.save(CROPPED_IMAGE_FNAME, "jpeg")
 
 	title = decorated_title("**" + skin_name + "**", rarity, bot)
 	desc = ""
@@ -302,8 +417,8 @@ def create_progress_embed(skin_name, description, rarity, splash_fname, pieces_c
 
 	embed = discord.Embed(title=title, url=ddragon_baseurl + splash_fname,
 					description=desc, color=rarity_colors[rarity]) \
-				.set_image(url="attachment://" + TEMP_IMAGE_FNAME)
-	f = (discord.File(TEMP_IMAGE_FNAME))
+				.set_image(url=attachment_prefix + CROPPED_IMAGE_FNAME)
+	f = (discord.File(CROPPED_IMAGE_FNAME))
 	return (embed, f)
 
 
@@ -332,16 +447,16 @@ def coordinates(letter, x, y):
 def decorated_title(title, rarity, bot):
 	if rarity == 'kLegendary':
 		l_id = bot.rarity_emoji_ids['legendary']
-		title = f"<:legendary:{l_id}> " + title + f"  <:legendary:{l_id}>"
+		title = f"<:legendary:{l_id}> {title} <:legendary:{l_id}>"
 	elif rarity == 'kMythic':
 		m_id = bot.rarity_emoji_ids['mythic']
-		title = f"<:mythic:{m_id}>  " + title + f"  <:mythic:{m_id}>"
+		title = f"<:mythic:{m_id}>  {title}  <:mythic:{m_id}>"
 	elif rarity == 'kEpic':
 		e_id = bot.rarity_emoji_ids['epic']
-		title = f"<:epic:{e_id}>  " + title + f"  <:epic:{e_id}>"
+		title = f"<:epic:{e_id}>  {title}  <:epic:{e_id}>"
 	elif rarity == 'kUltimate':
 		u_id = bot.rarity_emoji_ids['ultimate']
-		title = f"<:ultimate:{u_id}>  " + title + f"  <:ultimate:{u_id}>"
+		title = f"<:ultimate:{u_id}>  {title}  <:ultimate:{u_id}>"
 	return title
 
 
@@ -379,3 +494,8 @@ def time_left(user_id: str) -> int:
 				return int(60 - (hour_diff * 60))
 		else:  # they've never rolled before
 			return 0
+
+def get_starting_pieces(skin_name, starting_letter):
+	starting_counts = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
+	starting_counts[starting_letter] += 1
+	return {"name": skin_name, "pieces": starting_counts}

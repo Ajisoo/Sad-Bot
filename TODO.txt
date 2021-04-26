@@ -10,13 +10,16 @@
 13. info command (shows full champion)
 1. show other people's harems with ($harem <@otherperson>)
 6. store dupes of same piece (if someone has one and rolls another, they'll have two - alter data structure for this)
---- END DONE ----
-2. differentiate between finding info and checking progress?
 3. allow search by id for skin info also
-4. trading? use a trading embed to show that or something
+4. trading? (IN TESTING PHASE RIGHT NOW)
+--- END DONE ----
+
 5. make champ rolling have embed with (piece rolled, progress pic) with reactable swipe
+    (HOLY SHIT THIS IS HARD)
+    (MAKE A SECOND BURNER TEST SERVER SO LOGIC WILL BE SAME BETWEEN )
     - 6. make frostblade irelia piece D ultimate
 
+4. use an embed for trading
 5. use reactable embed for champ splash list instead of text
 9. stretch goal: do animation for progress pic a la roll color
 7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent

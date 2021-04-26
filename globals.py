@@ -9,7 +9,8 @@ def only_for_testing_server(guild_id) -> bool:
 
 
 ADMINS = [182707904367820800, # ajisoo
-          190253188262133761  # josh
+          190253188262133761, # josh
+          192144504998854658, # nolo
 		]
 
 BOT_PREFIX = "$"
@@ -46,26 +47,25 @@ HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 
 # Folder names are relative to the location of bot.py, so if anything gets moved around make sure to update these
 
-CONTENT_FOLDER = "content" + os.path.sep
+CONTENT_FOLDER = os.path.join("content")
 
 GA_BASE_WEBSITE = "https://www.mobafire.com"
 GA_WEBSITE = GA_BASE_WEBSITE + "/league-of-legends/abilities"
 
-GA_FOLDER = CONTENT_FOLDER + "lol_ability_guesser" + os.path.sep
-GA_LEADERBOARD_FILE = GA_FOLDER + "leaderboard_ga.txt"
+GA_FOLDER = os.path.join(CONTENT_FOLDER, "lol_ability_guesser")
+GA_LEADERBOARD_FILE = os.path.join(GA_FOLDER, "leaderboard_ga.txt")
 
-GS_FOLDER = CONTENT_FOLDER + "lol_splash_guesser" + os.path.sep
-GS_LEADERBOARD_FILE = GS_FOLDER + "leaderboard_gs.txt"
-CHAMP_SPLASH_FOLDER = GS_FOLDER + "img" + os.path.sep + \
-	"champion" + os.path.sep + "loading" + os.path.sep
-SKINS_DATAFILE = GS_FOLDER + 'skins.json'
+GS_FOLDER = os.path.join(CONTENT_FOLDER, "lol_splash_guesser")
+GS_LEADERBOARD_FILE = os.path.join(GS_FOLDER, "leaderboard_gs.txt")
+CHAMP_SPLASH_FOLDER = os.path.join(GS_FOLDER, "img", "champion", "loading")
+SKINS_DATAFILE = os.path.join(GS_FOLDER, "skins.json")
 TEMP_IMAGE_FNAME = "tempCroppedSplash.jpg"
 
-USER_INFO_FOLDER = CONTENT_FOLDER + "user_info" + os.path.sep
-SPLASH_HAREM_FILE = USER_INFO_FOLDER + 'splash-harems.json'
-SPLASH_ROLL_TIMERS_FILE = USER_INFO_FOLDER + 'splash-roll-timers.json'
+USER_INFO_FOLDER = os.path.join(CONTENT_FOLDER, "user_info")
+SPLASH_HAREM_FILE = os.path.join(USER_INFO_FOLDER, "splash-harems.json")
+SPLASH_ROLL_TIMERS_FILE = os.path.join(USER_INFO_FOLDER, "splash-roll-timers.json")
 
-RS_ID_TO_ALIAS_MAPPINGS_FILE = GS_FOLDER + "champion-summary.json"
+RS_ID_TO_ALIAS_MAPPINGS_FILE = os.path.join(GS_FOLDER, "champion-summary.json")
 GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
 GUM_LEADERBOARD_FILE = os.path.join(GUM_FOLDER, "leaderboard_gum.txt")
 
@@ -78,6 +78,6 @@ LOUNGE_GUILD_ID = 190241147539423234
 
 LEADERBOARDS = {
 	GS_LEADERBOARD_ID: GS_LEADERBOARD_FILE,
-	GA_LEADERBOARD_ID: GA_LEADERBOARD_ID,
+	GA_LEADERBOARD_ID: GA_LEADERBOARD_ID, # <-- FIXME make this the correct file eventually
 	GUM_LEADERBOARD_ID: GUM_LEADERBOARD_FILE,
 }

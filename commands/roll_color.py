@@ -1,8 +1,9 @@
 import os
 import datetime
-import discord
 import random
 import time
+
+import discord
 from PIL import Image
 
 # Example data: user_id:rolled_this_week: star_value|r|g|b, star_value|r|g|b

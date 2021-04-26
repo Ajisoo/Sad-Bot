@@ -7,11 +7,8 @@ class Franklin:
 
 	def __init__(self, bot, message_to_be_reacted_to, valid_reactions, functions, data):
 		self.message = message_to_be_reacted_to
-		self.map = {}
 		self.data = data
-		for i in range(min(len(valid_reactions), len(functions))):
-			self.map[valid_reactions[i]] = functions[i]
-
+		self.map = dict(zip(valid_reactions, functions))
 		bot.current_Franklins[message_to_be_reacted_to.id] = self
 
 	async def react(self, reaction, member):

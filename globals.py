@@ -67,6 +67,7 @@ FULL_IMAGE_FNAME = "tempFullSplash.jpg"
 USER_INFO_FOLDER = os.path.join(CONTENT_FOLDER, "user_info")
 SPLASH_HAREM_FILE = os.path.join(USER_INFO_FOLDER, "splash-harems.json")
 SPLASH_ROLL_TIMERS_FILE = os.path.join(USER_INFO_FOLDER, "splash-roll-timers.json")
+SPLASH_LINK_MAPPINGS_FILE = os.path.join(USER_INFO_FOLDER, "image-links.json")
 
 RS_ID_TO_ALIAS_MAPPINGS_FILE = os.path.join(GS_FOLDER, "champion-summary.json")
 GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
@@ -80,8 +81,11 @@ TEST_SERVER_GUILD_ID = 486266124351307786
 LOUNGE_GUILD_ID = 190241147539423234
 
 
+# prefix + burn_server_id + /image_id + /image_name
+CDN_PREFIX = "https://cdn.discordapp.com/attachments/"
+
 BURNER_IMAGES_GUILD_ID = TEST_SERVER_GUILD_ID
-BURNER_IMAGES_CHANNEL_ID_TEST = 836134062821343242 # one with jisoo and others
+BURNER_IMAGES_CHANNEL_ID_TEST = 836343014032801912  # one with jisoo and others
 
 BURNER_IMAGES_GUILD_ID2 = 836273735102890056  # separate burner images server
 BURNER_IMAGES_CHANNEL_ID_TEST2 = 836273735697956897

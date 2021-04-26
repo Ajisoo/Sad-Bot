@@ -13,6 +13,7 @@ import requests
 
 import commands.leaderboard_util
 from globals import *
+from commands.roll_splashes import coordinates
 
 async def cmd_ga_refresh(bot, message, _args):
 	if message.author.id not in ADMINS:  # Us
@@ -414,3 +415,42 @@ async def cmd_umq_replay(bot, message, _args):
 		await message.channel.send("Replaying last song...")
 	else:
 		await message.channel.send("No song to replay!")
+
+async def upload_splashes_to_burner_channel(burner_channel: discord.TextChannel):
+	image_links_mapping = {}
+	with open(SPLASH_LINK_MAPPINGS_FILE, 'r') as f:
+		image_links_mapping = json.load(f)
+
+	with open(SKINS_DATAFILE, 'r') as f:
+		skins_data = json.load(f)
+		for k,v in skins_data.items():
+			if k + 'A' in image_links_mapping: # already have it, but find a better way than k + 'A'
+				continue
+			splash_name = v["splash_name"]
+			im = Image.open(os.path.join(CHAMP_SPLASH_FOLDER, splash_name))
+			x, y = im.size
+
+			fnames_batch = []
+			for letter in ['A', 'B', 'C', 'D']:
+				cropped = im.crop(coordinates(letter, x, y))
+				cropped.save(f"temp{letter}.jpg", "jpeg")
+				fnames_batch.append(discord.File(f"temp{letter}.jpg"))
+			
+			# Upload this batch
+			print(fnames_batch)
+			burn_msg = await burner_channel.send(f'{k}', files=fnames_batch)
+
+			print(burn_msg.attachments)
+			for a, letter in zip(burn_msg.attachments, ['A', 'B', 'C', 'D']):
+				# get the part of URL after channel_id/
+				m = re.match(CDN_PREFIX + "\d+(/\d+/.+)", a.url)
+				if m is None:
+					print('somehow did not work')
+				cdn_suffix = m.group(1)
+
+				image_links_mapping[k + letter] = cdn_suffix
+			break
+	
+	with open(SPLASH_LINK_MAPPINGS_FILE, 'w') as f:
+		json.dump(image_links_mapping, f)
+	

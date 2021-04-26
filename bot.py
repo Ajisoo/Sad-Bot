@@ -13,6 +13,7 @@ from globals import *
 
 client = discord.Client()
 bots = {}
+burner_channel = None
 
 async def get_bot(guild_id):
 	return bots[guild_id]
@@ -28,12 +29,17 @@ def update_ga_leaderboard_file_name():
 
 @client.event
 async def on_ready():
-	global bots, IN_PROD
+	global bots, IN_PROD, burner_channel
 	for guild in client.guilds:
 		bots[guild.id] = BotStatus(client)
 		if guild.id == LOUNGE_GUILD_ID:
 			IN_PROD = True
-		
+
+	if IN_PROD:
+		burner_channel = client.get_channel(BURNER_IMAGES_CHANNEL_ID_PROD)
+	else:
+		burner_channel = client.get_channel(BURNER_IMAGES_CHANNEL_ID_TEST)
+	
 	print(f"'We have logged in as {client.user}")
 	if datetime.now().date() == PATCH_DAY.date():
 		update_ga_leaderboard_file_name()
@@ -217,7 +223,7 @@ async def on_message(message: discord.Message):
 	#TODO: add command to see current trade on you?
 
 	if command in ['test'] and only_for_testing_server(message.guild.id):
-		await guess_util.debug_get_cdragon_json(bot, message, args)
+		await guess_util.upload_splashes_to_burner_channel(burner_channel)
 
 @client.event
 async def on_raw_reaction_add(payload):

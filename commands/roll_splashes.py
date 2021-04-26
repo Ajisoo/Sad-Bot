@@ -43,6 +43,10 @@ def create_user_data_files():
 		with open(SPLASH_ROLL_TIMERS_FILE, "w+") as f:
 			print('making rolls file')
 			json.dump({}, f)
+	if not os.path.exists(SPLASH_LINK_MAPPINGS_FILE):
+		with open(SPLASH_LINK_MAPPINGS_FILE, "w+") as f:
+			print('making link mappings file')
+			json.dump({}, f)
 
 # id_with_piece has format <id>[A|B|C|D]
 async def force_roll(bot, message, id_with_piece):
@@ -137,11 +141,10 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 
 	# Create the embed
 	pieces_counts = splash_harems[user_id][id_string]["pieces"]
-	embed, f = create_progress_embed(full_skin_name, champ_description, rarity, chosen_splash,
+	embed, f = create_progress_embed(f"{full_skin_name} (Piece {letter})", champ_description, rarity, chosen_splash,
 	 								pieces_counts, im, bot)
-	embed_msg = message.channel.send(embed=embed, file=f)
+	await message.channel.send(embed=embed, file=f)
 	os.remove(CROPPED_IMAGE_FNAME)
-	await embed_msg
 	# ----------------------------------
 
 	# Add time to rolls json
@@ -416,7 +419,8 @@ def create_progress_embed(skin_name, description, rarity, splash_fname, pieces_c
 		desc = "_" + description + "_"
 
 	embed = discord.Embed(title=title, url=ddragon_baseurl + splash_fname,
-					description=desc, color=rarity_colors[rarity])
+					description=desc, color=rarity_colors[rarity]) \
+					.set_image(url=attachment_prefix + CROPPED_IMAGE_FNAME)
 	f = (discord.File(CROPPED_IMAGE_FNAME))
 	return (embed, f)
 
@@ -444,18 +448,21 @@ def coordinates(letter, x, y):
 		return (x // 2, y // 2, x, y)
 
 def decorated_title(title, rarity, bot):
-	if rarity == 'kLegendary':
-		l_id = bot.rarity_emoji_ids['legendary']
-		title = f"<:legendary:{l_id}> {title} <:legendary:{l_id}>"
-	elif rarity == 'kMythic':
-		m_id = bot.rarity_emoji_ids['mythic']
-		title = f"<:mythic:{m_id}>  {title}  <:mythic:{m_id}>"
-	elif rarity == 'kEpic':
-		e_id = bot.rarity_emoji_ids['epic']
-		title = f"<:epic:{e_id}>  {title}  <:epic:{e_id}>"
+	if title == "**Frostblade Irelia (Piece D)**":
+		u_id = bot.rarity_emoji_ids['ultimate']
+		title = f"<:ultimate:{u_id}> **Frostbutt Irelia (Piece D)** <:ultimate:{u_id}>"
 	elif rarity == 'kUltimate':
 		u_id = bot.rarity_emoji_ids['ultimate']
 		title = f"<:ultimate:{u_id}>  {title}  <:ultimate:{u_id}>"
+	elif rarity == 'kMythic':
+		m_id = bot.rarity_emoji_ids['mythic']
+		title = f"<:mythic:{m_id}>  {title}  <:mythic:{m_id}>"
+	elif rarity == 'kLegendary':
+		l_id = bot.rarity_emoji_ids['legendary']
+		title = f"<:legendary:{l_id}> {title} <:legendary:{l_id}>"
+	elif rarity == 'kEpic':
+		e_id = bot.rarity_emoji_ids['epic']
+		title = f"<:epic:{e_id}>  {title}  <:epic:{e_id}>"
 	return title
 
 

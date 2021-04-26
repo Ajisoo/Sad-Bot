@@ -28,9 +28,12 @@ def update_ga_leaderboard_file_name():
 
 @client.event
 async def on_ready():
-	global bots
+	global bots, IN_PROD
 	for guild in client.guilds:
 		bots[guild.id] = BotStatus(client)
+		if guild.id == LOUNGE_GUILD_ID:
+			IN_PROD = True
+		
 	print(f"'We have logged in as {client.user}")
 	if datetime.now().date() == PATCH_DAY.date():
 		update_ga_leaderboard_file_name()
@@ -140,7 +143,7 @@ async def on_message(message: discord.Message):
 		except Exception:
 
 			vc = client.voice_clients[0]
-		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=CONTENT_FOLDER + 'baka_mitai.mp3'))
+		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=os.path.join(CONTENT_FOLDER,'baka_mitai.mp3')))
 		while vc.is_playing():
 			await asyncio.sleep(1)
 		# disconnect after the player has finished

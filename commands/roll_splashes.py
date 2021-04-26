@@ -5,7 +5,7 @@ import discord
 import os
 import json
 import re
-# import asyncio
+import asyncio
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from PIL import Image, ImageOps
@@ -53,7 +53,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 		print("CHAMP SPLASHES FOLDER DOESN'T EXIST, PLEASE REFRESH")
 		await message.channel.send("Please ask an admin to refresh the champ splashes!")
 		return
-	if not os.path.exists(RS_ID_TO_ALIAS_MAPPINGS_FILE) or not os.path.exists(GS_FOLDER + 'rarity-dist.json'):
+	if not os.path.exists(RS_ID_TO_ALIAS_MAPPINGS_FILE) or not os.path.exists(RARITY_DIST_FILE):
 		print("RARITY DIST OR CHAMPION SUMMARY DOESN'T EXIST, PLEASE REFRESH")
 		await message.channel.send("Champs can't be rolled right now. Please ask an admin to refresh the champ splashes!")
 		return
@@ -76,7 +76,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	if forced_id == None:
 		global percentages, rolls 
 		if percentages == None or rolls == None:
-			with open(GS_FOLDER + 'rarity-dist.json', 'r') as f:
+			with open(RARITY_DIST_FILE, 'r') as f:
 				rarity_dist = json.load(f)
 				loot_pools = [(v['percentage'], v['rolls']) for v in rarity_dist.values()]
 				percentages, rolls = [list(t) for t in zip(*loot_pools)]
@@ -99,7 +99,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	# ------------------------------
 
 	# Pick one of 4 pieces of the splash
-	im = Image.open(CHAMP_SPLASH_FOLDER + chosen_splash)
+	im = Image.open(os.path.join(CHAMP_SPLASH_FOLDER, chosen_splash))
 	x, y = im.size
 
 	if forced_piece == None:
@@ -281,19 +281,19 @@ async def info_splash(bot, message, args):
 		splash_fname = this_skin["splash_name"]
 		skin_id = str(this_skin["id"])
 
-		im = Image.open(CHAMP_SPLASH_FOLDER + splash_fname)
-		# im.save(FULL_IMAGE_FNAME, "jpeg")
+		im = Image.open(os.path.join(CHAMP_SPLASH_FOLDER, splash_fname))
+		im.save(FULL_IMAGE_FNAME, "jpeg")
 		pieces_counts = your_harem[skin_id]["pieces"]
 
 		embed, f = create_progress_embed(this_skin["name"], this_skin["description"], this_skin["rarity"], splash_fname,
 										pieces_counts, im, bot)
 		
-		# f2 = discord.File(FULL_IMAGE_FNAME)
-		embed_msg = await message.channel.send(embed=embed, file=f)
-		# await asyncio.sleep(1)
-		# await embed_msg.edit(embed=embed.set_image(url=attachment_prefix + FULL_IMAGE_FNAME))
 
-		# os.remove(FULL_IMAGE_FNAME)
+		embed.set_image(
+			url=attachment_prefix + CROPPED_IMAGE_FNAME)
+		msg = await message.channel.send(embed=embed, file=f)
+
+		os.remove(FULL_IMAGE_FNAME)
 		os.remove(CROPPED_IMAGE_FNAME)
 
 
@@ -416,8 +416,7 @@ def create_progress_embed(skin_name, description, rarity, splash_fname, pieces_c
 		desc = "_" + description + "_"
 
 	embed = discord.Embed(title=title, url=ddragon_baseurl + splash_fname,
-					description=desc, color=rarity_colors[rarity]) \
-				.set_image(url=attachment_prefix + CROPPED_IMAGE_FNAME)
+					description=desc, color=rarity_colors[rarity])
 	f = (discord.File(CROPPED_IMAGE_FNAME))
 	return (embed, f)
 

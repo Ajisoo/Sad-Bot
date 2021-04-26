@@ -119,7 +119,6 @@ data_dragon_endpoint_base = 'https://ddragon.leagueoflegends.com/cdn/dragontail-
 cdragon_skins_url = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/skins.json'
 cdragon_champsummaries_url = 'http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json'
 
-rarity_dist_file = os.path.join(GS_FOLDER, 'rarity-dist.json')
 dumpfile_name = os.path.join(GS_FOLDER, 'dump.tgz')
 latest_version_file = os.path.join(GS_FOLDER, "latest_version.txt")
 
@@ -221,7 +220,7 @@ async def cmd_gs_refresh(bot, message, _args):
 				rarity_dist[v['rarity']]['rolls'].append(v['id'])
 			new_skin_data[k] = {key: v[key]
                             for key in ['id', 'name', 'description', 'rarity']}
-	with open(rarity_dist_file, "w", encoding='utf-8') as f:
+	with open(RARITY_DIST_FILE, "w", encoding='utf-8') as f:
 		json.dump(rarity_dist, f)
 
 

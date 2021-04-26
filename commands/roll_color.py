@@ -31,7 +31,7 @@ async def cmd_show_color(bot, message, args):
 		title = message.author.name + "'s current Color!\n"
 	else:
 		title = message.author.name + "'s Color!\n"
-	title += stars[data[0]] + " RGB " + data[1] + " " + data[2] + " " + data[3]
+	title += f"{stars[data[0]]} RGB {data[1]} {data[2]} {data[3]}"
 	img = Image.new('RGB', (color_size[data[0]], color_size[data[0]]), (max(0,int(data[1])), max(0, int(data[2])), max(0, int(data[3]))))
 	img.save("content/color.jpg")
 	file = discord.File("content/color.jpg")
@@ -89,14 +89,14 @@ async def cmd_list_color(bot, message, args):
 	string = message.author.name + "'s Colors:\n"
 	for index, thing in data:
 		_thing = thing.split("|")
-		string += "[" + str(index) + "] " + stars[_thing[0]] + " RGB " + _thing[1] + " " + _thing[2] + " " + _thing[3] + "\n"
+		string += f"[{index}] {stars[_thing[0]]} RGB {_thing[1]} {_thing[2]} {_thing[3]}\n"
 	await message.channel.send(string)
 
 
 async def update_file(data):
 	with open("content/roll_color/user_data.txt", "w") as f:
 		for key in data.keys():
-			f.write(str(key) + ":" + data[key][0] + ":" + ",".join(data[key][1]) + "\n")
+			f.write(f"{key}:{data[key][0]}:{','.join(data[key][1])}\n")
 
 
 async def first_time_setup(bot):
@@ -107,7 +107,7 @@ async def first_time_setup(bot):
 		else:
 			bot.start_date = datetime.datetime.strptime('2021-01-17 00:00:00', '%Y-%m-%d %H:%M:%S')
 			with open("content/roll_color/roll_start_date.txt", "w+") as f:
-				f.write(str(bot.start_date) + "\n")
+				f.write(f"{bot.start_date}\n")
 
 	if bot.roll_user_data is None:
 		bot.roll_user_data = {}
@@ -130,18 +130,18 @@ async def first_time_setup(bot):
 			f.write(str(bot.start_date) + "\n")
 
 
-async def cmd_roll(bot, message, args):
+async def cmd_roll(bot, message, _args):
 	if message.author.id in bot.roll_user_data.keys() and bot.roll_user_data[message.author.id][0] == "1":
 		data = bot.roll_user_data[message.author.id][1][0].split("|")
 		r = data[1]
 		g = data[2]
 		b = data[3]
 		if data[0] == "0":
-			embed = discord.Embed(title=message.author.name + ", you have already rolled!",
+			embed = discord.Embed(title=f"{message.author.name}, you have already rolled!",
 								  description="You currently have a 0 star color. That's impressive.")
 		else:
-			embed = discord.Embed(title=message.author.name + ", you have already rolled!",
-								  description="You currently have " + stars[data[0]] + " RGB " + r + " " + g + " " + b + ". View it on the left of this message!",
+			embed = discord.Embed(title=f"{message.author.name}, you have already rolled!",
+								  description=f"You currently have {stars[data[0]]} RGB {r} {g} {b}. View it on the left of this message!",
 								  color=discord.Color.from_rgb(int(r), int(g), int(b)))
 		await message.channel.send(embed=embed)
 	else:
@@ -195,15 +195,15 @@ async def cmd_roll(bot, message, args):
 		r = data[1]
 		g = data[2]
 		b = data[3]
-		base_embed = discord.Embed(title=message.author.name + ", you rolled :question: :question: :question:")
-		r_embed = discord.Embed(title=message.author.name + ", you rolled ***" + r + "*** :question: :question:")
-		g_embed = discord.Embed(title=message.author.name + ", you rolled ***" + r + "*** ***" + g + "*** :question:")
-		b_embed = discord.Embed(title=message.author.name + ", you rolled ***" + r + "*** ***" + g + "*** ***" + b + "***")
+		base_embed = discord.Embed(title=f"{message.author.name}, you rolled :question: :question: :question:")
+		r_embed = discord.Embed(title=f"{message.author.name}, you rolled ***{r}*** :question: :question:")
+		g_embed = discord.Embed(title=f"{message.author.name}, you rolled ***{r}*** ***{g}*** :question:")
+		b_embed = discord.Embed(title=f"{message.author.name}, you rolled ***{r}*** ***{g}*** ***{b}***")
 
 		if message.author.id not in bot.roll_user_data.keys():
 			bot.roll_user_data[message.author.id] = ("0", [])
 		bot.roll_user_data[message.author.id] = ("1", bot.roll_user_data[message.author.id][1])
-		bot.roll_user_data[message.author.id][1].insert(0, data[0] + "|" + data[1] + "|" + data[2] + "|" + data[3])
+		bot.roll_user_data[message.author.id][1].insert(0, f"{data[0]}|{data[1]}|{data[2]}|{data[3]}")
 		await update_file(bot.roll_user_data)
 		sent_embed = await message.channel.send(embed=base_embed)
 		time.sleep(1)
@@ -214,10 +214,10 @@ async def cmd_roll(bot, message, args):
 		await sent_embed.edit(embed=b_embed)
 		time.sleep(1)
 		if data[0] == "0":
-			embed = discord.Embed(title=message.author.name + ", you rolled a 0 star color! Impressive!",
+			embed = discord.Embed(title=f"{message.author.name}, you rolled a 0 star color! Impressive!",
 								  description="View it on the left.")
 		else:
-			embed = discord.Embed(title=message.author.name + ", you rolled a " + data[0] + " star color!",
-								  description="You currently have " + stars[data[0]] + " RGB " + r + " " + g + " " + b + ". View it on the left of this message!",
+			embed = discord.Embed(title=f"{message.author.name}, you rolled a {data[0]} star color!",
+								  description=f"You currently have {stars[data[0]]} RGB {r} {g} {b}. View it on the left of this message!",
 								  color=discord.Color.from_rgb(int(r), int(g), int(b)))
 		await sent_embed.edit(embed=embed)

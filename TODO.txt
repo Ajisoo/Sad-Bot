@@ -12,8 +12,9 @@
 6. store dupes of same piece (if someone has one and rolls another, they'll have two - alter data structure for this)
 3. allow search by id for skin info also
 4. trading? (IN TESTING PHASE RIGHT NOW)
---- END DONE ----
 5. use reactable embed for champ splash list instead of text
+BUG: `$harem @tag` was showing message sender's name as title instead
+--- END DONE ----
 
 5. make champ rolling have embed with (piece rolled, progress pic) with reactable swipe
     (HOLY SHIT THIS IS HARD)

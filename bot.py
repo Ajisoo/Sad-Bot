@@ -198,7 +198,7 @@ async def on_message(message: discord.Message):
 			await roll_splashes.cmd_splash_roll(bot, message)
 	
 	if command == 'harem':
-		await roll_splashes.cmd_splash_list(bot, message, args)
+		await roll_splashes.cmd_splash_list(bot, message, args, client)
 	
 	if command in ['ds', 'divorce_splash']:
 		if len(args) > 0:

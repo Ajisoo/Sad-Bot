@@ -174,7 +174,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	# ----------------------
 
 
-async def cmd_splash_list(bot, message, args):
+async def cmd_splash_list(bot, message, args, client):
 	if not os.path.exists(SPLASH_HAREM_FILE):
 		print("SPLASH HAREMS FILE DOESN'T EXIST, RESTART BOT")
 		await message.channel.send("Splash harems aren't available right now, please contact an admin.")
@@ -186,6 +186,7 @@ async def cmd_splash_list(bot, message, args):
 	
 	show_number = False
 	user_id = str(message.author.id)
+	harem_owner = message.author.name
 	if len(args) == 1:
 		if (args[0] == 'c'):      # show counts
 			show_number = True
@@ -193,6 +194,13 @@ async def cmd_splash_list(bot, message, args):
 			m = re.match("<@!(\d+)>", args[0])
 			if m is not None:
 				user_id = m.group(1)
+				harem_owner = client.get_user(int(user_id))
+				if harem_owner is None:
+					harem_owner = await client.fetch_user(int(user_id))
+					if harem_owner is None:
+						await message.channel.send("user doesn't exist i guess")
+						return
+				harem_owner = harem_owner.name
 			else:
 				await message.channel.send("That user doesn't exist!")
 				return
@@ -225,8 +233,8 @@ async def cmd_splash_list(bot, message, args):
 		# Constants
 		chunks = [champs_list[i:i + champs_per_page] for i in range(0, len(champs_list), champs_per_page)]
 		champs_desc = '\n'.join(champs_list[:champs_per_page])
-
-		embed = discord.Embed(title=f"{message.author.name}\'s champs", 
+			
+		embed = discord.Embed(title=f"{harem_owner}\'s champs", 
 		                      description=champs_desc) \
                     .set_footer(text=f"Page 1 / {len(chunks)}")
 		msg = await message.channel.send(embed=embed)

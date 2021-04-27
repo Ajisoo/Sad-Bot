@@ -20,6 +20,7 @@ splash_harems = None
 
 rarity_colors = {
 	"kNoRarity": discord.Colour.from_rgb(255,255,254),
+	"kRare": discord.Colour.from_rgb(255, 255, 254),
 	"kEpic": discord.Colour.from_rgb(4, 199, 248),
 	"kLegendary": discord.Colour.from_rgb(227, 48, 52),
 	"kUltimate": discord.Colour.from_rgb(226, 145, 20),
@@ -65,7 +66,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	user_id = str(message.author.id)
 
 	ttr = time_left(user_id)
-	if ttr > 0 and not only_for_testing_server(message.guild.id):
+	if ttr > 0: # and not only_for_testing_server(message.guild.id):
 		await message.channel.send(f"You can't roll yet! You have {ttr} minutes left!")
 		return 
 
@@ -160,7 +161,10 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	# Add time to rolls json
 	with open(SPLASH_ROLL_TIMERS_FILE, 'r+') as f:
 		rolls_info = json.load(f)
-		rolls_info[user_id] = datetime.now().strftime(time_format)
+		if user_id in rolls_info:
+			rolls_info[user_id]["rolls_left"] -= 1
+		else:
+			rolls_info[user_id] = {"rolls_left": 3, "start": datetime.now().strftime(time_format)}
 		f.seek(0)
 		f.truncate()
 		json.dump(rolls_info, f)
@@ -502,18 +506,18 @@ def add_padding(image_file: Image, p=5, fill='black') -> Image:
 	x, y = image_file.size
 	return ImageOps.expand(image_file.crop((p, p, x-p, y-p)), border=5, fill=fill)
 
+# TODO: change this to 3 times every 3 hours
 def time_left(user_id: str) -> int:
 	with open(SPLASH_ROLL_TIMERS_FILE, 'r') as f:
 		rolls_info = json.load(f)
 		if user_id in rolls_info:
-			earlier_roll_str = rolls_info[user_id]
-			earlier_roll = datetime.strptime(earlier_roll_str, time_format)
-			hour_diff = (datetime.now() - earlier_roll).seconds / 3600
-
-			if hour_diff >= 1:
-				return 0
+			if rolls_info[user_id]["rolls_left"] == 0:
+				earlier_roll_str = rolls_info[user_id]["start"]
+				earlier_roll = datetime.strptime(earlier_roll_str, time_format)
+				hour_diff = (datetime.now() - earlier_roll).seconds / 3600
+				return int(60 * 3 - (hour_diff * 60))
 			else:
-				return int(60 - (hour_diff * 60))
+				return 0
 		else:  # they've never rolled before
 			return 0
 

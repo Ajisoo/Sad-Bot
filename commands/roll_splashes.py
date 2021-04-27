@@ -484,7 +484,7 @@ async def punish(bot, message, args):
 			del harems[punished_id]
 		
 		f.seek(0)
-		f.trucate()
+		f.truncate()
 		json.dump(harems, f)
 
 	await message.channel.send("Punishment has been dealt.")

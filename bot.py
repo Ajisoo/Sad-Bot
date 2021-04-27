@@ -37,8 +37,10 @@ async def on_ready():
 
 	if IN_PROD:
 		burner_channel = client.get_channel(BURNER_IMAGES_CHANNEL_ID_PROD)
+		bot_spam_channel = client.get_channel(BOT_SPAM_CHANNEL_ID)
 	else:
 		burner_channel = client.get_channel(BURNER_IMAGES_CHANNEL_ID_TEST)
+		bot_spam_channel = client.get_channel(TEST_SPAM_CHANNEL_ID)
 	
 	print(f"'We have logged in as {client.user}")
 	if datetime.now().date() == PATCH_DAY.date():
@@ -46,6 +48,10 @@ async def on_ready():
 
 	roll_color.create_user_data_file()
 	roll_splashes.create_user_data_files()
+
+	now = datetime.now()
+	if now.date() == PATCH_DAY.date():
+		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
 
 
 @client.event
@@ -83,10 +89,6 @@ async def on_message(message: discord.Message):
 	args = [x.lower() for x in args]
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
-
-	if not bot.patch_message_sent and now.date() == PATCH_DAY.date():
-		await message.channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
-		bot.patch_message_sent = True
 
 	if command == "help":
 		await message.author.send(HELP_DEFAULT_MESSAGE)
@@ -245,6 +247,25 @@ async def on_raw_reaction_add(payload):
 
 	if franklin is not None:
 		await franklin.react(processed_emoji, payload.member)
+
+# Currently only used for $harem scrolling
+@client.event 
+async def on_raw_reaction_remove(payload):
+	if payload.guild_id is None:
+		return  # In PM
+	bot = await get_bot(payload.guild_id)
+
+	if client.user.id == payload.user_id:  # Don't respond to your own reactions
+		return
+
+	reaction = payload.emoji
+	message_id = payload.message_id
+	franklin = get_franklin(bot, message_id)
+
+	processed_emoji = reaction.name
+
+	if franklin is not None:
+		await franklin.remove_reaction(processed_emoji)
 
 key_file = open("bot.key", "r")
 key = key_file.readline().strip()

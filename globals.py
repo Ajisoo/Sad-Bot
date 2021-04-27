@@ -33,16 +33,21 @@ BIRTHDAYS = {225822313550053376: [3, 14],
 			 377691228977889283: [2, 17]}
 
 
-PATCH_MESSAGE_HEADER = "🎉 New patch today 🎉\n"
+PATCH_MESSAGE_HEADER = "🎉 Patch 2.1 released today 🎉\n"
 
-PATCH_MESSAGE = ("Welcome to the Boobs and Bulge Emporium! \n"
-				 "Step right up with `$gs` to get started on guessing your favorite champ skin splashes! \n"
-				 "There will be a separate leaderboard for these perverts. \n"
-				 "Further updates: `$ga` and `$gs` will start an ability / splash guess respectively, and \n"
-				 "`$g` will be used to take a guess at the most recent guessing round that has started. \n"
-				 "`$ga_lb`, `$gs_lb`, `$ga_my_score`, and `$gs_my_score` can be used to fetch scores. \n")
+PATCH_MESSAGE = ("Nerfs: Irelia was buffed.\n"
+				 "**New Content**\n"
+				 "Welcome to the League Skin Collector! \n"
+				 "Begin your crippling rolling addiction with `$[rs|roll_splash]`! (4 rolls every 3 hours)\n"
+				 "To check on your harem, use `$harem`. To see how many of each piece you have as well, use `$harem c`.\n"
+				 "To spy on someone else's harem, use `$harem <@spyee>`.\n"
+				 "To check your progress on any skin, use `$[is|info_splash] [<skin_id>|<full_skin_name>]` \n"
+				 "To divorce a skin, use `$[ds|divorce_splash] <skin_id><piece_letter>`\n"
+				 "To initiate a trade, use `$ts <@tradee> <your_offer_skin_id> <their_offer_skin_id>` \n"
+				 "To respond to a trade, use `$ts [y|yes|n|no]`.\n"
+                 "Please report any bugs to <@190253188262133761>.")
 
-PATCH_DAY = datetime(2020, 10, 1)
+PATCH_DAY = datetime(2021, 4, 27)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 
@@ -79,7 +84,8 @@ GUM_LEADERBOARD_ID = "GUM"
 
 TEST_SERVER_GUILD_ID = 486266124351307786
 LOUNGE_GUILD_ID = 190241147539423234
-
+BOT_SPAM_CHANNEL_ID = 390742885693390849
+TEST_SPAM_CHANNEL_ID = 486266124351307789
 
 # prefix + burn_server_id + /image_id + /image_name
 CDN_PREFIX = "https://cdn.discordapp.com/attachments/"
@@ -89,7 +95,6 @@ BURNER_IMAGES_CHANNEL_ID_TEST = 836343014032801912  # one with jisoo and others
 
 BURNER_IMAGES_GUILD_ID2 = 836273735102890056  # separate burner images server
 BURNER_IMAGES_CHANNEL_ID_TEST2 = 836273735697956897
-
 
 BURNER_IMAGES_GUILD_ID_PROD = 836143604321746944 # prod burner server
 BURNER_IMAGES_CHANNEL_ID_PROD = 836143604321746947

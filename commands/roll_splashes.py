@@ -5,10 +5,11 @@ import discord
 import os
 import json
 import re
-import asyncio
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from PIL import Image, ImageOps
+
+from Franklin import *
 
 ### Globals ###
 ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/"
@@ -30,6 +31,8 @@ rarity_colors = {
 time_format = "%m/%d/%Y, %H:%M"
 skin_id_regex = "\d{4,}[ABCD]"
 attachment_prefix = "attachment://"
+
+champs_per_page = 10
 ### End Globals ###
 
 
@@ -219,13 +222,40 @@ async def cmd_splash_list(bot, message, args):
 										' (Pieces: ' + ', '.join(pieces) + ')')
 
 		# TODO: use cool reactable embed a la Mudae instead
-		champs_desc = '\n'.join(champs_list)
 		# Constants
-		champs_per_page = 10
+		chunks = [champs_list[i:i + champs_per_page] for i in range(0, len(champs_list), champs_per_page)]
+		champs_desc = '\n'.join(champs_list[:champs_per_page])
 
 		embed = discord.Embed(title=f"{message.author.name}\'s champs", 
-		                      description=champs_desc)
-		await message.channel.send(embed=embed)
+		                      description=champs_desc) \
+                    .set_footer(text=f"Page 1 / {len(chunks)}")
+		msg = await message.channel.send(embed=embed)
+		await msg.add_reaction("⬅️")
+		await msg.add_reaction("➡️")
+
+		reactions = ["⬅️", "➡️"]
+		functions = [scroll] * 2
+		Franklin(bot, msg, reactions, functions,{"chunks": chunks, "index": 0})
+
+async def scroll(data, _, embed_msg, reaction):
+	chunks = data["chunks"]
+	if reaction == "➡️":
+		if data["index"] >= len(chunks) - 1:
+			data["index"] = 0
+		else:
+			data["index"] += 1
+	elif reaction == "⬅️":
+		if data["index"] == 0:
+			data["index"] = len(chunks) - 1
+		else:
+			data["index"] -= 1
+	
+	new_chunk = chunks[data["index"]]
+	embed = embed_msg.embeds[0]
+	embed.description = '\n'.join(new_chunk)
+	embed.set_footer(text=f"Page {data['index'] + 1} / {len(chunks)}")
+	await embed_msg.edit(embed=embed)
+
 
 # Precondition: len(args) > 0, contains list of divorcees in format <id>[A|B|C|D]
 async def divorce_splash(bot, message, args):

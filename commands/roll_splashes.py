@@ -428,8 +428,8 @@ async def trade_splashes(bot, message, args):
 				your_harem[tradee_skin_id]["pieces"][tradee_piece] -= 1
 				their_harem[trader_skin_id]["pieces"][trader_piece] -= 1
 
-				with open(SKINS_DATAFILE, 'r') as f:
-					skins_data = json.load(f)
+				with open(SKINS_DATAFILE, 'r') as f2:
+					skins_data = json.load(f2)
 					trader_skin_name = skins_data[trader_skin_id]["name"]
 					tradee_skin_name = skins_data[tradee_skin_id]["name"]
 
@@ -437,12 +437,12 @@ async def trade_splashes(bot, message, args):
 				if tradee_skin_id in their_harem:
 					their_harem[tradee_skin_id]["pieces"][tradee_piece] += 1
 				else:
-					their_harem[tradee_skin_id]["pieces"] = get_starting_pieces(tradee_skin_name, tradee_piece)
+					their_harem[tradee_skin_id] = get_starting_pieces(tradee_skin_name, tradee_piece)
 				
 				if trader_skin_id in your_harem:
 					your_harem[trader_skin_id]["pieces"][trader_piece] += 1
 				else:
-					your_harem[trader_skin_id]["pieces"] = get_starting_pieces(trader_skin_name, trader_piece)
+					your_harem[trader_skin_id] = get_starting_pieces(trader_skin_name, trader_piece)
 
 				# If any skin piece counts ended up empty, delete.
 				if not all(your_harem[tradee_skin_id]["pieces"].values()):
@@ -451,6 +451,13 @@ async def trade_splashes(bot, message, args):
 					del their_harem[trader_skin_id]
 				
 				await message.channel.send("Trade successful!")
+
+				harems[user_id] = your_harem
+				harems[trade["trader_id"]] = their_harem
+
+				f.seek(0)
+				f.truncate()
+				json.dump(harems, f)
 
 		elif response in ['n', 'no']:
 			await message.channel.send("Trade declined.")

@@ -165,7 +165,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	with open(SPLASH_ROLL_TIMERS_FILE, 'r+') as f:
 		rolls_info = json.load(f)
 		if user_id in rolls_info:
-			if rolls_info[user_id]["rolls_left"] == 0:
+			if rolls_info[user_id]["rolls_left"] <= 0:
 				rolls_info[user_id] = {"rolls_left": 3, "start": datetime.now().strftime(time_format)}
 			else:
 				rolls_info[user_id]["rolls_left"] -= 1

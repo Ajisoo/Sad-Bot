@@ -90,7 +90,7 @@ async def on_message(message: discord.Message):
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
 
-	if command == "disconnect" and message.author.id in ADMINS:
+	if command == "die" and message.author.id in ADMINS:
 		client.close()
 		return
 

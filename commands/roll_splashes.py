@@ -114,6 +114,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	else:
 		letter = forced_piece
 	
+	im.crop(coordinates(letter, x, y)).save(CROPPED_IMAGE_FNAME, "jpeg")
 	# ------------------------------------------------
 
 	# Add to person's list
@@ -140,9 +141,18 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	# -------------------------------------
 
 	# Create the embed
-	pieces_counts = splash_harems[user_id][id_string]["pieces"]
-	embed, f = create_progress_embed(f"{full_skin_name} (Piece {letter})", champ_description, rarity, chosen_splash,
-	 								pieces_counts, im, bot)
+	skin_name = f"{full_skin_name} (Piece {letter})"
+	title = decorated_title("**" + skin_name + "**", rarity, bot)
+	desc = ""
+	if champ_description is not None:
+		desc = "_" + champ_description + "_"
+
+	embed = discord.Embed(title=title, description=desc,
+                       color=rarity_colors[rarity], url=ddragon_baseurl + chosen_splash) \
+              			.set_image(url=attachment_prefix + CROPPED_IMAGE_FNAME)
+
+	f = (discord.File(CROPPED_IMAGE_FNAME))
+
 	await message.channel.send(embed=embed, file=f)
 	os.remove(CROPPED_IMAGE_FNAME)
 	# ----------------------------------
@@ -198,15 +208,20 @@ async def cmd_splash_list(bot, message, args):
 					else:
 						pieces.append(p)
 			if all(pieces_count.values()) and not show_number:
-				champs_list.append('#' + k + ': ' + champs[k]["name"] +
+				champs_list.append('#**' + k + '**: ' + champs[k]["name"] +
 										' (**Complete**)')
 			else:
-				champs_list.append('#' + k + ': ' + champs[k]["name"] +
+				champs_list.append('#**' + k + '**: ' + champs[k]["name"] +
 										' (Pieces: ' + ', '.join(pieces) + ')')
 
 		# TODO: use cool reactable embed a la Mudae instead
-		champs_msg = f'**{message.author.name}\'s champs**\n' + '\n'.join(champs_list)
-		await message.channel.send(champs_msg)
+		champs_desc = '\n'.join(champs_list)
+		# Constants
+		champs_per_page = 10
+
+		embed = discord.Embed(title=f"{message.author.name}\'s champs", 
+		                      description=champs_desc)
+		await message.channel.send(embed=embed)
 
 # Precondition: len(args) > 0, contains list of divorcees in format <id>[A|B|C|D]
 async def divorce_splash(bot, message, args):
@@ -451,6 +466,7 @@ def decorated_title(title, rarity, bot):
 	if title == "**Frostblade Irelia (Piece D)**":
 		u_id = bot.rarity_emoji_ids['ultimate']
 		title = f"<:ultimate:{u_id}> **Frostbutt Irelia (Piece D)** <:ultimate:{u_id}>"
+		# NONE OF YOU FUCKERS BETTER SPOIL THIS
 	elif rarity == 'kUltimate':
 		u_id = bot.rarity_emoji_ids['ultimate']
 		title = f"<:ultimate:{u_id}>  {title}  <:ultimate:{u_id}>"

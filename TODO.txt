@@ -13,14 +13,13 @@
 3. allow search by id for skin info also
 4. trading? (IN TESTING PHASE RIGHT NOW)
 --- END DONE ----
+5. use reactable embed for champ splash list instead of text
 
 5. make champ rolling have embed with (piece rolled, progress pic) with reactable swipe
     (HOLY SHIT THIS IS HARD)
     (MAKE A SECOND BURNER TEST SERVER SO LOGIC WILL BE SAME BETWEEN )
-    - 6. make frostblade irelia piece D ultimate
 
 4. use an embed for trading
-5. use reactable embed for champ splash list instead of text
 9. stretch goal: do animation for progress pic a la roll color
 7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent
    but also we're mainly using this just on Lounge anyways

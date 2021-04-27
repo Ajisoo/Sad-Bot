@@ -245,6 +245,8 @@ async def cmd_gs_refresh(bot, message, _args):
 			alias = aliases[k[:-3]]
 			skin_number = str(int(k[-3:]))
 			new_skin_data[k]['splash_name'] = alias + "_" + skin_number + ".jpg"
+			if new_skin_data[k]['description'] is not None:
+				new_skin_data[k]['description'] = new_skin_data[k]['description'].replace('<br>', '\n').replace('\\n', '\n')
 
 		f.seek(0)
 		f.truncate()

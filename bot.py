@@ -191,28 +191,28 @@ async def on_message(message: discord.Message):
 		await roll_color.first_time_setup(bot)
 		await roll_color.cmd_list_color(bot, message, args)
 	
-	if command in ['rs', 'roll_splash'] and only_for_testing_server(message.guild.id):
+	if command in ['rs', 'roll_splash']:
 		if len(args) > 0 and only_for_testing_server(message.guild.id):
 			await roll_splashes.force_roll(bot, message, args[0])
 		else:
 			await roll_splashes.cmd_splash_roll(bot, message)
 	
-	if command == 'harem' and only_for_testing_server(message.guild.id):
+	if command == 'harem':
 		await roll_splashes.cmd_splash_list(bot, message, args)
 	
-	if command in ['ds', 'divorce_splash'] and only_for_testing_server(message.guild.id):
+	if command in ['ds', 'divorce_splash']:
 		if len(args) > 0:
 			await roll_splashes.divorce_splash(bot, message, args)
 		else:
 			await message.channel.send("Divorcee(s) not specified!")
 
-	if command in ['is', 'info_splash'] and only_for_testing_server(message.guild.id):
+	if command in ['is', 'info_splash']:
 		if len(args) > 0:
 			await roll_splashes.info_splash(bot, message, args)
 		else:
 			await message.channel.send("Requested champ not specified!")
 
-	if command in ['ts', 'trade_splash'] and only_for_testing_server(message.guild.id):
+	if command in ['ts', 'trade_splash']:
 		if len(args) in [1,3]:
 			await roll_splashes.trade_splashes(bot, message, args)
 		else:

@@ -165,7 +165,10 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	with open(SPLASH_ROLL_TIMERS_FILE, 'r+') as f:
 		rolls_info = json.load(f)
 		if user_id in rolls_info:
-			rolls_info[user_id]["rolls_left"] -= 1
+			if rolls_info[user_id]["rolls_left"] == 0:
+				rolls_info[user_id] = {"rolls_left": 3, "start": datetime.now().strftime(time_format)}
+			else:
+				rolls_info[user_id]["rolls_left"] -= 1
 		else:
 			rolls_info[user_id] = {"rolls_left": 3, "start": datetime.now().strftime(time_format)}
 		f.seek(0)
@@ -467,6 +470,24 @@ async def trade_splashes(bot, message, args):
 
 	else:
 		await message.channel.send("Incorrect usage of trade command")
+
+async def punish(bot, message, args):
+	m = re.match("<@!(\d+)>", args[0])
+	if m is None:
+		await message.channel.send("Please @ whoever you want to punish.")
+		return
+	punished_id = m.group(1)
+
+	with open(SPLASH_HAREM_FILE, 'r+') as f:
+		harems = json.load(f)
+		if punished_id in harems:
+			del harems[punished_id]
+		
+		f.seek(0)
+		f.trucate()
+		json.dump(harems, f)
+
+	await message.channel.send("Punishment has been dealt.")
 
 
 # --------------------  END MAIN METHODS     ----------------------- #

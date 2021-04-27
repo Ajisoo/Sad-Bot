@@ -90,6 +90,10 @@ async def on_message(message: discord.Message):
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
 
+	if command == "disconnect" and message.author.id in ADMINS:
+		client.close()
+		return
+
 	if command == "help":
 		await message.author.send(HELP_DEFAULT_MESSAGE)
 
@@ -223,6 +227,8 @@ async def on_message(message: discord.Message):
 										"`[$ts] <y|yes|n|no>`"))
 
 	#TODO: add command to see current trade on you?
+	if command == 'punish' and message.author.id in ADMINS:
+		await roll_splashes.punish(bot, message, args)
 
 	if command in ['test'] and only_for_testing_server(message.guild.id):
 		await guess_util.upload_splashes_to_burner_channel(burner_channel)

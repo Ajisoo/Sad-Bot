@@ -33,21 +33,13 @@ BIRTHDAYS = {225822313550053376: [3, 14],
 			 377691228977889283: [2, 17]}
 
 
-PATCH_MESSAGE_HEADER = "🎉 Patch 2.1 released today 🎉\n"
+PATCH_MESSAGE_HEADER = "🎉 Patch 2.1.1 released today 🎉\n"
 
-PATCH_MESSAGE = ("Nerfs: Irelia was buffed.\n"
-				 "**New Content**\n"
-				 "Welcome to the League Skin Collector! \n"
-				 "Begin your crippling rolling addiction with `$[rs|roll_splash]`! (4 rolls every 3 hours)\n"
-				 "To check on your harem, use `$harem`. To see how many of each piece you have as well, use `$harem c`.\n"
-				 "To spy on someone else's harem, use `$harem <@spyee>`.\n"
-				 "To check your progress on any skin, use `$[is|info_splash] [<skin_id>|<full_skin_name>]` \n"
-				 "To divorce a skin, use `$[ds|divorce_splash] <skin_id><piece_letter>`\n"
-				 "To initiate a trade, use `$ts <@tradee> <your_offer_skin_id> <their_offer_skin_id>` \n"
-				 "To respond to a trade, use `$ts [y|yes|n|no]`.\n"
-                 "Please report any bugs to <@190253188262133761>.")
+PATCH_MESSAGE = ("Added some new commands.\n"
+				 "Harems now display rarities, and you can sort by name/rarity.\n"
+				 "`$harem sn` to sort by name, and `$harem sr` to sort by rarity.")
 
-PATCH_DAY = datetime(2021, 4, 27)
+PATCH_DAY = datetime(2021, 4, 28)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 

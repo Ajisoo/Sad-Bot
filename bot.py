@@ -196,8 +196,8 @@ async def on_message(message: discord.Message):
 		await roll_color.cmd_list_color(bot, message, args)
 	
 	if command in ['rs', 'roll_splash']:
-		if len(args) > 0 and only_for_testing_server(message.guild.id):
-			await roll_splashes.force_roll(bot, message, args[0])
+		if len(args) == 2 and message.author.id in ADMINS:
+			await roll_splashes.force_roll(bot, message, args[0], args[1])
 		else:
 			await roll_splashes.cmd_splash_roll(bot, message)
 	

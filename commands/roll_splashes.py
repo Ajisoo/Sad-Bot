@@ -29,6 +29,7 @@ rarity_colors = {
 
 time_format = "%m/%d/%Y, %H:%M"
 skin_id_regex = "\d{4,}[ABCD]"
+mention_regex = "<@!(\d+)>"
 attachment_prefix = "attachment://"
 
 champs_per_page = 10
@@ -52,10 +53,15 @@ def create_user_data_files():
 			json.dump({}, f)
 
 # id_with_piece has format <id>[A|B|C|D]
-async def force_roll(bot, message, id_with_piece):
-	await cmd_splash_roll(bot, message, forced_id=id_with_piece[:-1], forced_piece=id_with_piece[-1].upper())
+async def force_roll(bot, message, id_with_piece, user_to_roll_for):
+	m = re.match(mention_regex, user_to_roll_for)
+	if m is not None:
+		user_to_roll_for = m.group(1)
+		await cmd_splash_roll(bot, message, forced_id=id_with_piece[:-1], forced_piece=id_with_piece[-1].upper(), roll_receiver_id=user_to_roll_for)
+	else:
+		await message.channel.send("Please format `$rs <skin_id>[A|B|C|D] <@roll_recipient>`")
 
-async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
+async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None, roll_receiver_id=None):
 	if not os.path.exists(CHAMP_SPLASH_FOLDER):
 		print("CHAMP SPLASHES FOLDER DOESN'T EXIST, PLEASE REFRESH")
 		await message.channel.send("Please ask an admin to refresh the champ splashes!")
@@ -128,13 +134,17 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 			print("Harems file was empty, it never should be")
 			splash_harems = {}
 
+	if roll_receiver_id is not None:
+		roll_receiver = str(roll_receiver_id)
+	else:
+		roll_receiver = user_id
 	id_string = str(full_champ_id)
-	inventory = splash_harems.get(user_id, {})
+	inventory = splash_harems.get(roll_receiver, {})
 	if id_string in inventory:
 		inventory[id_string]["pieces"][letter] += 1
 	else:
 		inventory[id_string] = get_starting_pieces(full_skin_name, letter)
-	splash_harems[user_id] = inventory
+	splash_harems[roll_receiver] = inventory
 
 	with open(SPLASH_HAREM_FILE, 'w') as f:
 		json.dump(splash_harems, f)
@@ -191,7 +201,7 @@ async def cmd_splash_list(bot, message, args, client):
 		if (args[0] == 'c'):      # show counts
 			show_number = True
 		else:                     # check for user id
-			m = re.match("<@!(\d+)>", args[0])
+			m = re.match(mention_regex, args[0])
 			if m is not None:
 				user_id = m.group(1)
 				harem_owner = client.get_user(int(user_id))
@@ -360,7 +370,7 @@ async def trade_splashes(bot, message, args):
 	# Figure out if we're initiating or responding to a trade
 	if len(args) == 3:
 		# initiate trade
-		m = re.match("<@!(\d+)>", args[0])
+		m = re.match(mention_regex, args[0])
 		if m is None:
 			print(args[0], 'this is the mention that broke')
 			await message.channel.send("Must @ who you want to trade with")
@@ -467,7 +477,7 @@ async def trade_splashes(bot, message, args):
 		await message.channel.send("Incorrect usage of trade command")
 
 async def punish(bot, message, args):
-	m = re.match("<@!(\d+)>", args[0])
+	m = re.match(mention_regex, args[0])
 	if m is None:
 		await message.channel.send("Please @ whoever you want to punish.")
 		return

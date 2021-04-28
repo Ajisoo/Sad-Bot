@@ -45,7 +45,6 @@ PATCH_MESSAGE = ("Nerfs: Irelia was buffed.\n"
 				 "To divorce a skin, use `$[ds|divorce_splash] <skin_id><piece_letter>`\n"
 				 "To initiate a trade, use `$ts <@tradee> <your_offer_skin_id> <their_offer_skin_id>` \n"
 				 "To respond to a trade, use `$ts [y|yes|n|no]`.\n"
-				 "BUGS FIXED: `$harem @tag` failed and trades should work now.\n"
                  "Please report any bugs to <@190253188262133761>.")
 
 PATCH_DAY = datetime(2021, 4, 27)

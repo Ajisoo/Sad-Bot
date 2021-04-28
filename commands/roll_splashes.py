@@ -27,6 +27,15 @@ rarity_colors = {
 	"kMythic": discord.Colour.from_rgb(183, 55, 182)
 }
 
+rarity_sort = {
+	"kNoRarity": 5,
+	"kRare": 4,
+	"kEpic": 3,
+	"kLegendary": 2,
+	"kUltimate": 0,
+	"kMythic": 1
+}
+
 time_format = "%m/%d/%Y, %H:%M"
 skin_id_regex = "\d{4,}[ABCD]"
 mention_regex = "<@!(\d+)>"
@@ -74,7 +83,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None, roll_
 	user_id = str(message.author.id)
 
 	ttr = time_left(user_id)
-	if ttr > 0: # and not only_for_testing_server(message.guild.id):
+	if ttr > 0 and not only_for_testing_server(message.guild.id):
 		await message.channel.send(f"You can't roll yet! You have {ttr} minutes left!")
 		return 
 
@@ -143,7 +152,7 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None, roll_
 	if id_string in inventory:
 		inventory[id_string]["pieces"][letter] += 1
 	else:
-		inventory[id_string] = get_starting_pieces(full_skin_name, letter)
+		inventory[id_string] = get_starting_pieces(full_skin_name, letter, rarity)
 	splash_harems[roll_receiver] = inventory
 
 	with open(SPLASH_HAREM_FILE, 'w') as f:
@@ -197,9 +206,15 @@ async def cmd_splash_list(bot, message, args, client):
 	show_number = False
 	user_id = str(message.author.id)
 	harem_owner = message.author.name
-	if len(args) == 1:
-		if (args[0] == 'c'):      # show counts
+	sort_method = None # default
+	if len(args) >= 1:
+		if args[0] == 'c':      # show counts
 			show_number = True
+		elif args[0] in ['sn', 'sr']: # sort by name / rarity
+			if args[0] == 'sn':
+				sort_method = "name"
+			elif args[0] == 'sr':
+				sort_method = "rarity"
 		else:                     # check for user id
 			m = re.match(mention_regex, args[0])
 			if m is not None:
@@ -222,8 +237,16 @@ async def cmd_splash_list(bot, message, args, client):
 		return
 	else:
 		champs_list = []
-		for k in sorted(champs, key=int):
+		if sort_method == "name":
+			sorted_champs = sorted(champs, key=lambda x: champs[x]["name"])
+		elif sort_method == "rarity":
+			sorted_champs = sorted(champs, key=lambda x: rarity_sort[champs[x]["rarity"]])
+		else:
+			sorted_champs = sorted(champs, key=int)
+
+		for k in sorted_champs:
 			pieces_count = champs[k]["pieces"]
+			rarity = champs[k]["rarity"]
 			pieces = []
 			for p in sorted(pieces_count):
 				count = pieces_count[p]
@@ -233,14 +256,11 @@ async def cmd_splash_list(bot, message, args, client):
 					else:
 						pieces.append(p)
 			if all(pieces_count.values()) and not show_number:
-				champs_list.append('#**' + k + '**: ' + champs[k]["name"] +
-										' (**Complete**)')
+				champs_list.append(f'#**{k}**: {champs[k]["name"]} (**Complete**) {rarity_symbol(rarity, bot)}')
 			else:
-				champs_list.append('#**' + k + '**: ' + champs[k]["name"] +
-										' (Pieces: ' + ', '.join(pieces) + ')')
+				champs_list.append(f'#**{k}**: {champs[k]["name"]} (Pieces: {", ".join(pieces)}) {rarity_symbol(rarity, bot)}')
 
-		# TODO: use cool reactable embed a la Mudae instead
-		# Constants
+		# Make scrollable embed 
 		chunks = [champs_list[i:i + champs_per_page] for i in range(0, len(champs_list), champs_per_page)]
 		champs_desc = '\n'.join(champs_list[:champs_per_page])
 			
@@ -439,18 +459,20 @@ async def trade_splashes(bot, message, args):
 				with open(SKINS_DATAFILE, 'r') as f2:
 					skins_data = json.load(f2)
 					trader_skin_name = skins_data[trader_skin_id]["name"]
+					trader_rarity = skins_data[trader_skin_id]["rarity"]
 					tradee_skin_name = skins_data[tradee_skin_id]["name"]
+					tradee_rarity = skins_data[tradee_skin_id]["rarity"]
 
 				# Add pieces
 				if tradee_skin_id in their_harem:
 					their_harem[tradee_skin_id]["pieces"][tradee_piece] += 1
 				else:
-					their_harem[tradee_skin_id] = get_starting_pieces(tradee_skin_name, tradee_piece)
+					their_harem[tradee_skin_id] = get_starting_pieces(tradee_skin_name, tradee_piece, tradee_rarity)
 				
 				if trader_skin_id in your_harem:
 					your_harem[trader_skin_id]["pieces"][trader_piece] += 1
 				else:
-					your_harem[trader_skin_id] = get_starting_pieces(trader_skin_name, trader_piece)
+					your_harem[trader_skin_id] = get_starting_pieces(trader_skin_name, trader_piece, trader_rarity)
 
 				# If any skin piece counts ended up empty, delete.
 				if not all(your_harem[tradee_skin_id]["pieces"].values()):
@@ -538,11 +560,7 @@ def coordinates(letter, x, y):
 		return (x // 2, y // 2, x, y)
 
 def decorated_title(title, rarity, bot):
-	if title == "**Frostblade Irelia (Piece D)**":
-		u_id = bot.rarity_emoji_ids['ultimate']
-		title = f"<:ultimate:{u_id}> **Frostbutt Irelia (Piece D)** <:ultimate:{u_id}>"
-		# NONE OF YOU FUCKERS BETTER SPOIL THIS
-	elif rarity == 'kUltimate':
+	if rarity == 'kUltimate' or title == "**Frostblade Irelia (Piece D)**":
 		u_id = bot.rarity_emoji_ids['ultimate']
 		title = f"<:ultimate:{u_id}>  {title}  <:ultimate:{u_id}>"
 	elif rarity == 'kMythic':
@@ -555,6 +573,23 @@ def decorated_title(title, rarity, bot):
 		e_id = bot.rarity_emoji_ids['epic']
 		title = f"<:epic:{e_id}>  {title}  <:epic:{e_id}>"
 	return title
+
+def rarity_symbol(rarity, bot):
+	if rarity == 'kUltimate':
+		u_id = bot.rarity_emoji_ids['ultimate']
+		symbol = f"<:ultimate:{u_id}>"
+	elif rarity == 'kMythic':
+		m_id = bot.rarity_emoji_ids['mythic']
+		symbol = f"<:mythic:{m_id}>"
+	elif rarity == 'kLegendary':
+		l_id = bot.rarity_emoji_ids['legendary']
+		symbol = f"<:legendary:{l_id}>"
+	elif rarity == 'kEpic':
+		e_id = bot.rarity_emoji_ids['epic']
+		symbol = f"<:epic:{e_id}>"
+	else:
+		symbol = ""
+	return symbol
 
 
 # show pieces the user has over a gray overlay 
@@ -577,7 +612,6 @@ def add_padding(image_file: Image, p=5, fill='black') -> Image:
 	x, y = image_file.size
 	return ImageOps.expand(image_file.crop((p, p, x-p, y-p)), border=5, fill=fill)
 
-# TODO: change this to 3 times every 3 hours
 def time_left(user_id: str) -> int:
 	with open(SPLASH_ROLL_TIMERS_FILE, 'r') as f:
 		rolls_info = json.load(f)
@@ -592,7 +626,24 @@ def time_left(user_id: str) -> int:
 		else:  # they've never rolled before
 			return 0
 
-def get_starting_pieces(skin_name, starting_letter):
+def get_starting_pieces(skin_name, starting_letter, rarity):
 	starting_counts = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
 	starting_counts[starting_letter] += 1
-	return {"name": skin_name, "pieces": starting_counts}
+	return {"name": skin_name, "rarity": rarity, "pieces": starting_counts}
+
+# Goes through everyone's harem and adds rarities
+async def update_rarities(channel):
+	with open(SKINS_DATAFILE, 'r') as f, \
+		open(SPLASH_HAREM_FILE, 'r+') as f2:
+		skins_data = json.load(f)
+		harems = json.load(f2)
+
+		for v in harems.values():
+			for skin_id in v.keys():
+				v[skin_id]["rarity"] = skins_data[skin_id]["rarity"]
+		
+		f2.seek(0)
+		f2.truncate()
+		json.dump(harems, f2)
+	
+	await channel.send("Rarities updated!")

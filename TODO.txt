@@ -14,12 +14,11 @@
 4. trading? (IN TESTING PHASE RIGHT NOW)
 5. use reactable embed for champ splash list instead of text
 BUG: `$harem @tag` was showing message sender's name as title instead
+2. add sorting by rarity/name on the harem list
+    2.5. add rarity icons to harem list
+    2.7 UPON NEXT BOT RESTART, ADD RARITY TO EVERYONE'S HAREMS
 --- END DONE ----
-
-5. make champ rolling have embed with (piece rolled, progress pic) with reactable swipe
-    (HOLY SHIT THIS IS HARD)
-    (MAKE A SECOND BURNER TEST SERVER SO LOGIC WILL BE SAME BETWEEN )
-
+3. add 10 year anniversary splashes to list 
 4. use an embed for trading
 9. stretch goal: do animation for progress pic a la roll color
 7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent

@@ -17,7 +17,6 @@ ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/
 percentages = None
 rolls = None
 id_to_alias_map = None
-splash_harems = None
 
 rarity_colors = {
 	"kNoRarity": discord.Colour.from_rgb(255,255,254),
@@ -122,14 +121,12 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None):
 	# ------------------------------------------------
 
 	# Add to person's list
-	global splash_harems
-	if splash_harems == None:
-		with open(SPLASH_HAREM_FILE, 'r') as f:
-			try:
-				splash_harems = json.load(f)
-			except JSONDecodeError:
-				print("Harems file was empty, it never should be")
-				splash_harems = {}
+	with open(SPLASH_HAREM_FILE, 'r') as f:
+		try:
+			splash_harems = json.load(f)
+		except JSONDecodeError:
+			print("Harems file was empty, it never should be")
+			splash_harems = {}
 
 	id_string = str(full_champ_id)
 	inventory = splash_harems.get(user_id, {})
@@ -316,10 +313,8 @@ async def info_splash(bot, message, args):
 	else:
 		skin_name = ' '.join(args)
 
-	global splash_harems
-	if splash_harems == None:
-		with open(SPLASH_HAREM_FILE, 'r') as f:
-			splash_harems = json.load(f)
+	with open(SPLASH_HAREM_FILE, 'r') as f:
+		splash_harems = json.load(f)
 	
 	your_harem = splash_harems.get(user_id, None)
 	if your_harem is None:

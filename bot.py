@@ -49,8 +49,6 @@ async def on_ready():
 	roll_color.create_user_data_file()
 	roll_splashes.create_user_data_files()
 
-	await roll_splashes.update_rarities(bot_spam_channel)
-
 	now = datetime.now()
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)

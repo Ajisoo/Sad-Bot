@@ -8,7 +8,7 @@ import discord
 from data.bot_status import BotStatus
 from commands import guess_util, leaderboard_util, roll_color, roll_splashes
 from commands.tictactoe_util import cmd_tictactoe
-from Franklin import get_franklin
+from Franklin import get_franklin, Franklin
 from globals import *
 
 client = discord.Client()
@@ -235,6 +235,35 @@ async def on_message(message: discord.Message):
 	if command in ['test'] and only_for_testing_server(message.guild.id):
 		await guess_util.upload_splashes_to_burner_channel(burner_channel)
 
+	if command in ['create_poll', 'poll']:
+		if len(args) == 0:
+			await message.channel.send("Format: " + BOT_PREFIX + "create_poll <description> " + BOT_PREFIX + " <option 1 text> " + BOT_PREFIX + " <option 2 text> ...")
+			return
+		poll_args = " ".join(args).split(BOT_PREFIX)
+		if len(poll_args) < 2:
+			await message.channel.send("Format: " + BOT_PREFIX + "create_poll <description> " + BOT_PREFIX + " <option 1 text> " + BOT_PREFIX + " <option 2 text> ...")
+			return
+		if len(poll_args) > 10:
+			await message.channel.send("Maximum of 9 options")
+			return
+
+		print(poll_args)
+		description = ""
+		for index in range(len(poll_args[1:])):
+			description += REACTION_MAP[index + 1] + poll_args[index + 1].strip() + "\n"
+		embed = discord.Embed(title=poll_args[0].strip(), description=description)
+		msg = await message.channel.send(embed=embed)
+		reactions = []
+		for index in range(len(poll_args[1:])):
+			await msg.add_reaction(REACTION_MAP2[index + 1])
+			reactions.append(REACTION_MAP2[index + 1])
+
+		def dummy(a, b, c, d):
+			pass
+
+		functions = [dummy] * len(poll_args[1:])
+		Franklin(bot, msg, reactions, functions, None, lifespan=60*60*24, remove_valid_reactions=False)
+
 @client.event
 async def on_raw_reaction_add(payload):
 	if payload.guild_id is None:
@@ -257,7 +286,7 @@ async def on_raw_reaction_add(payload):
 		await franklin.react(processed_emoji, payload.member)
 
 # Currently only used for $harem scrolling
-@client.event 
+@client.event
 async def on_raw_reaction_remove(payload):
 	if payload.guild_id is None:
 		return  # In PM

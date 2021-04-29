@@ -307,7 +307,7 @@ async def cmd_splash_list(bot, message, args, client):
 
 		reactions = ["⬅️", "➡️"]
 		functions = [scroll] * 2
-		Franklin(bot, msg, reactions, functions,{"chunks": chunks, "index": 0})
+		Franklin(bot, msg, reactions, functions,{"chunks": chunks, "index": 0}, remove_valid_reactions=False)
 
 async def scroll(data, _, embed_msg, reaction):
 	chunks = data["chunks"]

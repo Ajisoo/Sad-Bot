@@ -49,10 +49,14 @@ async def on_ready():
 	roll_color.create_user_data_file()
 	roll_splashes.create_user_data_files()
 
+
 	now = datetime.now()
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
 
+	if os.path.exists(GS_FOLDER):
+		await roll_splashes.first_time_setup_anniversary_skins(bot_spam_channel)
+		
 
 @client.event
 async def on_message(message: discord.Message):

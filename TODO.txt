@@ -17,8 +17,14 @@ BUG: `$harem @tag` was showing message sender's name as title instead
 2. add sorting by rarity/name on the harem list
     2.5. add rarity icons to harem list
     2.7 UPON NEXT BOT RESTART, ADD RARITY TO EVERYONE'S HAREMS
+3. add first time setup for 10 year anniversary skins 
+    - append anniversary_skins.json to skins.json
+    - recalculate rarity dists
+    - add 10 year anniversary skins to splashes folder 
+4. on refresh, 
+    - append anniversary_skins.json to skins.json BEFORE rarity dists is calculated
+    - add 10 year anniversary skins to splashes folder 
 --- END DONE ----
-3. add 10 year anniversary splashes to list 
 4. use an embed for trading
 9. stretch goal: do animation for progress pic a la roll color
 7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent

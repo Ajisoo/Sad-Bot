@@ -8,6 +8,7 @@ import re
 from datetime import datetime
 from json.decoder import JSONDecodeError
 from PIL import Image, ImageOps
+from shutil import copy2
 
 from Franklin import *
 
@@ -61,6 +62,39 @@ def create_user_data_files():
 			print('making link mappings file')
 			json.dump({}, f)
 
+async def first_time_setup_anniversary_skins(channel):
+	# Add anniversary_skins to skins.json
+	with open(SKINS_DATAFILE, 'r') as f, \
+		open(TENTH_ANNIVERSARY_SKINS_JSON, 'r') as f2:
+		skins_data = json.load(f)
+		tenth_skins_data = json.load(f2)
+
+		skins_data.update(tenth_skins_data)
+
+	with open(SKINS_DATAFILE, "w", encoding='utf-8') as f:
+		json.dump(skins_data, f, ensure_ascii=False)
+
+	# Recalculate rarity dist
+	global RARITY_DIST
+	with open(SKINS_DATAFILE, "r") as f:
+		skin_data = json.load(f)
+		for k in RARITY_DIST.keys():
+			RARITY_DIST[k]['rolls'] = []
+		for k, v in skin_data.items():
+			if v['rarity'] == 'kRare':
+				# kRare only has Conqueror Nautilus and Alistar, just put them with not rare
+				RARITY_DIST['kNoRarity']['rolls'].append(v['id'])
+			else:
+				RARITY_DIST[v['rarity']]['rolls'].append(v['id'])
+	with open(RARITY_DIST_FILE, "w", encoding='utf-8') as f:
+		json.dump(RARITY_DIST, f)
+
+	# Add anniversary skins to splashes folder
+	for fname in os.listdir(TENTH_ANNIVERSARY_SKINS_FOLDER):
+		copy2(os.path.join(TENTH_ANNIVERSARY_SKINS_FOLDER, fname), CHAMP_SPLASH_FOLDER)
+	
+	await channel.send("Special skins added!")
+
 # id_with_piece has format <id>[A|B|C|D]
 async def force_roll(bot, message, id_with_piece, user_to_roll_for):
 	m = re.match(mention_regex, user_to_roll_for)
@@ -99,8 +133,8 @@ async def cmd_splash_roll(bot, message, forced_id=None, forced_piece=None, roll_
 		global percentages, rolls 
 		if percentages == None or rolls == None:
 			with open(RARITY_DIST_FILE, 'r') as f:
-				rarity_dist = json.load(f)
-				loot_pools = [(v['percentage'], v['rolls']) for v in rarity_dist.values()]
+				RARITY_DIST = json.load(f)
+				loot_pools = [(v['percentage'], v['rolls']) for v in RARITY_DIST.values()]
 				percentages, rolls = [list(t) for t in zip(*loot_pools)]
 
 		res_index = choices(range(len(rolls)), weights=percentages)[0]
@@ -631,19 +665,3 @@ def get_starting_pieces(skin_name, starting_letter, rarity):
 	starting_counts[starting_letter] += 1
 	return {"name": skin_name, "rarity": rarity, "pieces": starting_counts}
 
-# Goes through everyone's harem and adds rarities
-async def update_rarities(channel):
-	with open(SKINS_DATAFILE, 'r') as f, \
-		open(SPLASH_HAREM_FILE, 'r+') as f2:
-		skins_data = json.load(f)
-		harems = json.load(f2)
-
-		for v in harems.values():
-			for skin_id in v.keys():
-				v[skin_id]["rarity"] = skins_data[skin_id]["rarity"]
-		
-		f2.seek(0)
-		f2.truncate()
-		json.dump(harems, f2)
-	
-	await channel.send("Rarities updated!")

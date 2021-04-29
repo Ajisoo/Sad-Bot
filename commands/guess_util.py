@@ -125,28 +125,7 @@ latest_version_file = os.path.join(GS_FOLDER, "latest_version.txt")
 
 
 
-rarity_dist = {
-	"kNoRarity": {
-		'percentage': 0.75,
-		'rolls': []
-	},
-	"kEpic": {
-		'percentage': 0.20,
-		'rolls': []
-	},
-	"kLegendary": {
-		'percentage': 0.02,
-		'rolls': []
-	},
-	"kUltimate": {
-		'percentage': 0.01,
-		'rolls': []
-	},
-	"kMythic": {
-		'percentage': 0.02,
-		'rolls': []
-	} 
-}
+
 
 ### SPLASH CONSTANTS END ###
 
@@ -202,27 +181,33 @@ async def cmd_gs_refresh(bot, message, _args):
 	shutil.unpack_archive(dumpfile_name, GS_FOLDER)
 	print("Done unpacking data dump!")
 
+	for fname in os.listdir(TENTH_ANNIVERSARY_SKINS_FOLDER):
+		shutil.copy2(os.path.join(TENTH_ANNIVERSARY_SKINS_FOLDER, fname), CHAMP_SPLASH_FOLDER)
+
 	# Get skins json (which has rarity info)
 	await get_skins
 
 	# Turn skins json into smaller version of itself
 	await message.channel.send("Getting skin data...")
-	global rarity_dist
+	global RARITY_DIST
 	new_skin_data = {}
-	with open(SKINS_DATAFILE, "r") as f:
+	with open(SKINS_DATAFILE, "r") as f, \
+		open(TENTH_ANNIVERSARY_SKINS_JSON, 'r') as f2:
 		skin_data = json.load(f)
-		for k in rarity_dist.keys():
-			rarity_dist[k]['rolls'] = []
+		tenth_skins_data = json.load(f2)
+		skin_data.update(tenth_skins_data)
+		for k in RARITY_DIST.keys():
+			RARITY_DIST[k]['rolls'] = []
 		for k, v in skin_data.items():
 			if v['rarity'] == 'kRare':
 				# kRare only has Conqueror Nautilus and Alistar, just put them with not rare
-				rarity_dist['kNoRarity']['rolls'].append(v['id'])
+				RARITY_DIST['kNoRarity']['rolls'].append(v['id'])
 			else:
-				rarity_dist[v['rarity']]['rolls'].append(v['id'])
+				RARITY_DIST[v['rarity']]['rolls'].append(v['id'])
 			new_skin_data[k] = {key: v[key]
                             for key in ['id', 'name', 'description', 'rarity']}
 	with open(RARITY_DIST_FILE, "w", encoding='utf-8') as f:
-		json.dump(rarity_dist, f)
+		json.dump(RARITY_DIST, f)
 
 
 	# Get champion summaries (which has ID to champ alias mappings)

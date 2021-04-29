@@ -33,11 +33,9 @@ BIRTHDAYS = {225822313550053376: [3, 14],
 			 377691228977889283: [2, 17]}
 
 
-PATCH_MESSAGE_HEADER = "🎉 Patch 2.1.1 released today 🎉\n"
+PATCH_MESSAGE_HEADER = "🎉 Patch 2.1.2 released today 🎉\n"
 
-PATCH_MESSAGE = ("Added some new commands.\n"
-				 "Harems now display rarities, and you can sort by name/rarity.\n"
-				 "`$harem sn` to sort by name, and `$harem sr` to sort by rarity.")
+PATCH_MESSAGE = ("Added some fan classic skins :)")
 
 PATCH_DAY = datetime(2021, 4, 28)
 
@@ -65,6 +63,9 @@ USER_INFO_FOLDER = os.path.join(CONTENT_FOLDER, "user_info")
 SPLASH_HAREM_FILE = os.path.join(USER_INFO_FOLDER, "splash-harems.json")
 SPLASH_ROLL_TIMERS_FILE = os.path.join(USER_INFO_FOLDER, "splash-roll-timers.json")
 SPLASH_LINK_MAPPINGS_FILE = os.path.join(USER_INFO_FOLDER, "image-links.json")
+
+TENTH_ANNIVERSARY_SKINS_FOLDER = os.path.join(CONTENT_FOLDER, "anniversary_skins")
+TENTH_ANNIVERSARY_SKINS_JSON = os.path.join(USER_INFO_FOLDER, "anniversary_skins.json")
 
 RS_ID_TO_ALIAS_MAPPINGS_FILE = os.path.join(GS_FOLDER, "champion-summary.json")
 GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
@@ -95,4 +96,27 @@ LEADERBOARDS = {
 	GS_LEADERBOARD_ID: GS_LEADERBOARD_FILE,
 	GA_LEADERBOARD_ID: GA_LEADERBOARD_ID, # <-- FIXME make this the correct file eventually
 	GUM_LEADERBOARD_ID: GUM_LEADERBOARD_FILE,
+}
+
+RARITY_DIST = {
+	"kNoRarity": {
+		'percentage': 0.75,
+		'rolls': []
+	},
+	"kEpic": {
+		'percentage': 0.20,
+		'rolls': []
+	},
+	"kLegendary": {
+		'percentage': 0.02,
+		'rolls': []
+	},
+	"kUltimate": {
+		'percentage': 0.01,
+		'rolls': []
+	},
+	"kMythic": {
+		'percentage': 0.02,
+		'rolls': []
+	}
 }

@@ -53,9 +53,7 @@ async def on_ready():
 	now = datetime.now()
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
-
-	if os.path.exists(GS_FOLDER):
-		await roll_splashes.first_time_setup_anniversary_skins(bot_spam_channel)
+	
 		
 
 @client.event

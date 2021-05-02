@@ -522,6 +522,8 @@ async def trade_splashes(bot, message, args):
 				f.seek(0)
 				f.truncate()
 				json.dump(harems, f)
+				
+				del bot.active_trades[user_id]
 
 		elif response in ['n', 'no']:
 			await message.channel.send("Trade declined.")

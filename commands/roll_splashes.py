@@ -655,7 +655,7 @@ def time_left(user_id: str) -> int:
 			if rolls_info[user_id]["rolls_left"] == 0:
 				earlier_roll_str = rolls_info[user_id]["start"]
 				earlier_roll = datetime.strptime(earlier_roll_str, time_format)
-				hour_diff = (datetime.now() - earlier_roll).seconds / 3600
+				hour_diff = (datetime.now() - earlier_roll).total_seconds() / 3600
 				return int(60 * 3 - (hour_diff * 60))
 			else:
 				return 0

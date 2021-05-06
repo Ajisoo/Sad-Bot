@@ -236,6 +236,11 @@ async def cmd_gs_refresh(bot, message, _args):
 		f.seek(0)
 		f.truncate()
 		json.dump(aliases, f)
+	
+	with open(RS_SKIN_NAME_TO_ID_MAPPINGS_FILE, 'w+') as f:
+		mappings = {v['name'].lower(): str(v['id']) for v in new_skin_data.values()}
+		json.dump(mappings, f)
+
 	with open(SKINS_DATAFILE, "w", encoding='utf-8') as f:
 		json.dump(new_skin_data, f, ensure_ascii=False)
 	print("Finished with mappings")

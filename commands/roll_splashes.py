@@ -61,6 +61,41 @@ def create_user_data_files():
 		with open(SPLASH_LINK_MAPPINGS_FILE, "w+") as f:
 			print('making link mappings file')
 			json.dump({}, f)
+	
+	if not os.path.exists(GS_FOLDER):
+		os.makedirs(GS_FOLDER)
+	if not os.path.exists(RS_SKIN_NAME_TO_ID_MAPPINGS_FILE) and \
+		os.path.exists(SKINS_DATAFILE) and \
+		os.path.exists(TENTH_ANNIVERSARY_SKINS_JSON):
+		# Rename the 10th anniversary skins in skins.json and harems
+		with open(TENTH_ANNIVERSARY_SKINS_JSON, 'r') as ff:
+			tenth_json = json.load(ff)
+			with open(SKINS_DATAFILE, 'r+') as f:
+				skins_data = json.load(f)
+				for k, v in skins_data.items():
+					if k.endswith("999"):
+						v["name"] = tenth_json[k]["name"]
+				f.seek(0)
+				f.truncate()
+				json.dump(skins_data, f)
+			with open(SPLASH_HAREM_FILE, 'r+') as f:
+				harems = json.load(f)
+				for harem in harems.values():
+					for id, v in harem.items():
+						if id.endswith("999"):
+							v["name"] = tenth_json[id]["name"]
+				f.seek(0)
+				f.truncate()
+				json.dump(harems, f)
+
+		with open(RS_SKIN_NAME_TO_ID_MAPPINGS_FILE, 'w+') as f, \
+			open(SKINS_DATAFILE, 'r') as f2:
+			skins_data = json.load(f2)
+			mappings = {v['name'].lower():str(v['id']) for v in skins_data.values()}
+
+			json.dump(mappings, f)
+			print('name to id mappings created!')
+
 
 async def first_time_setup_anniversary_skins(channel):
 	# Add anniversary_skins to skins.json
@@ -391,9 +426,14 @@ async def info_splash(bot, message, args):
 		if search_by_id:
 			v = your_harem.get(skin_id, None)
 		else:  # Else, search by name
-			v = next(filter(lambda s: skin_name.lower() ==
-                            s[1]['name'].lower(), your_harem.items()), None)
-			skin_id = v[0] if v is not None else None
+			with open(RS_SKIN_NAME_TO_ID_MAPPINGS_FILE, 'r') as f2:
+				ids = json.load(f2)
+
+			if skin_name.lower() in ids:
+				skin_id = ids[skin_name.lower()]
+				v = your_harem.get(skin_id, None)
+			else:
+				v = None
 
 		if v is None:
 			await message.channel.send("You don't have that!")
@@ -533,6 +573,68 @@ async def trade_splashes(bot, message, args):
 
 	else:
 		await message.channel.send("Incorrect usage of trade command")
+
+async def search_all(bot, message, args, client):
+	# Join args by space and split on $
+	processed_args = list(map(lambda x: x.strip().lower(), ' '.join(args).split('$')))
+	
+	# Find the IDs corresponding
+	with open(RS_SKIN_NAME_TO_ID_MAPPINGS_FILE, 'r') as f:
+		name_id_map = json.load(f)
+	
+	ids = [name_id_map.get(name, None) for name in processed_args]
+	
+	ownership_dict = {}
+	with open(SPLASH_HAREM_FILE, 'r') as f:
+		harems = json.load(f)
+
+	filtered_ids = list(filter(lambda x: x is not None, ids))
+	if len(filtered_ids) == 0:
+		await message.channel.send("No skins found!")
+		return
+
+	for id in filtered_ids:
+		ownership_dict[id] = {}
+		for owner_id, v in harems.items():
+			if id in v:
+				ownership_dict[id][owner_id] = v[id]["pieces"]
+	
+	# Display ownership dict
+	with open(SKINS_DATAFILE, 'r') as f:
+		skins_data = json.load(f)
+	
+	chunks = []
+	for k, v in ownership_dict.items():
+		page = [f"**#{k}**  {skins_data[k]['name']}:"]
+		for user_id, pieces_count in v.items():
+			harem_owner = client.get_user(int(user_id))
+			if harem_owner is None:
+				harem_owner = await client.fetch_user(int(user_id))
+			
+			owner_name = harem_owner.name
+			pieces = []
+			for p in sorted(pieces_count):
+				if pieces_count[p] > 0:
+					pieces.append(p)
+			
+			page.append(f"**{owner_name}**: (Pieces: {', '.join(pieces)})")
+		if len(page) == 1:
+			page.append("No one owns this!")
+		chunks.append(page)
+
+	starting_desc = '\n'.join(chunks[0])
+	embed = discord.Embed(title=f"Search results",
+                       description=starting_desc) \
+            .set_footer(text=f"Page 1 / {len(chunks)}")
+	msg = await message.channel.send(embed=embed)
+	await msg.add_reaction("⬅️")
+	await msg.add_reaction("➡️")
+
+	reactions = ["⬅️", "➡️"]
+	functions = [scroll] * 2
+	Franklin(bot, msg, reactions, functions, {"chunks": chunks, "index": 0}, remove_valid_reactions=False)
+
+
 
 async def punish(bot, message, args):
 	m = re.match(mention_regex, args[0])

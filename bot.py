@@ -42,7 +42,7 @@ async def on_ready():
 		burner_channel = client.get_channel(BURNER_IMAGES_CHANNEL_ID_TEST)
 		bot_spam_channel = client.get_channel(TEST_SPAM_CHANNEL_ID)
 	
-	print(f"'We have logged in as {client.user}")
+	print(f"We have logged in as {client.user}")
 	if datetime.now().date() == PATCH_DAY.date():
 		update_ga_leaderboard_file_name()
 
@@ -230,6 +230,12 @@ async def on_message(message: discord.Message):
 			 							"`[$ts | $trade_splash] <@tradee> <skin_to_trade_id> <skin_to_receive_id>`\n\n"
 										"Trade response:\n"
 										"`[$ts] <y|yes|n|no>`"))
+
+	if command == 'searchall':
+		if len(args) > 0:
+			await roll_splashes.search_all(bot, message, args, client)
+		else:
+			await message.channel.send("Please search for something!")
 
 	#TODO: add command to see current trade on you?
 	if command == 'punish' and message.author.id in ADMINS:

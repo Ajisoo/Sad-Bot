@@ -33,11 +33,13 @@ BIRTHDAYS = {225822313550053376: [3, 14],
 			 377691228977889283: [2, 17]}
 
 
-PATCH_MESSAGE_HEADER = "🎉 Patch 2.1.2 released today 🎉\n"
+PATCH_MESSAGE_HEADER = "🎉 Patch 2.1.3 released today 🎉\n"
 
-PATCH_MESSAGE = ("Added some fan classic skins :)")
+PATCH_MESSAGE = ("New command $searchall is here!\n"
+				"Use `$searchall` with champion skin names separated by `$` to see who owns them.\n"
+				"Also the 10th anniversary splashes have been renamed.")
 
-PATCH_DAY = datetime(2021, 4, 28)
+PATCH_DAY = datetime(2021, 5, 6)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 
@@ -68,6 +70,7 @@ TENTH_ANNIVERSARY_SKINS_FOLDER = os.path.join(CONTENT_FOLDER, "anniversary_skins
 TENTH_ANNIVERSARY_SKINS_JSON = os.path.join(USER_INFO_FOLDER, "anniversary_skins.json")
 
 RS_ID_TO_ALIAS_MAPPINGS_FILE = os.path.join(GS_FOLDER, "champion-summary.json")
+RS_SKIN_NAME_TO_ID_MAPPINGS_FILE = os.path.join(GS_FOLDER, "name-to-id-mappings.json")
 GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
 GUM_LEADERBOARD_FILE = os.path.join(GUM_FOLDER, "leaderboard_gum.txt")
 

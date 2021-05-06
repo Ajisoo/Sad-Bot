@@ -77,8 +77,8 @@ async def on_message(message: discord.Message):
 	if now.month == 12 and now.day == 25:
 		await message.add_reaction('🎅')
 	
-	if 824551576336990211 in [y.id for y in message.author.roles]:
-		await message.add_reaction(await message.guild.fetch_emoji(839676443482259487))
+	if message.guild.id == 190241147539423234 and 824551576336990211 in [y.id for y in message.author.roles]:
+		await message.add_reaction(await message.guild.fetch_emoji(839678413786447884))
 		
 	args = []
 	if message.content[:len(BOT_PREFIX)] == BOT_PREFIX:

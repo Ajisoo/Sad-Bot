@@ -155,6 +155,20 @@ async def on_message(message: discord.Message):
 	if command in ['tictactoe', 'ttt']:
 		await cmd_tictactoe(bot, client.user, message, args)
 
+	if command in ['playmp3']:
+		try:
+			vc = await message.author.voice.channel.connect()
+
+		except Exception:
+
+			vc = client.voice_clients[0]
+		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=os.path.join(CONTENT_FOLDER,args[1] + '.mp3')))
+		while vc.is_playing():
+			await asyncio.sleep(1)
+		# disconnect after the player has finished
+		vc.stop()
+		await vc.disconnect()
+		
 	if command in ['bakamitai', 'bm']:
 		try:
 			vc = await message.author.voice.channel.connect()

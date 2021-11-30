@@ -14,6 +14,8 @@ ADMINS = [182707904367820800, # ajisoo
           192144504998854658, # nolo
 		]
 
+ESSAY_MODE_ADMINS = ADMINS + [190248352053460993] # christian bc he requested this
+
 BOT_PREFIX = "$"
 
 BOT_KEY_FILE = "bot.key"
@@ -39,13 +41,15 @@ BIRTHDAYS = {225822313550053376: [3, 14],
 			 377691228977889283: [2, 17]}
 
 
-PATCH_MESSAGE_HEADER = "🎉 Patch 2.1.3 released today 🎉\n"
 
-PATCH_MESSAGE = ("New command $searchall is here!\n"
-				"Use `$searchall` with champion skin names separated by `$` to see who owns them.\n"
-				"Also the 10th anniversary splashes have been renamed.")
+PATCH_MESSAGE_HEADER = "🎉 Patch 2.2 released today 🎉\n"
 
-PATCH_DAY = datetime(2021, 5, 6)
+PATCH_MESSAGE = ("New command $essaymode is here!\n"
+				"Tired of people typing short messages?\n"
+				"Use `$essaymode on [numChars]` to set a minimum of characters everyone needs to type!\n"
+				"Use `$essaymode off` to disable essay mode.\n")
+
+PATCH_DAY = datetime(2021, 11, 30)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 

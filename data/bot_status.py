@@ -6,6 +6,8 @@ class BotStatus:
 		self.g_answer = ""
 		self.g_answer_raw = ""
 		self.patch_message_sent = False
+		self.essay_mode_on = False
+		self.essay_mode_minimum = 0
 		self.current_Franklins = {}
 		self.listener = None
 		self.guess_type = ""

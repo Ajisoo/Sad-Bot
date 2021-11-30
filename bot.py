@@ -113,15 +113,18 @@ async def on_message(message: discord.Message):
 	if command == "help":
 		await message.author.send(HELP_DEFAULT_MESSAGE)
 
-	if command == "essaymode" and message.author.id in ESSAY_MODE_ADMINS:
-		if args[0] == "on" and int(args[1]) > 0:
-			bot.essay_mode_on = True
-			bot.essay_mode_minimum = int(args[1])
-			await message.add_reaction('✅')
-		if args[0] == "off":
-			bot.essay_mode_on = False
-			bot.essay_mode_minimum = 0
-			await message.add_reaction('✅')
+	if command == "essaymode":
+		if message.author.id in ESSAY_MODE_ADMINS:
+			if args[0] == "on" and int(args[1]) > 0:
+				bot.essay_mode_on = True
+				bot.essay_mode_minimum = int(args[1])
+				await message.add_reaction('✅')
+			if args[0] == "off":
+				bot.essay_mode_on = False
+				bot.essay_mode_minimum = 0
+				await message.add_reaction('✅')
+		else:
+			await message.channel.send("Please apply for privileges to use this command.")
 
 	if command == 'ga_refresh':
 		await guess_util.cmd_ga_refresh(bot, message, args)

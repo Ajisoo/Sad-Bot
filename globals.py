@@ -49,7 +49,7 @@ PATCH_MESSAGE = ("New command $essaymode is here!\n"
 				"Use `$essaymode on [numChars]` to set a minimum of characters everyone needs to type!\n"
 				"Use `$essaymode off` to disable essay mode.\n")
 
-PATCH_DAY = datetime(2021, 11, 30)
+PATCH_DAY = datetime(2021, 12, 1)
 
 HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 

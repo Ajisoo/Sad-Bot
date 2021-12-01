@@ -82,7 +82,6 @@ async def on_message(message: discord.Message):
 		except Exception:
 			pass
 		await message.delete(delay=0.3)
-		return
 
 	if now.month == 12 and now.day == 25:
 		await message.add_reaction('🎅')

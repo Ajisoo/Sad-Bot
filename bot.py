@@ -14,6 +14,7 @@ from globals import *
 client = discord.Client()
 bots = {}
 burner_channel = None
+alpha_regex = re.compile("^[a-zA-Z]+$")
 
 async def get_bot(guild_id):
 	return bots[guild_id]
@@ -82,6 +83,10 @@ async def on_message(message: discord.Message):
 		except Exception:
 			pass
 		await message.delete(delay=0.3)
+
+	message_without_spaces = message.content.replace(" ", "")
+	if len(message_without_spaces) == 6 and message_without_spaces.isalpha():
+		await message.channel.send('Banger room code.')
 
 	if now.month == 12 and now.day == 25:
 		await message.add_reaction('🎅')

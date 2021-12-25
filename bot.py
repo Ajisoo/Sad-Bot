@@ -85,7 +85,9 @@ async def on_message(message: discord.Message):
 		await message.delete(delay=0.3)
 
 	if now.month == 12 and now.day == 25:
-		await message.add_reaction('🎅')
+		reactions = ['🎅', '🤶', '❄️', '⛄', '🎄', '🎁', '☃️']
+		weights = [5000, 5000, 5000, 5000, 5000, 5000, 1]
+		await message.add_reaction(random.choices(reactions, weights=weights, k=1)[0])
 	
 	if (message.guild.id == 190241147539423234 and 824551576336990211 in [y.id for y in message.author.roles])\
    	or message.author.id == 237357891189866497: #gio

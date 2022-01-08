@@ -94,7 +94,7 @@ async def on_message(message: discord.Message):
 		await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))
 		
 	message_without_spaces = message.content.replace(" ", "")
-	if len(message_without_spaces) == 6 and message_without_spaces.isalpha():
+	if message.author.id != 188670149103058944 and len(message_without_spaces) == 6 and message_without_spaces.isalpha():
 		await message.channel.send('Banger room code.')
 	
 	args = []

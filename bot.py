@@ -93,9 +93,9 @@ async def on_message(message: discord.Message):
    	or message.author.id == 237357891189866497: #gio
 		await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))
 		
-	message_without_spaces = message.content.replace(" ", "")
-	if message.author.id != 188670149103058944 and len(message_without_spaces) == 6 and message_without_spaces.isalpha():
-		await message.channel.send('Banger room code.')
+	# message_without_spaces = message.content.replace(" ", "")
+	# if message.author.id != 188670149103058944 and len(message_without_spaces) == 6 and message_without_spaces.isalpha():
+	# 	await message.channel.send('Banger room code.')
 	
 	args = []
 	if message.content[:len(BOT_PREFIX)] == BOT_PREFIX:

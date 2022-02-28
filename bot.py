@@ -11,7 +11,7 @@ from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
 from globals import *
 
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.all())
 bots = {}
 burner_channel = None
 alpha_regex = re.compile("^[a-zA-Z]+$")

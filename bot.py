@@ -73,7 +73,8 @@ async def on_message(message: discord.Message):
 		try:
 			await message.add_reaction(await message.guild.fetch_emoji(634171978420322335))
 		except:
-			await message.add_reaction(await message.guild.fetch_emoji(851961972840726578))
+			pass
+			#await message.add_reaction(await message.guild.fetch_emoji(851961972840726578))
 
 	if message.author.id in BIRTHDAYS.keys() and BIRTHDAYS[message.author.id][0] == now.month and BIRTHDAYS[message.author.id][1] == now.day:
 		await message.add_reaction('🍰')

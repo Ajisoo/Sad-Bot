@@ -78,6 +78,8 @@ async def on_message(message: discord.Message):
 
 	if message.author.id in BIRTHDAYS.keys() and BIRTHDAYS[message.author.id][0] == now.month and BIRTHDAYS[message.author.id][1] == now.day:
 		await message.add_reaction('🍰')
+		if now.month == 3 and now.day == 14:
+			await message.add_reaction('🥧')
 
 	if len(message.content) < bot.essay_mode_minimum and bot.essay_mode_on and bot.essay_mode_minimum > 0:
 		try:

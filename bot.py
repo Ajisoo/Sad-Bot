@@ -104,8 +104,8 @@ async def on_message(message: discord.Message):
 				await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))  # shork reacc for jail
 		except discord.HTTPException as he:
 			if (he.text == "Reaction blocked" and he.code == 90001):
-				await message.delete(delay=0.3)
-
+				#await message.delete(delay=0.3)
+				await message.channel.send(await message.guild.fetch_emoji(831228255063244831))
 	
 	args = []
 	if message.content[:len(BOT_PREFIX)] == BOT_PREFIX:

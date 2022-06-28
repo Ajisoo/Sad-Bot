@@ -15,7 +15,6 @@ client = discord.Client(intents=discord.Intents.all())
 bots = {}
 burner_channel = None
 alpha_regex = re.compile("^[a-zA-Z]+$")
-bot_block_counter = 0
 
 async def get_bot(guild_id):
 	return bots[guild_id]

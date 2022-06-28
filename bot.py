@@ -1,6 +1,5 @@
 import datetime
 import asyncio
-from http.client import HTTPException
 import random
 import re
 

@@ -69,7 +69,6 @@ async def on_message(message: discord.Message):
 
 	now = datetime.now()
 
-	print(message.author)
 
 	if message.author.status == discord.Status.dnd:
 		try:
@@ -104,7 +103,8 @@ async def on_message(message: discord.Message):
 			else:
 				await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))  # shork reacc for jail
 		except discord.HTTPException as he:
-			await message.delete(delay=0.3)
+			if (he.text == "Reaction blocked" and he.code == 90001):
+				await message.delete(delay=0.3)
 
 	
 	args = []

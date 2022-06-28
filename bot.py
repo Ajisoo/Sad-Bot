@@ -1,5 +1,6 @@
 import datetime
 import asyncio
+from http.client import HTTPException
 import random
 import re
 
@@ -15,6 +16,7 @@ client = discord.Client(intents=discord.Intents.all())
 bots = {}
 burner_channel = None
 alpha_regex = re.compile("^[a-zA-Z]+$")
+bot_block_counter = 0
 
 async def get_bot(guild_id):
 	return bots[guild_id]
@@ -69,6 +71,8 @@ async def on_message(message: discord.Message):
 
 	now = datetime.now()
 
+	print(message.author)
+
 	if message.author.status == discord.Status.dnd:
 		try:
 			await message.add_reaction(await message.guild.fetch_emoji(634171978420322335))
@@ -95,12 +99,15 @@ async def on_message(message: discord.Message):
 		await message.add_reaction(random.choices(reactions, weights=weights, k=1)[0])
 	
 	if (message.guild.id == 190241147539423234 and 824551576336990211 in [y.id for y in message.author.roles])\
-   	or message.author.id == 237357891189866497: #gio
-		await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))
-		
-	# message_without_spaces = message.content.replace(" ", "")
-	# if message.author.id != 188670149103058944 and len(message_without_spaces) == 6 and message_without_spaces.isalpha():
-	# 	await message.channel.send('Banger room code.')
+	or (message.guild.id == 486266124351307786): 
+		try:
+			if (message.guild.id == 486266124351307786): # test server
+				await message.add_reaction(await message.guild.fetch_emoji(834785299292487701))
+			else:
+				await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))  # shork reacc for jail
+		except discord.HTTPException as he:
+			await message.delete(delay=0.3)
+
 	
 	args = []
 	if message.content[:len(BOT_PREFIX)] == BOT_PREFIX:

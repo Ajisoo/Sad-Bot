@@ -6,7 +6,7 @@ import re
 import discord
 
 from data.bot_status import BotStatus
-from commands import guess_util, leaderboard_util, roll_color, roll_splashes
+from commands import guess_util, leaderboard_util, roll_color, roll_splashes, apex_util
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
 from globals import *
@@ -95,10 +95,9 @@ async def on_message(message: discord.Message):
 		weights = [5000, 5000, 5000, 5000, 5000, 5000, 1]
 		await message.add_reaction(random.choices(reactions, weights=weights, k=1)[0])
 	
-	if (message.guild.id == 190241147539423234 and 824551576336990211 in [y.id for y in message.author.roles])\
-	or (message.guild.id == 486266124351307786): 
+	if (message.guild.id == LOUNGE_GUILD_ID and JAIL_ROLE in [y.id for y in message.author.roles]):
 		try:
-			if (message.guild.id == 486266124351307786): # test server
+			if (message.guild.id == TEST_SERVER_GUILD_ID): # test server
 				await message.add_reaction(await message.guild.fetch_emoji(834785299292487701))
 			else:
 				await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))  # shork reacc for jail
@@ -290,6 +289,10 @@ async def on_message(message: discord.Message):
 			await roll_splashes.search_all(bot, message, args, client)
 		else:
 			await message.channel.send("Please search for something!")
+
+	if command == 'apexmap':
+		await apex_util.cmd_get_apex_map(message)
+
 
 	#TODO: add command to see current trade on you?
 	if command == 'punish' and message.author.id in ADMINS:

@@ -43,7 +43,7 @@ BIRTHDAYS = {225822313550053376: [3, 14],
 			 192144504998854658: [7, 22],
 			 377691228977889283: [2, 17]}
 
-
+JAIL_ROLE = 824551576336990211
 
 PATCH_MESSAGE_HEADER = "🎉 Patch 2.2 released today 🎉\n"
 
@@ -73,6 +73,8 @@ SKINS_DATAFILE = os.path.join(GS_FOLDER, "skins.json")
 RARITY_DIST_FILE = os.path.join(GS_FOLDER, 'rarity-dist.json')
 CROPPED_IMAGE_FNAME = "tempCroppedSplash.jpg"
 FULL_IMAGE_FNAME = "tempFullSplash.jpg"
+
+APEX_MAP_ROTATION_SITE = "https://apexlegendsstatus.com/current-map"
 
 USER_INFO_FOLDER = os.path.join(CONTENT_FOLDER, "user_info")
 SPLASH_HAREM_FILE = os.path.join(USER_INFO_FOLDER, "splash-harems.json")

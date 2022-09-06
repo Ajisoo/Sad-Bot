@@ -9,4 +9,5 @@ venv/*
 *.swp
 
 bot.key
+api_keys/
 ffmpeg.exe

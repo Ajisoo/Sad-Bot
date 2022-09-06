@@ -54,7 +54,15 @@ async def on_ready():
 	now = datetime.now()
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
-	
+
+	os.makedirs(API_KEY_DIR, exist_ok=True)
+	missing_key = False
+	for key_prefix in API_KEY_NAMES:
+		if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
+			missing_key = True
+			print("- MISSING API KEY:", f"{key_prefix}.key")
+	if missing_key:
+		print("===== WARNING: At least one API key is missing (see above) =====")
 		
 
 @client.event

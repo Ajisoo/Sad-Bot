@@ -20,6 +20,24 @@ BOT_PREFIX = "$"
 
 BOT_KEY_FILE = "bot.key"
 
+API_KEY_DIR = "api_keys/"
+# Each entry NAME in this list will have a corresponding API key stored in `api_keys/NAME.key`
+API_KEY_NAMES = [
+	"apex",
+]
+
+
+def get_key(key_name):
+	"""Returns the key text corresponding to the provided key name; errors on failure."""
+	with open(os.path.join(API_KEY_DIR, f"{key_name}.key")) as f:
+		return f.read().strip()
+
+
+# Maps an endpoint URL to some simple name
+API_ENDPOINTS = {
+	"apex_map": "https://api.mozambiquehe.re/maprotation",
+}
+
 BIRTHDAYS = {225822313550053376: [3, 14],
 			 167090536602140682: [7, 21],
 			 191597928090042369: [8, 3],
@@ -73,8 +91,6 @@ SKINS_DATAFILE = os.path.join(GS_FOLDER, "skins.json")
 RARITY_DIST_FILE = os.path.join(GS_FOLDER, 'rarity-dist.json')
 CROPPED_IMAGE_FNAME = "tempCroppedSplash.jpg"
 FULL_IMAGE_FNAME = "tempFullSplash.jpg"
-
-APEX_MAP_ROTATION_SITE = "https://apexlegendsstatus.com/current-map"
 
 USER_INFO_FOLDER = os.path.join(CONTENT_FOLDER, "user_info")
 SPLASH_HAREM_FILE = os.path.join(USER_INFO_FOLDER, "splash-harems.json")

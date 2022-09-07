@@ -27,17 +27,20 @@ async def cmd_get_apex_map(message):
 		curr_map_end_ms = next_map_end_ms
 		next_map_name = None
 		next_map_end_ms = None
-		return
-	key = get_key("apex")
-	endpoint_url = API_ENDPOINTS["apex_map"]
-	r = requests.get(endpoint_url, headers={"Authorization": key})
-	if r.status_code == 200:
-		json = r.json()
-		curr_map_name = json["current"]["map"]
-		curr_map_end_ms = json["current"]["end"]
-		next_map_name = json["next"]["map"]
-		next_map_end_ms = json["next"]["end"]
-		remaining = dt.datetime.fromtimestamp(curr_map_end_ms - now).strftime("%M:%S")
-		await message.channel.send(f"Current map is **{curr_map_name}** (**{remaining}** remaining; next map is **{next_map_name}**)")
 	else:
-		await message.channel.send("Unable to retrieve map rotation :)")
+		key = get_key("apex")
+		endpoint_url = API_ENDPOINTS["apex_map"]
+		r = requests.get(endpoint_url, headers={"Authorization": key})
+		if r.status_code == 200:
+			json = r.json()
+			curr_map_name = json["current"]["map"]
+			curr_map_end_ms = json["current"]["end"]
+			next_map_name = json["next"]["map"]
+			next_map_end_ms = json["next"]["end"]
+			remaining = dt.datetime.fromtimestamp(curr_map_end_ms - now).strftime("%M:%S")
+		else:
+			await message.channel.send("Unable to retrieve map rotation :)")
+			return
+
+	await message.channel.send(
+		f"Current map is **{curr_map_name}** (**{remaining}** remaining; next map is **{next_map_name}**)")

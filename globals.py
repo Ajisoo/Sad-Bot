@@ -105,6 +105,8 @@ RS_SKIN_NAME_TO_ID_MAPPINGS_FILE = os.path.join(GS_FOLDER, "name-to-id-mappings.
 GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
 GUM_LEADERBOARD_FILE = os.path.join(GUM_FOLDER, "leaderboard_gum.txt")
 
+LFG_FILE = os.path.join(CONTENT_FOLDER, "lfg.json")
+
 GS_LEADERBOARD_ID = "GS"
 GA_LEADERBOARD_ID = "GA"
 GUM_LEADERBOARD_ID = "GUM"

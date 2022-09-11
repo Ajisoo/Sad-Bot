@@ -6,7 +6,7 @@ import re
 import discord
 
 from data.bot_status import BotStatus
-from commands import guess_util, leaderboard_util, roll_color, roll_splashes, apex_util
+from commands import guess_util, leaderboard_util, roll_color, roll_splashes, apex_util, lfg_util
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
 from globals import *
@@ -301,6 +301,8 @@ async def on_message(message: discord.Message):
 	if command == 'apexmap':
 		await apex_util.cmd_get_apex_map(message)
 
+	if command == 'lfg':
+		await lfg_util.cmd_lfg(message, args)
 
 	#TODO: add command to see current trade on you?
 	if command == 'punish' and message.author.id in ADMINS:

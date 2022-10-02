@@ -95,6 +95,8 @@ def generate_image(icons: Optional[Dict[str, io.BytesIO]] = None, games: Dict[st
     # given a padding of 20px and an avatar width of 75px
     padding = 40
     image_size = 200
+    overlap_mask_size_increase = 1/8*image_size
+    x_increment = int(padding + (5 / 8) * image_size)
     img_per_row = canvas_width / (image_size * padding)
     x_starting_value = 2 * padding + image_size
 
@@ -125,6 +127,8 @@ def generate_image(icons: Optional[Dict[str, io.BytesIO]] = None, games: Dict[st
             width, height = icon.size
             # image height will be (height*(new_width/width))
 
+            is_last = icon == icons[-1]
+
             icon = icon.resize((image_size, image_size))
 
             # if there is no more room to the right to add a new image (with padding)
@@ -136,10 +140,13 @@ def generate_image(icons: Optional[Dict[str, io.BytesIO]] = None, games: Dict[st
             mask_im = Image.new("L", (image_size, image_size))
             draw = ImageDraw.Draw(mask_im)
             draw.ellipse((0, 0, image_size, image_size), fill=255)
+            if not is_last:
+                draw.ellipse((x_increment - overlap_mask_size_increase, -overlap_mask_size_increase,
+                              x_increment + image_size + overlap_mask_size_increase, image_size + overlap_mask_size_increase), fill=0)
             background.paste(icon, (x, y), mask=mask_im)
 
             # move the x value over to keep equal spacing between icons
-            x += int(padding + (5 / 8) * image_size)
+            x += x_increment
 
     background.save(SIGNUP_BG_IMAGE_UPDATED, "PNG")
     return discord.File(SIGNUP_BG_IMAGE_UPDATED, filename="background.png")

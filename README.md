@@ -12,3 +12,4 @@
 ## External Dependencies
 - `ffmpeg` must be available as a binary *in the current directory* named `ffmpeg.exe` (don't ask why)
 - `opus` audio codecs must be installed in your path in order to play audio files (see [docs](https://discordpy.readthedocs.io/en/stable/api.html#discord.VoiceClient)) -- on ubuntu, you can get them with `sudo apt install opus-tools`
+- If you're updating dependencies, install [pip-tools](https://github.com/jazzband/pip-tools) to update requirements.txt properly.

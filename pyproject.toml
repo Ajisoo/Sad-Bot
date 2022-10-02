@@ -15,8 +15,13 @@ disable = [
     "C0114", # missing-module-docstring
     "C0115", # missing-class-docstring
     "C0116", # missing-function-docstring
+    "C0209", # consider-using-f-string
+    "C0301", # line-too-long
     "W0401", # wilcard-import
     "W0511", # fixme
+    "W0603", # global-statement
     "W0614", # unused-wildcard-import
     "W0702", # bare-except
+    "W0703", # broad-except
+    "W1514", # unspecified-encoding
 ]

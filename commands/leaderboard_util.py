@@ -1,12 +1,11 @@
-from globals import *
-
 """
 Leaderboards file is sorted and tab separated with format (user_id, points)
 
 VERY IMPORTANT: leaderboard.txt should always have a newline at the end because its fucky
-TODO: solve this in a smarter way  
+TODO: solve this in a smarter way
 """
 
+from globals import *
 
 def update_leaderboards_file(user_id, leaderboard_id):
     user_id = str(user_id)
@@ -19,8 +18,7 @@ def update_leaderboards_file(user_id, leaderboard_id):
 
     # Update user's score
     user_found = False
-    for i in range(len(lines)):
-        line = lines[i]
+    for i, line in enumerate(lines):
         split_line = line.strip().split("\t")
         if user_id == split_line[0]:
             split_line[1] = str(int(split_line[1]) + 1)

@@ -1,8 +1,6 @@
-# import discord
 import datetime as dt
 
 import requests
-from bs4 import BeautifulSoup
 
 from globals import get_key, API_ENDPOINTS
 

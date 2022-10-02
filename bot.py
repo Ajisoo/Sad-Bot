@@ -29,17 +29,16 @@ async def get_bot(guild_id):
 
 
 def update_ga_leaderboard_file_name():
-    try:
-        open(os.path.join(GA_FOLDER, "leaderboard.txt"), "r")
-    except Exception:
+    old_leaderboard_file = os.path.join(GA_FOLDER, "leaderboard.txt")
+    if not os.path.isfile(old_leaderboard_file):
         return
 
-    os.rename(os.path.join(GA_FOLDER, "leaderboard.txt"), GA_LEADERBOARD_FILE)
+    os.rename(old_leaderboard_file, GA_LEADERBOARD_FILE)
 
 
 @client.event
 async def on_ready():
-    global bots, IN_PROD, burner_channel
+    global IN_PROD, burner_channel
     for guild in client.guilds:
         bots[guild.id] = BotStatus(client)
         if guild.id == LOUNGE_GUILD_ID:
@@ -87,7 +86,7 @@ async def on_message(message: discord.Message):
             # await message.add_reaction(await message.guild.fetch_emoji(851961972840726578))
 
     if (
-        message.author.id in BIRTHDAYS.keys()
+        message.author.id in BIRTHDAYS
         and BIRTHDAYS[message.author.id][0] == now.month
         and BIRTHDAYS[message.author.id][1] == now.day
     ):
@@ -384,7 +383,7 @@ async def on_message(message: discord.Message):
             await msg.add_reaction(REACTION_MAP2[index + 1])
             reactions.append(REACTION_MAP2[index + 1])
 
-        def dummy(a, b, c, d):
+        def dummy(_a, _b, _c, _d):
             pass
 
         functions = [dummy] * len(poll_args[1:])
@@ -441,8 +440,7 @@ async def on_raw_reaction_remove(payload):
         await franklin.remove_reaction(processed_emoji)
 
 
-key_file = open("bot.key", "r")
-key = key_file.readline().strip()
-key_file.close()
+with open("bot.key", "r") as key_file:
+    key = key_file.readline().strip()
 
 client.run(key)

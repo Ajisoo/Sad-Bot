@@ -1,7 +1,5 @@
 import threading
 
-from discord import message
-
 
 def get_franklin(bot, message_id):
     return bot.current_Franklins.get(message_id)

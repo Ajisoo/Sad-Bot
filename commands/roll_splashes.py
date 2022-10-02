@@ -1,16 +1,16 @@
 import os
-from globals import *
 from random import choice, choices
-import discord
-import os
 import json
+from json.decoder import JSONDecodeError
 import re
 from datetime import datetime
-from json.decoder import JSONDecodeError
-from PIL import Image, ImageOps
 from shutil import copy2
 
+import discord
+from PIL import Image, ImageOps
+
 from Franklin import *
+from globals import *
 
 ### Globals ###
 ddragon_baseurl = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/"
@@ -38,8 +38,8 @@ rarity_sort = {
 }
 
 time_format = "%m/%d/%Y, %H:%M"
-skin_id_regex = "\d{4,}[ABCD]"
-mention_regex = "<@!(\d+)>"
+skin_id_regex = r"\d{4,}[ABCD]"
+mention_regex = r"<@!(\d+)>"
 attachment_prefix = "attachment://"
 
 champs_per_page = 10
@@ -83,8 +83,8 @@ def create_user_data_files():
             with open(SPLASH_HAREM_FILE, "r+") as f:
                 harems = json.load(f)
                 for harem in harems.values():
-                    for id, v in harem.items():
-                        if id.endswith("999"):
+                    for hid, v in harem.items():
+                        if hid.endswith("999"):
                             v["name"] = tenth_json[id]["name"]
                 f.seek(0)
                 f.truncate()
@@ -112,12 +112,11 @@ async def first_time_setup_anniversary_skins(channel):
         json.dump(skins_data, f, ensure_ascii=False)
 
     # Recalculate rarity dist
-    global RARITY_DIST
     with open(SKINS_DATAFILE, "r") as f:
         skin_data = json.load(f)
-        for k in RARITY_DIST.keys():
-            RARITY_DIST[k]["rolls"] = []
-        for k, v in skin_data.items():
+        for v in RARITY_DIST.values():
+            v["rolls"] = []
+        for  v in skin_data.values():
             if v["rarity"] == "kRare":
                 # kRare only has Conqueror Nautilus and Alistar, just put them with not rare
                 RARITY_DIST["kNoRarity"]["rolls"].append(v["id"])
@@ -174,17 +173,15 @@ async def cmd_splash_roll(
         await message.channel.send(f"You can't roll yet! You have {ttr} minutes left!")
         return
 
-    """
-		1. Pick a random thing out of the rarity-dist
-		2. The 3 rightmost numbers are the skin number
-		3. All numbers left of that are the champion ID
-		4. Use champion-summary.json to get the Alias from ID
-		5. Combine <Alias_SkinNumber> to get the jpg
-		6. Query skins.json to get full skin name and description
-	"""
-    if forced_id == None:
+    # 1. Pick a random thing out of the rarity-dist
+    # 2. The 3 rightmost numbers are the skin number
+    # 3. All numbers left of that are the champion ID
+    # 4. Use champion-summary.json to get the Alias from ID
+    # 5. Combine <Alias_SkinNumber> to get the jpg
+    # 6. Query skins.json to get full skin name and description
+    if forced_id is None:
         global percentages, rolls
-        if percentages == None or rolls == None:
+        if percentages is None or rolls is None:
             with open(RARITY_DIST_FILE, "r") as f:
                 RARITY_DIST = json.load(f)
                 loot_pools = [
@@ -216,7 +213,7 @@ async def cmd_splash_roll(
     im = Image.open(os.path.join(CHAMP_SPLASH_FOLDER, chosen_splash))
     x, y = im.size
 
-    if forced_piece == None:
+    if forced_piece is None:
         left = choice([0, x / 2])
         top = choice([0, y / 2])
 
@@ -418,7 +415,7 @@ async def scroll(data, _, embed_msg, reaction):
 
 
 # Precondition: len(args) > 0, contains list of divorcees in format <id>[A|B|C|D]
-async def divorce_splash(bot, message, args):
+async def divorce_splash(_bot, message, args):
     user_id = str(message.author.id)
     with open(SPLASH_HAREM_FILE, "r+") as f:
         harems = json.load(f)
@@ -463,7 +460,7 @@ async def info_splash(bot, message, args):
     # combine args into single space-separated string
     # do an equals check on everything in skins.json
     # show embed for champion
-    m = re.match("\d{4,}", args[0])
+    m = re.match(r"\d{4,}", args[0])
     search_by_id = False
     if m is not None:
         skin_id = m.group(0)
@@ -517,7 +514,7 @@ async def info_splash(bot, message, args):
         )
 
         embed.set_image(url=attachment_prefix + CROPPED_IMAGE_FNAME)
-        msg = await message.channel.send(embed=embed, file=f)
+        await message.channel.send(embed=embed, file=f)
 
         os.remove(FULL_IMAGE_FNAME)
         os.remove(CROPPED_IMAGE_FNAME)
@@ -689,11 +686,11 @@ async def search_all(bot, message, args, client):
         await message.channel.send("No skins found!")
         return
 
-    for id in filtered_ids:
-        ownership_dict[id] = {}
+    for fid in filtered_ids:
+        ownership_dict[fid] = {}
         for owner_id, v in harems.items():
-            if id in v:
-                ownership_dict[id][owner_id] = v[id]["pieces"]
+            if fid in v:
+                ownership_dict[fid][owner_id] = v[fid]["pieces"]
 
     # Display ownership dict
     with open(SKINS_DATAFILE, "r") as f:
@@ -720,7 +717,7 @@ async def search_all(bot, message, args, client):
 
     starting_desc = "\n".join(chunks[0])
     embed = discord.Embed(
-        title=f"Search results", description=starting_desc
+        title="Search results", description=starting_desc
     ).set_footer(text=f"Page 1 / {len(chunks)}")
     msg = await message.channel.send(embed=embed)
     await msg.add_reaction("⬅️")
@@ -738,7 +735,7 @@ async def search_all(bot, message, args, client):
     )
 
 
-async def punish(bot, message, args):
+async def punish(_bot, message, args):
     m = re.match(mention_regex, args[0])
     if m is None:
         await message.channel.send("Please @ whoever you want to punish.")
@@ -804,6 +801,7 @@ def coordinates(letter, x, y):
         return (0, y // 2, x // 2, y)
     elif letter == "D":
         return (x // 2, y // 2, x, y)
+    raise Exception(f"invalid letter: {letter}")
 
 
 def decorated_title(title, rarity, bot):

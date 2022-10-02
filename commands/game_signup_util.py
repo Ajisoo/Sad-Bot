@@ -1,13 +1,12 @@
+from collections import defaultdict
 import io
 import os
-from typing import List, Optional, Union
+from typing import Dict, Optional
 
 import discord
 from discord.ui import Button, View
 import PIL
 from PIL import Image, ImageDraw, ImageOps
-from typing import Dict
-from collections import defaultdict
 
 from globals import (
     BACKGROUND_ATTACHMENT_URL,

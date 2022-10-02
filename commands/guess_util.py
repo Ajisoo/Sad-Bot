@@ -220,14 +220,13 @@ async def cmd_gs_refresh(bot, message, _args):
 
     # Turn skins json into smaller version of itself
     await message.channel.send("Getting skin data...")
-    global RARITY_DIST
     new_skin_data = {}
     with open(SKINS_DATAFILE, "r") as f, open(TENTH_ANNIVERSARY_SKINS_JSON, "r") as f2:
         skin_data = json.load(f)
         tenth_skins_data = json.load(f2)
         skin_data.update(tenth_skins_data)
-        for k in RARITY_DIST.keys():
-            RARITY_DIST[k]["rolls"] = []
+        for v in RARITY_DIST.values():
+            v["rolls"] = []
         for k, v in skin_data.items():
             if v["rarity"] == "kRare":
                 # kRare only has Conqueror Nautilus and Alistar, just put them with not rare
@@ -261,10 +260,10 @@ async def cmd_gs_refresh(bot, message, _args):
         for k, v in new_skin_data.items():
             alias = aliases[k[:-3]]
             skin_number = str(int(k[-3:]))
-            new_skin_data[k]["splash_name"] = alias + "_" + skin_number + ".jpg"
-            if new_skin_data[k]["description"] is not None:
-                new_skin_data[k]["description"] = (
-                    new_skin_data[k]["description"]
+            v["splash_name"] = alias + "_" + skin_number + ".jpg"
+            if v["description"] is not None:
+                v["description"] = (
+                    v["description"]
                     .replace("<br>", "\n")
                     .replace("\\n", "\n")
                 )
@@ -332,11 +331,10 @@ async def cmd_gs_start(bot, message, _args):
     ) as f:
         json_data = json.load(f)
 
-    """ If you're wondering why we don't just use the skin number
-	    as the index for this array, that's a good question. For some reason
-		they're not sequentially numbered like I checked and 16 came after 12
-		for some reason. So we go through the whole array. It's roughly O(1) anyways.
-	"""
+    # If you're wondering why we don't just use the skin number
+    # as the index for this array, that's a good question. For some reason
+	# they're not sequentially numbered like I checked and 16 came after 12
+	# for some reason. So we go through the whole array. It's roughly O(1) anyways.
     skins_array = json_data["data"][champ_name]["skins"]
     for skin in skins_array:
         if skin["num"] == int(skin_number):
@@ -493,7 +491,7 @@ async def upload_splashes_to_burner_channel(burner_channel: discord.TextChannel)
             print(burn_msg.attachments)
             for a, letter in zip(burn_msg.attachments, ["A", "B", "C", "D"]):
                 # get the part of URL after channel_id/
-                m = re.match(CDN_PREFIX + "\d+(/\d+/.+)", a.url)
+                m = re.match(CDN_PREFIX + r"\d+(/\d+/.+)", a.url)
                 if m is None:
                     print("somehow did not work")
                 cdn_suffix = m.group(1)

@@ -14,15 +14,15 @@ class GameButton(Button):
     async def callback(self, interaction):
         await interaction.channel.send(interaction.user.name)
 
+
 async def create_board(message):
-    league_button = GameButton(label='League gamer', style=discord.ButtonStyle.green)
-    (file, embed) = create_party_embed('Gamers', 'Sign up')
+    league_button = GameButton(label="League gamer", style=discord.ButtonStyle.green)
+    (file, embed) = create_party_embed("Gamers", "Sign up")
 
     view = View()
     view.add_item(league_button)
 
     await message.channel.send(file=file, embed=embed, view=view)
-
 
 
 def create_party_embed(
@@ -37,7 +37,7 @@ def create_party_embed(
 
     # if icons:
     file = generate_image(icons)
-    embed.set_image(url='attachment://background.png')
+    embed.set_image(url="attachment://background.png")
 
     return (file, embed)
 
@@ -46,7 +46,7 @@ def generate_image(icons: Optional[List[io.BytesIO]] = None) -> discord.File:
 
     if icons is None:
         with Image.open(SIGNUP_BG_IMAGE) as bg:
-            bg.save(SIGNUP_BG_IMAGE_UPDATED, 'PNG')
+            bg.save(SIGNUP_BG_IMAGE_UPDATED, "PNG")
             return discord.File(SIGNUP_BG_IMAGE_UPDATED, filename="background.png")
 
     # get the predefined background from filesystem
@@ -87,7 +87,7 @@ def generate_image(icons: Optional[List[io.BytesIO]] = None) -> discord.File:
         # move the x value over to keep equal spacing between icons
         x += padding + image_width + padding
 
-    background.save(SIGNUP_BG_IMAGE_UPDATED, 'PNG')
+    background.save(SIGNUP_BG_IMAGE_UPDATED, "PNG")
     return discord.File(SIGNUP_BG_IMAGE_UPDATED, filename="background.png")
     # converts the completed image to bytes and returns as a File object for the embed
     # with io.BytesIO() as binary:

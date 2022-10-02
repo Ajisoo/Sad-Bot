@@ -9,16 +9,18 @@ import os
 # AND this function with anything that isn't ready to be released yet
 # so the command can only be triggered in the test server
 def only_for_testing_server(guild_id) -> bool:
-	return guild_id == TEST_SERVER_GUILD_ID
+    return guild_id == TEST_SERVER_GUILD_ID
+
 
 IN_PROD = False
 
-ADMINS = [182707904367820800, # ajisoo
-          190253188262133761, # josh
-          192144504998854658, # nolo
-		]
+ADMINS = [
+    182707904367820800,  # ajisoo
+    190253188262133761,  # josh
+    192144504998854658,  # nolo
+]
 
-ESSAY_MODE_ADMINS = ADMINS + [190248352053460993] # christian bc he requested this
+ESSAY_MODE_ADMINS = ADMINS + [190248352053460993]  # christian bc he requested this
 
 BOT_PREFIX = "$"
 
@@ -28,12 +30,14 @@ BOT_KEY_FILE = "bot.key"
 # The following files must be in the bot at launch, or else it will send a message
 # indicating its displeasure.
 
-CONTENT_FOLDER = os.path.join("content") # should already exist in git, so we don't even check it
+CONTENT_FOLDER = os.path.join(
+    "content"
+)  # should already exist in git, so we don't even check it
 
 REQUIRED_RESOURCES = {
-	"ffmpeg_executable": "ffmpeg.exe", # don't ask why we don't check in PATH, and why it's an exe :)
-	"baka_mitai_mp3": os.path.join(CONTENT_FOLDER, "baka_mitai.mp3"),
-	"umq_folder": os.path.join(CONTENT_FOLDER, "undertale_ost_guesser/ost"),
+    "ffmpeg_executable": "ffmpeg.exe",  # don't ask why we don't check in PATH, and why it's an exe :)
+    "baka_mitai_mp3": os.path.join(CONTENT_FOLDER, "baka_mitai.mp3"),
+    "umq_folder": os.path.join(CONTENT_FOLDER, "undertale_ost_guesser/ost"),
 }
 
 RES_FFMPEG = REQUIRED_RESOURCES["ffmpeg_executable"]
@@ -42,39 +46,43 @@ RES_UT_OST_FOLDER = REQUIRED_RESOURCES["umq_folder"]
 
 RES_MESSAGE_OF_DISPLEASURE = "===== find your files >:( ====="
 
-async def res_check(channel):
-	"""
-	Check if all REQUIRED_RESOURCES and API_KEY_NAMES are present.
 
-	This will send RES_MESSAGE_OF_DISPLEASURE if any files/keys are missing, and print everything
-	to console. In dev, it will also send the list of missing resources in the channel.
-	"""
-	missing_res_entries = []
-	for file in REQUIRED_RESOURCES.values():
-		if not os.path.exists(file):
-			missing_res_entries.append(file)
-	missing_keys = []
-	os.makedirs(API_KEY_DIR, exist_ok=True)
-	for key_prefix in API_KEY_NAMES:
-		if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
-			missing_keys.append(f"{key_prefix}.key")
-	if missing_res_entries or missing_keys:
-		print(RES_MESSAGE_OF_DISPLEASURE)
-	for file in missing_res_entries:
-		print("- Missing resource:", file)
-	for key in missing_keys:
-		print("- Missing API key:", key)
-	if missing_res_entries or missing_keys:
-		print("===== WARNING: At least one API key or resource is missing (see above) =====")
-		message = RES_MESSAGE_OF_DISPLEASURE
-		if not IN_PROD:
-			if missing_res_entries:
-				message += "\n- Missing resources: " + ", ".join(missing_res_entries)
-			if missing_keys:
-				message += "\n- Missing API keys: " + ", ".join(missing_keys)
-		await channel.send(message)
-	else:
-		print("All resources and API keys found.")
+async def res_check(channel):
+    """
+    Check if all REQUIRED_RESOURCES and API_KEY_NAMES are present.
+
+    This will send RES_MESSAGE_OF_DISPLEASURE if any files/keys are missing, and print everything
+    to console. In dev, it will also send the list of missing resources in the channel.
+    """
+    missing_res_entries = []
+    for file in REQUIRED_RESOURCES.values():
+        if not os.path.exists(file):
+            missing_res_entries.append(file)
+    missing_keys = []
+    os.makedirs(API_KEY_DIR, exist_ok=True)
+    for key_prefix in API_KEY_NAMES:
+        if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
+            missing_keys.append(f"{key_prefix}.key")
+    if missing_res_entries or missing_keys:
+        print(RES_MESSAGE_OF_DISPLEASURE)
+    for file in missing_res_entries:
+        print("- Missing resource:", file)
+    for key in missing_keys:
+        print("- Missing API key:", key)
+    if missing_res_entries or missing_keys:
+        print(
+            "===== WARNING: At least one API key or resource is missing (see above) ====="
+        )
+        message = RES_MESSAGE_OF_DISPLEASURE
+        if not IN_PROD:
+            if missing_res_entries:
+                message += "\n- Missing resources: " + ", ".join(missing_res_entries)
+            if missing_keys:
+                message += "\n- Missing API keys: " + ", ".join(missing_keys)
+        await channel.send(message)
+    else:
+        print("All resources and API keys found.")
+
 
 # ===== END STATIC RESOURCE CHECKS =====
 
@@ -83,54 +91,58 @@ async def res_check(channel):
 API_KEY_DIR = "api_keys/"
 # Each entry NAME in this list will have a corresponding API key stored in `api_keys/NAME.key`
 API_KEY_NAMES = [
-	"apex",
+    "apex",
 ]
 
 
 def get_key(key_name):
-	"""Returns the key text corresponding to the provided key name; errors on failure."""
-	with open(os.path.join(API_KEY_DIR, f"{key_name}.key")) as f:
-		return f.read().strip()
+    """Returns the key text corresponding to the provided key name; errors on failure."""
+    with open(os.path.join(API_KEY_DIR, f"{key_name}.key")) as f:
+        return f.read().strip()
 
 
 # Maps an endpoint URL to some simple name
 API_ENDPOINTS = {
-	"apex_map": "https://api.mozambiquehe.re/maprotation",
+    "apex_map": "https://api.mozambiquehe.re/maprotation",
 }
 
 # ===== END API KEY STUFF =====
 
-BIRTHDAYS = {225822313550053376: [3, 14],
-			 167090536602140682: [7, 21],
-			 191597928090042369: [8, 3],
-			 193550776340185088: [11, 20],
-			 363197965306953730: [9, 2],
-			 193787631325151238: [6, 16],
-			 182707904367820800: [11, 2],
-			 190248352053460993: [5, 26],
-			 96079507659694080: [5, 17],
-			 259454924964757504: [9, 22],
-			 190253188262133761: [4, 17],
-			 285290000395010048: [7, 30],
-			 734705037489733692: [7, 30],
-			 188670149103058944: [8, 24],
-			 241766036444151808: [2, 13],
-			 157724394767122432: [7, 11],
-			 497278780721725440: [10, 31],
-			 123460317463183363: [11, 9],
-			 262490582276898816: [11, 10],
-			 112703359890227200: [5, 23],
-			 192144504998854658: [7, 22],
-			 377691228977889283: [2, 17]}
+BIRTHDAYS = {
+    225822313550053376: [3, 14],
+    167090536602140682: [7, 21],
+    191597928090042369: [8, 3],
+    193550776340185088: [11, 20],
+    363197965306953730: [9, 2],
+    193787631325151238: [6, 16],
+    182707904367820800: [11, 2],
+    190248352053460993: [5, 26],
+    96079507659694080: [5, 17],
+    259454924964757504: [9, 22],
+    190253188262133761: [4, 17],
+    285290000395010048: [7, 30],
+    734705037489733692: [7, 30],
+    188670149103058944: [8, 24],
+    241766036444151808: [2, 13],
+    157724394767122432: [7, 11],
+    497278780721725440: [10, 31],
+    123460317463183363: [11, 9],
+    262490582276898816: [11, 10],
+    112703359890227200: [5, 23],
+    192144504998854658: [7, 22],
+    377691228977889283: [2, 17],
+}
 
 JAIL_ROLE = 824551576336990211
 
 PATCH_MESSAGE_HEADER = "🎉 Patch 2.2 released today 🎉\n"
 
-PATCH_MESSAGE = ("New command $essaymode is here!\n"
-				"Tired of people typing short messages?\n"
-				"Use `$essaymode on [numChars]` to set a minimum of characters everyone needs to type!\n"
-				"Use `$essaymode off` to disable essay mode.\n")
+PATCH_MESSAGE = (
+    "New command $essaymode is here!\n"
+    "Tired of people typing short messages?\n"
+    "Use `$essaymode on [numChars]` to set a minimum of characters everyone needs to type!\n"
+    "Use `$essaymode off` to disable essay mode.\n"
+)
 
 PATCH_DAY = datetime(2021, 12, 1)
 
@@ -154,7 +166,7 @@ GS_FOLDER = os.path.join(CONTENT_FOLDER, "lol_splash_guesser")
 GS_LEADERBOARD_FILE = os.path.join(GS_FOLDER, "leaderboard_gs.txt")
 CHAMP_SPLASH_FOLDER = os.path.join(GS_FOLDER, "img", "champion", "loading")
 SKINS_DATAFILE = os.path.join(GS_FOLDER, "skins.json")
-RARITY_DIST_FILE = os.path.join(GS_FOLDER, 'rarity-dist.json')
+RARITY_DIST_FILE = os.path.join(GS_FOLDER, "rarity-dist.json")
 CROPPED_IMAGE_FNAME = "tempCroppedSplash.jpg"
 FULL_IMAGE_FNAME = "tempFullSplash.jpg"
 
@@ -188,59 +200,44 @@ BURNER_IMAGES_CHANNEL_ID_TEST = 836343014032801912  # one with jisoo and others
 BURNER_IMAGES_GUILD_ID2 = 836273735102890056  # separate burner images server
 BURNER_IMAGES_CHANNEL_ID_TEST2 = 836273735697956897
 
-BURNER_IMAGES_GUILD_ID_PROD = 836143604321746944 # prod burner server
+BURNER_IMAGES_GUILD_ID_PROD = 836143604321746944  # prod burner server
 BURNER_IMAGES_CHANNEL_ID_PROD = 836143604321746947
 
 LEADERBOARDS = {
-	GS_LEADERBOARD_ID: GS_LEADERBOARD_FILE,
-	GA_LEADERBOARD_ID: GA_LEADERBOARD_ID, # <-- FIXME make this the correct file eventually
-	GUM_LEADERBOARD_ID: GUM_LEADERBOARD_FILE,
+    GS_LEADERBOARD_ID: GS_LEADERBOARD_FILE,
+    GA_LEADERBOARD_ID: GA_LEADERBOARD_ID,  # <-- FIXME make this the correct file eventually
+    GUM_LEADERBOARD_ID: GUM_LEADERBOARD_FILE,
 }
 
 RARITY_DIST = {
-	"kNoRarity": {
-		'percentage': 0.75,
-		'rolls': []
-	},
-	"kEpic": {
-		'percentage': 0.20,
-		'rolls': []
-	},
-	"kLegendary": {
-		'percentage': 0.02,
-		'rolls': []
-	},
-	"kUltimate": {
-		'percentage': 0.01,
-		'rolls': []
-	},
-	"kMythic": {
-		'percentage': 0.02,
-		'rolls': []
-	}
+    "kNoRarity": {"percentage": 0.75, "rolls": []},
+    "kEpic": {"percentage": 0.20, "rolls": []},
+    "kLegendary": {"percentage": 0.02, "rolls": []},
+    "kUltimate": {"percentage": 0.01, "rolls": []},
+    "kMythic": {"percentage": 0.02, "rolls": []},
 }
 
 REACTION_MAP = {
-	0: ":zero:",
-	1: ":one:",
-	2: ":two:",
-	3: ":three:",
-	4: ":four:",
-	5: ":five:",
-	6: ":six:",
-	7: ":seven:",
-	8: ":eight:",
-	9: ":nine:",
+    0: ":zero:",
+    1: ":one:",
+    2: ":two:",
+    3: ":three:",
+    4: ":four:",
+    5: ":five:",
+    6: ":six:",
+    7: ":seven:",
+    8: ":eight:",
+    9: ":nine:",
 }
 REACTION_MAP2 = {
-	0: "0⃣",
-	1: "1⃣",
-	2: "2⃣",
-	3: "3⃣",
-	4: "4⃣",
-	5: "5⃣",
-	6: "6⃣",
-	7: "7⃣",
-	8: "8⃣",
-	9: "9⃣",
+    0: "0⃣",
+    1: "1⃣",
+    2: "2⃣",
+    3: "3⃣",
+    4: "4⃣",
+    5: "5⃣",
+    6: "6⃣",
+    7: "7⃣",
+    8: "8⃣",
+    9: "9⃣",
 }

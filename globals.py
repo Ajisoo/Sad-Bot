@@ -77,6 +77,10 @@ HELP_DEFAULT_MESSAGE = "😠 no help for you! 😠"
 # Folder names are relative to the location of bot.py, so if anything gets moved around make sure to update these
 
 CONTENT_FOLDER = os.path.join("content")
+RESOURCES_FOLDER = os.path.join("resources")
+
+SIGNUP_BG_IMAGE = os.path.join(RESOURCES_FOLDER, "background.png")
+SIGNUP_BG_IMAGE_UPDATED = os.path.join(RESOURCES_FOLDER, "background.updated.png")
 
 GA_BASE_WEBSITE = "https://www.mobafire.com"
 GA_WEBSITE = GA_BASE_WEBSITE + "/league-of-legends/abilities"

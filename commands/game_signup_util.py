@@ -1,4 +1,5 @@
 import io
+import os
 from typing import List, Optional, Union
 
 import discord
@@ -6,17 +7,21 @@ from discord.ui import Button, View
 import PIL
 from PIL import Image, ImageDraw, ImageOps
 
-from globals import SIGNUP_BG_IMAGE
+from globals import RESOURCES_FOLDER, SIGNUP_BG_IMAGE, SIGNUP_BG_IMAGE_UPDATED
 
 
-async def create_board(bot, message):
+class GameButton(Button):
+    async def callback(self, interaction):
+        await interaction.channel.send(interaction.user.name)
 
-	league_button = Button(label="League", color='green')
+async def create_board(message):
+    league_button = GameButton(label='League gamer', style=discord.ButtonStyle.green)
+    (file, embed) = create_party_embed('Gamers', 'Sign up')
 
-	embed = create_party_embed('Gamers', 'Sign up')
+    view = View()
+    view.add_item(league_button)
 
-
-	return
+    await message.channel.send(file=file, embed=embed, view=view)
 
 
 
@@ -28,19 +33,21 @@ def create_party_embed(
 ) -> discord.Embed:
 
     embed = discord.Embed(title=title, description=description)
-    embed.set_thumbnail(url=thumbnail if thumbnail else discord.Embed.Empty)
+    embed.set_thumbnail(url=thumbnail if thumbnail else None)
 
-    if icons:
-        image = generate_image(icons)
-        embed.set_image(file=image)
+    # if icons:
+    file = generate_image(icons)
+    embed.set_image(url='attachment://background.png')
 
-    return embed
+    return (file, embed)
 
 
-def generate_image(icons: Optional[List[io.BytesIO]] = None) -> PIL.Image:
+def generate_image(icons: Optional[List[io.BytesIO]] = None) -> discord.File:
 
     if icons is None:
-        return discord.File(fp=SIGNUP_BG_IMAGE, filename="join.png")
+        with Image.open(SIGNUP_BG_IMAGE) as bg:
+            bg.save(SIGNUP_BG_IMAGE_UPDATED, 'PNG')
+            return discord.File(SIGNUP_BG_IMAGE_UPDATED, filename="background.png")
 
     # get the predefined background from filesystem
     background = Image.open(SIGNUP_BG_IMAGE)
@@ -80,9 +87,11 @@ def generate_image(icons: Optional[List[io.BytesIO]] = None) -> PIL.Image:
         # move the x value over to keep equal spacing between icons
         x += padding + image_width + padding
 
+    background.save(SIGNUP_BG_IMAGE_UPDATED, 'PNG')
+    return discord.File(SIGNUP_BG_IMAGE_UPDATED, filename="background.png")
     # converts the completed image to bytes and returns as a File object for the embed
-    with io.BytesIO() as binary:
-        background.save(binary, "PNG")
-        binary.seek(0)
+    # with io.BytesIO() as binary:
+    #     background.save(binary, "PNG")
+    #     binary.seek(0)
 
-        return discord.File(binary, filename="icons.png")
+    #     return discord.File(binary, filename="icons.png")

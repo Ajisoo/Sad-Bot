@@ -6,7 +6,7 @@ import re
 import discord
 
 from data.bot_status import BotStatus
-from commands import guess_util, leaderboard_util, roll_color, roll_splashes, apex_util
+from commands import guess_util, leaderboard_util, roll_color, roll_splashes, apex_util, game_signup_util
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
 from globals import *
@@ -300,6 +300,9 @@ async def on_message(message: discord.Message):
 
 	if command == 'apexmap':
 		await apex_util.cmd_get_apex_map(message)
+
+	if command == 'rollcall':
+		await game_signup_util.create_board(message)
 
 
 	#TODO: add command to see current trade on you?

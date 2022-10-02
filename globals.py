@@ -155,6 +155,12 @@ RESOURCES_FOLDER = os.path.join("resources")
 
 SIGNUP_BG_IMAGE = os.path.join(RESOURCES_FOLDER, "background.png")
 SIGNUP_BG_IMAGE_UPDATED = os.path.join(RESOURCES_FOLDER, "background.updated.png")
+THUMBNAIL_IMAGE = os.path.join(RESOURCES_FOLDER, 'thumbnail.png')
+
+THUMBNAIL_ATTACHMENT_URL = 'attachment://thumbnail.png'
+BACKGROUND_ATTACHMENT_URL = 'attachment://background.png'
+
+GAME_THUMBNAILS_FOLDER = os.path.join(RESOURCES_FOLDER, 'game_thumbnails')
 
 GA_BASE_WEBSITE = "https://www.mobafire.com"
 GA_WEBSITE = GA_BASE_WEBSITE + "/league-of-legends/abilities"

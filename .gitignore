@@ -11,3 +11,5 @@ venv/*
 bot.key
 api_keys/
 ffmpeg.exe
+
+resources/background.updated.png

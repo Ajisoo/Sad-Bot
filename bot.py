@@ -54,16 +54,8 @@ async def on_ready():
 	now = datetime.now()
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
+	await res_check(bot_spam_channel)
 
-	os.makedirs(API_KEY_DIR, exist_ok=True)
-	missing_key = False
-	for key_prefix in API_KEY_NAMES:
-		if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
-			missing_key = True
-			print("- MISSING API KEY:", f"{key_prefix}.key")
-	if missing_key:
-		print("===== WARNING: At least one API key is missing (see above) =====")
-		
 
 @client.event
 async def on_message(message: discord.Message):
@@ -207,7 +199,7 @@ async def on_message(message: discord.Message):
 		except Exception:
 
 			vc = client.voice_clients[0]
-		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=os.path.join(CONTENT_FOLDER,args[0] + '.mp3')))
+		vc.play(discord.FFmpegPCMAudio(executable=RES_FFMPEG, source=os.path.join(CONTENT_FOLDER,args[0] + '.mp3')))
 		while vc.is_playing():
 			await asyncio.sleep(1)
 		# disconnect after the player has finished
@@ -221,7 +213,7 @@ async def on_message(message: discord.Message):
 		except Exception:
 
 			vc = client.voice_clients[0]
-		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=os.path.join(CONTENT_FOLDER,'baka_mitai.mp3')))
+		vc.play(discord.FFmpegPCMAudio(executable=RES_FFMPEG, source=RES_BAKA_MITAI))
 		while vc.is_playing():
 			await asyncio.sleep(1)
 		# disconnect after the player has finished

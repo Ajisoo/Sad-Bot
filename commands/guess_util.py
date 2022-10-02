@@ -341,7 +341,6 @@ async def GET_remote_file(url, fname, message):
 		await message.channel.send("Error getting info from " + url)
 # ----------------------------------------------------------------------------------------------
 
-UT_OST_FOLDER = os.path.join(GUM_FOLDER, "ost")
 # Every file starts with this - we could rename them but we're (I'm) lazy
 UT_PREFIX_LEN = len("toby fox - UNDERTALE Soundtrack - ")
 

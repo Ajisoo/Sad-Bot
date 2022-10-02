@@ -1,5 +1,4 @@
 import io
-import os
 from typing import List, Optional, Union
 
 import discord
@@ -7,12 +6,18 @@ from discord.ui import Button, View
 import PIL
 from PIL import Image, ImageDraw, ImageOps
 
-from globals import RESOURCES_FOLDER, SIGNUP_BG_IMAGE, SIGNUP_BG_IMAGE_UPDATED
+from globals import SIGNUP_BG_IMAGE, SIGNUP_BG_IMAGE_UPDATED
 
 
 class GameButton(Button):
     async def callback(self, interaction):
-        await interaction.channel.send(interaction.user.name)
+        league_button = GameButton(label="League gamer", style=discord.ButtonStyle.green)
+        (file, embed) = create_party_embed("Gamers", "Sign up", thumbnail=None, icons=[io.BytesIO(await interaction.user.display_avatar.read())])
+
+        view = View()
+        view.add_item(league_button)
+
+        await interaction.response.edit_message(attachments=[file], embed=embed, view=view)
 
 
 async def create_board(message):
@@ -59,11 +64,11 @@ def generate_image(icons: Optional[List[io.BytesIO]] = None) -> discord.File:
     # calculate how many icons for each row
     # given a padding of 20px and an avatar width of 75px
     padding = 5
-    image_width = 50
+    image_width = 200
     img_per_row = canvas_width / (image_width * padding)
 
     # create image objects for each avatar
-    icons = [Image.open(io.BytesIO(icon)) for icon in icons]
+    icons = [Image.open(icon) for icon in icons]
 
     # now let's start placing the avatars on the canvas
     x = padding
@@ -72,7 +77,7 @@ def generate_image(icons: Optional[List[io.BytesIO]] = None) -> discord.File:
         # ensure size that matches image_width
         width, height = icon.size
         # image height will be (height*(new_width/width))
-        height = int(height * (image_width / width))
+        height = 200
 
         icon = icon.resize((image_width, height))
 

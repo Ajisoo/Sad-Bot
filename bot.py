@@ -90,14 +90,6 @@ async def on_message(message: discord.Message):
 		if now.month == 3 and now.day == 14:
 			await message.add_reaction('🥧')
 
-	if len(message.content) < bot.essay_mode_minimum and bot.essay_mode_on and bot.essay_mode_minimum > 0:
-		try:
-			emji = await message.guild.fetch_emoji(883078527203827763) # feel better
-			await message.add_reaction(emji)
-		except Exception:
-			pass
-		await message.delete(delay=0.3)
-
 	if now.month == 12 and now.day == 25:
 		reactions = ['🎅', '🤶', '❄️', '⛄', '🎄', '🎁', '☃️']
 		weights = [5000, 5000, 5000, 5000, 5000, 5000, 1]
@@ -148,6 +140,14 @@ async def on_message(message: discord.Message):
 				await message.add_reaction('✅')
 		else:
 			await message.channel.send("Please apply for privileges to use this command.")
+
+	if len(message.content) < bot.essay_mode_minimum and bot.essay_mode_on and bot.essay_mode_minimum > 0:
+		try:
+			emji = await message.guild.fetch_emoji(883078527203827763) # feel better
+			await message.add_reaction(emji)
+		except Exception:
+			pass
+		await message.delete(delay=0.3)
 
 	if command == 'ga_refresh':
 		await guess_util.cmd_ga_refresh(bot, message, args)

@@ -29,7 +29,7 @@ async def cmd_ga_refresh(bot, message, _args):
 	counter = 0
 	for ability in ability_list:
 		champ_name = ability.find("img", {"class": "ability-list__item__champ"})["champ"].replace("\n", " ")
-		image = ability.find("img", {"class": "ability-list__item__pic"})["src"]
+		image = ability.find("img", {"class": "ability-list__item__pic"})["data-original"]
 		ability_name = str(ability.find("span", {"class": "ability-list__item__name"}).contents[0]).strip().replace(
 			"\n", " ")
 		ability_key = ability.find("div", {"class": "ability-list__item__keybind"}).text.replace("\n", " ")

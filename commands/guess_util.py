@@ -394,7 +394,7 @@ UT_PREFIX_LEN = len("toby fox - UNDERTALE Soundtrack - ")
 
 async def _umq_try_join_vc(_bot, message):
     """Returns a voice channel if it can connect; otherwise sends a warning and returns"""
-    if not os.path.exists(UT_OST_FOLDER):
+    if not os.path.exists(RES_UT_OST_FOLDER):
         print("UNDERTALE OST FOLDER DOESN'T EXIST")
         await message.channel.send(
             "Please ask an admin to fix the undertale OST files!"
@@ -414,12 +414,12 @@ async def _umq_try_join_vc(_bot, message):
 
 
 async def cmd_umq_start(bot, message, _args):
-    chosen_song_fn = random.choice(os.listdir(UT_OST_FOLDER))
+    chosen_song_fn = random.choice(os.listdir(RES_UT_OST_FOLDER))
     vc = await _umq_try_join_vc(bot, message)
     if not vc:
         return
     vc.stop()
-    song_path = os.path.join(UT_OST_FOLDER, chosen_song_fn)
+    song_path = os.path.join(RES_UT_OST_FOLDER, chosen_song_fn)
     # The starting point is at least 15 seconds away before the end of the song
     duration = int(float(ffmpeg.probe(song_path)["format"]["duration"]))
     ts_secs = random.randint(0, max(0, duration - 15))
@@ -450,7 +450,7 @@ async def cmd_umq_replay(bot, message, _args):
         return
     vc.stop()
     chosen_song_fn = bot.umq_last_song_fn
-    song_path = os.path.join(UT_OST_FOLDER, chosen_song_fn)
+    song_path = os.path.join(RES_UT_OST_FOLDER, chosen_song_fn)
     if chosen_song_fn:
         vc.play(
             discord.FFmpegPCMAudio(

@@ -4,3 +4,5 @@ ffmpeg-python
 requests
 Pillow
 pynacl
+black
+pylint

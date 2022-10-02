@@ -1,0 +1,7 @@
+[tool.black]
+target-version = ["py37"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    "W0614", # unused-wildcard-import
+]

@@ -1,3 +1,7 @@
+"""
+Global constants, URLs, file paths, and associated helper functions.
+"""
+
 from datetime import datetime
 import os
 
@@ -20,6 +24,62 @@ BOT_PREFIX = "$"
 
 BOT_KEY_FILE = "bot.key"
 
+# ===== BEGIN STATIC RESOURCE CHECKS =====
+# The following files must be in the bot at launch, or else it will send a message
+# indicating its displeasure.
+
+CONTENT_FOLDER = os.path.join("content") # should already exist in git, so we don't even check it
+
+REQUIRED_RESOURCES = {
+	"ffmpeg_executable": "ffmpeg.exe", # don't ask why we don't check in PATH, and why it's an exe :)
+	"baka_mitai_mp3": os.path.join(CONTENT_FOLDER, "baka_mitai.mp3"),
+	"umq_folder": os.path.join(CONTENT_FOLDER, "undertale_ost_guesser/ost"),
+}
+
+RES_FFMPEG = REQUIRED_RESOURCES["ffmpeg_executable"]
+RES_BAKA_MITAI = REQUIRED_RESOURCES["baka_mitai_mp3"]
+RES_UT_OST_FOLDER = REQUIRED_RESOURCES["umq_folder"]
+
+RES_MESSAGE_OF_DISPLEASURE = "===== find your files >:( ====="
+
+async def res_check(channel):
+	"""
+	Check if all REQUIRED_RESOURCES and API_KEY_NAMES are present.
+
+	This will send RES_MESSAGE_OF_DISPLEASURE if any files/keys are missing, and print everything
+	to console. In dev, it will also send the list of missing resources in the channel.
+	"""
+	missing_res_entries = []
+	for file in REQUIRED_RESOURCES.values():
+		if not os.path.exists(file):
+			missing_res_entries.append(file)
+	missing_keys = []
+	os.makedirs(API_KEY_DIR, exist_ok=True)
+	for key_prefix in API_KEY_NAMES:
+		if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
+			missing_keys.append(f"{key_prefix}.key")
+	if missing_res_entries or missing_keys:
+		print(RES_MESSAGE_OF_DISPLEASURE)
+	for file in missing_res_entries:
+		print("- Missing resource:", file)
+	for key in missing_keys:
+		print("- Missing API key:", key)
+	if missing_res_entries or missing_keys:
+		print("===== WARNING: At least one API key or resource is missing (see above) =====")
+		message = RES_MESSAGE_OF_DISPLEASURE
+		if not IN_PROD:
+			if missing_res_entries:
+				message += "\n- Missing resources: " + ", ".join(missing_res_entries)
+			if missing_keys:
+				message += "\n- Missing API keys: " + ", ".join(missing_keys)
+		await channel.send(message)
+	else:
+		print("All resources and API keys found.")
+
+# ===== END STATIC RESOURCE CHECKS =====
+
+# ===== BEGIN API KEY STUFF =====
+
 API_KEY_DIR = "api_keys/"
 # Each entry NAME in this list will have a corresponding API key stored in `api_keys/NAME.key`
 API_KEY_NAMES = [
@@ -37,6 +97,8 @@ def get_key(key_name):
 API_ENDPOINTS = {
 	"apex_map": "https://api.mozambiquehe.re/maprotation",
 }
+
+# ===== END API KEY STUFF =====
 
 BIRTHDAYS = {225822313550053376: [3, 14],
 			 167090536602140682: [7, 21],
@@ -106,8 +168,7 @@ TENTH_ANNIVERSARY_SKINS_JSON = os.path.join(USER_INFO_FOLDER, "anniversary_skins
 
 RS_ID_TO_ALIAS_MAPPINGS_FILE = os.path.join(GS_FOLDER, "champion-summary.json")
 RS_SKIN_NAME_TO_ID_MAPPINGS_FILE = os.path.join(GS_FOLDER, "name-to-id-mappings.json")
-GUM_FOLDER = os.path.join(CONTENT_FOLDER, "undertale_ost_guesser")
-GUM_LEADERBOARD_FILE = os.path.join(GUM_FOLDER, "leaderboard_gum.txt")
+GUM_LEADERBOARD_FILE = os.path.join(RES_UT_OST_FOLDER, "leaderboard_gum.txt")
 
 GS_LEADERBOARD_ID = "GS"
 GA_LEADERBOARD_ID = "GA"

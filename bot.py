@@ -100,7 +100,7 @@ async def on_message(message: discord.Message):
 
 	if now.month == 12 and now.day == 25:
 		reactions = ['🎅', '🤶', '❄️', '⛄', '🎄', '🎁', '☃️']
-		weights = [5000, 5000, 5000, 5000, 5000, 5000, 1]
+		weights = [500, 500, 500, 500, 500, 500, 1]
 		await message.add_reaction(random.choices(reactions, weights=weights, k=1)[0])
 	
 	if (message.guild.id == LOUNGE_GUILD_ID and JAIL_ROLE in [y.id for y in message.author.roles]):

@@ -9,10 +9,13 @@ def only_for_testing_server(guild_id) -> bool:
 
 IN_PROD = False
 
-ADMINS = [182707904367820800, # ajisoo
-          190253188262133761, # josh
-          192144504998854658, # nolo
-		]
+BOT_NAME = "SadBot" if IN_PROD else "HappyBot"
+
+ADMINS = [
+    182707904367820800,  # ajisoo
+    190253188262133761,  # josh
+    192144504998854658,  # nolo
+]
 
 ESSAY_MODE_ADMINS = ADMINS + [190248352053460993] # christian bc he requested this
 

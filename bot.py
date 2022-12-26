@@ -2,11 +2,19 @@ import datetime
 import asyncio
 import random
 import re
+import threading
 
 import discord
 
 from data.bot_status import BotStatus
-from commands import guess_util, leaderboard_util, roll_color, roll_splashes, apex_util
+from commands import (
+	guess_util,
+	leaderboard_util,
+	roll_color,
+	roll_splashes,
+	message_guess,
+	apex_util,
+)
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
 from globals import *
@@ -55,14 +63,26 @@ async def on_ready():
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
 
-	os.makedirs(API_KEY_DIR, exist_ok=True)
-	missing_key = False
-	for key_prefix in API_KEY_NAMES:
-		if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
-			missing_key = True
-			print("- MISSING API KEY:", f"{key_prefix}.key")
-	if missing_key:
-		print("===== WARNING: At least one API key is missing (see above) =====")
+	await message_guess.cmd_mguess_first_new_game(client, bot_spam_channel)
+
+	# TEMPORARY FOR NEW YEARS GAG:
+	# Schedule sends of mguess message
+	# sched library seems to be used internally by discord.py, so just spawn a thread instead
+	# def scheduled():
+	# 	await message_guess.cmd_mguess_dingdong(client)
+	# delay = (message_guess.MGUESS_DINGDONG_SEND_DT - now).total_seconds()
+	# threading.Timer(delay, scheduled).start()
+
+	# await message_guess.cmd_mguess_dingdong(client)
+
+	# os.makedirs(API_KEY_DIR, exist_ok=True)
+	# missing_key = False
+	# for key_prefix in API_KEY_NAMES:
+	# 	if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
+	# 		missing_key = True
+	# 		print("- MISSING API KEY:", f"{key_prefix}.key")
+	# if missing_key:
+	# 	print("===== WARNING: At least one API key is missing (see above) =====")
 		
 
 @client.event
@@ -125,6 +145,7 @@ async def on_message(message: discord.Message):
 	if len(args) == 0:
 		return
 
+	args_unnormalized = args[1:] if len(args) > 1 else []
 	args = [x.lower() for x in args]
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
@@ -243,6 +264,20 @@ async def on_message(message: discord.Message):
 	if command in ['patch_notes', 'pn']:
 		await message.channel.send(PATCH_MESSAGE)
 
+	MGuessCommands = message_guess.MGuessCommands
+
+	if command == MGuessCommands.NEW:
+		await message_guess.cmd_mguess_first_new_game(client, message)
+
+	if command == MGuessCommands.SKIP:
+		await message_guess.cmd_mguess_skip(message)
+
+	if command == MGuessCommands.HINT:
+		await message_guess.cmd_mguess_hint(message)
+
+	if command == MGuessCommands.GUESS:
+		await message_guess.cmd_mguess_guess(message, args_unnormalized)
+
 	if command in ['guess_splash', 'gs']:
 		await guess_util.cmd_gs_start(bot, message, args)
 
@@ -288,7 +323,7 @@ async def on_message(message: discord.Message):
 		else:
 			await message.channel.send(("Please follow one of the trading formats:\n"
 										"Trade initiation:\n"
-			 							"`[$ts | $trade_splash] <@tradee> <skin_to_trade_id> <skin_to_receive_id>`\n\n"
+										"`[$ts | $trade_splash] <@tradee> <skin_to_trade_id> <skin_to_receive_id>`\n\n"
 										"Trade response:\n"
 										"`[$ts] <y|yes|n|no>`"))
 
@@ -358,6 +393,14 @@ async def on_raw_reaction_add(payload):
 
 	if franklin is not None:
 		await franklin.react(processed_emoji, payload.member)
+
+@client.event
+async def on_reaction_add(reaction, _user):
+	# Handle dingdongbingbong
+	message = reaction.message
+	if message.id == message_guess.dingdong_id:
+		if len(message.reactions) >= message_guess.MGUESS_REACT_THRESH:
+			await message_guess.cmd_mguess_first_new_game(client, message.channel)
 
 # Currently only used for $harem scrolling
 @client.event

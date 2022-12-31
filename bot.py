@@ -4,9 +4,17 @@ import random
 import re
 
 import discord
+from discord.ext import tasks
 
 from data.bot_status import BotStatus
-from commands import guess_util, leaderboard_util, roll_color, roll_splashes, apex_util
+from commands import (
+	guess_util,
+	leaderboard_util,
+	roll_color,
+	roll_splashes,
+	message_guess,
+	apex_util,
+)
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
 from globals import *
@@ -28,11 +36,12 @@ def update_ga_leaderboard_file_name():
 
 	os.rename(os.path.join(GA_FOLDER, "leaderboard.txt"), GA_LEADERBOARD_FILE)
 
+
 @client.event
 async def on_ready():
 	global bots, IN_PROD, burner_channel
 	for guild in client.guilds:
-		bots[guild.id] = BotStatus(client)
+		bots[guild.id] = BotStatus(client, guild)
 		if guild.id == LOUNGE_GUILD_ID:
 			IN_PROD = True
 
@@ -125,6 +134,7 @@ async def on_message(message: discord.Message):
 	if len(args) == 0:
 		return
 
+	args_unnormalized = args[1:] if len(args) > 1 else []
 	args = [x.lower() for x in args]
 	command = args[0].lower()
 	args = args[1:] if len(args) > 1 else []
@@ -243,6 +253,26 @@ async def on_message(message: discord.Message):
 	if command in ['patch_notes', 'pn']:
 		await message.channel.send(PATCH_MESSAGE)
 
+	MGuessCommands = message_guess.MGuessCommands
+
+	if command == MGuessCommands.NEW:
+		await message_guess.cmd_mguess_new_game(client, message.channel, punish_on_fail=False)
+
+	if command == MGuessCommands.SKIP:
+		await message_guess.cmd_mguess_skip(message)
+
+	if command == MGuessCommands.HINTS:
+		await message_guess.cmd_mguess_hints(message)
+
+	if command == MGuessCommands.MESSAGE:
+		await message_guess.cmd_mguess_message(message)
+
+	if command == MGuessCommands.GUESS:
+		await message_guess.cmd_mguess_guess(message, args_unnormalized)
+
+	if command == MGuessCommands.HELP:
+		await message_guess.cmd_mguess_help(message)
+
 	if command in ['guess_splash', 'gs']:
 		await guess_util.cmd_gs_start(bot, message, args)
 
@@ -288,7 +318,7 @@ async def on_message(message: discord.Message):
 		else:
 			await message.channel.send(("Please follow one of the trading formats:\n"
 										"Trade initiation:\n"
-			 							"`[$ts | $trade_splash] <@tradee> <skin_to_trade_id> <skin_to_receive_id>`\n\n"
+										"`[$ts | $trade_splash] <@tradee> <skin_to_trade_id> <skin_to_receive_id>`\n\n"
 										"Trade response:\n"
 										"`[$ts] <y|yes|n|no>`"))
 
@@ -358,6 +388,14 @@ async def on_raw_reaction_add(payload):
 
 	if franklin is not None:
 		await franklin.react(processed_emoji, payload.member)
+
+@client.event
+async def on_reaction_add(reaction, _user):
+	# Handle dingdongbingbong
+	message = reaction.message
+	if message.id == message_guess.dingdong_id:
+		if len(message.reactions) >= message_guess.MGUESS_REACT_THRESH:
+			await message_guess.cmd_mguess_first_new_game(client, message.channel)
 
 # Currently only used for $harem scrolling
 @client.event

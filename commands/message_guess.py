@@ -49,7 +49,7 @@ else:
         834817573748605009,
     ]
 
-MGUESS_DINGDONG_SEND_DT = dt.datetime(2022, 12, 31, hour=22, minute=0, second=0)
+MGUESS_DINGDONG_SEND_DT = dt.datetime(2022, 12, 31, hour=22, minute=0, second=0).astimezone()
 # MGUESS_DINGDONG_SEND_DT = dt.datetime.now().astimezone() + dt.timedelta(seconds=10) # CHANGEME
 MGUESS_REACT_THRESH = 3
 MGUESS_ALLOWED_GUESSES = 5
@@ -539,7 +539,7 @@ async def cmd_mguess_hints(message):
         "The hint is that which cannot be named.",
     ])
     value = "\n".join("- " + l for l in curr_state.hint_text_list) if curr_state.hint_text_list else nothing
-    embed = discord.Embed(title="Hints", description=.astimezone()value)
+    embed = discord.Embed(title="Hints", description=value)
     embed.set_footer(text="A new hint is revealed after an incorrect guess.")
     await message.channel.send("Here's the story so far:", embed=embed)
 

@@ -1,4 +1,8 @@
-class BotStatus:
+from discord.ext import tasks, commands as c
+
+from commands import message_guess
+
+class BotStatus(c.Cog):
 
 	def __init__(self, discord_client):
 		self.client = discord_client
@@ -23,3 +27,10 @@ class BotStatus:
 					break
 		self.umq_last_song_fn = None
 		self.umq_last_song_ts = None
+
+	# Scheduled job for new years 2023 gag
+	@tasks.loop(time=message_guess.MGUESS_DINGDONG_SEND_DT.time())
+	async def ny23_gag(self):
+		print("running scheduled")
+		if message_guess.MGUESS_DINGDONG_SEND_DT.date() == dt.date.today():
+			await message_guess.cmd_mguess_dingdong(self.client)

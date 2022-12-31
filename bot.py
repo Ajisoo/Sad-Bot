@@ -5,6 +5,7 @@ import re
 import threading
 
 import discord
+from discord.ext import tasks
 
 from data.bot_status import BotStatus
 from commands import (
@@ -36,6 +37,7 @@ def update_ga_leaderboard_file_name():
 
 	os.rename(os.path.join(GA_FOLDER, "leaderboard.txt"), GA_LEADERBOARD_FILE)
 
+
 @client.event
 async def on_ready():
 	global bots, IN_PROD, burner_channel
@@ -63,26 +65,16 @@ async def on_ready():
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
 
-	await message_guess.cmd_mguess_first_new_game(client, bot_spam_channel)
-
-	# TEMPORARY FOR NEW YEARS GAG:
-	# Schedule sends of mguess message
-	# sched library seems to be used internally by discord.py, so just spawn a thread instead
-	# def scheduled():
-	# 	await message_guess.cmd_mguess_dingdong(client)
-	# delay = (message_guess.MGUESS_DINGDONG_SEND_DT - now).total_seconds()
-	# threading.Timer(delay, scheduled).start()
-
 	# await message_guess.cmd_mguess_dingdong(client)
 
-	# os.makedirs(API_KEY_DIR, exist_ok=True)
-	# missing_key = False
-	# for key_prefix in API_KEY_NAMES:
-	# 	if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
-	# 		missing_key = True
-	# 		print("- MISSING API KEY:", f"{key_prefix}.key")
-	# if missing_key:
-	# 	print("===== WARNING: At least one API key is missing (see above) =====")
+	os.makedirs(API_KEY_DIR, exist_ok=True)
+	missing_key = False
+	for key_prefix in API_KEY_NAMES:
+		if not os.path.isfile(os.path.join(API_KEY_DIR, f"{key_prefix}.key")):
+			missing_key = True
+			print("- MISSING API KEY:", f"{key_prefix}.key")
+	if missing_key:
+		print("===== WARNING: At least one API key is missing (see above) =====")
 		
 
 @client.event
@@ -267,13 +259,16 @@ async def on_message(message: discord.Message):
 	MGuessCommands = message_guess.MGuessCommands
 
 	if command == MGuessCommands.NEW:
-		await message_guess.cmd_mguess_first_new_game(client, message)
+		await message_guess.cmd_mguess_first_new_game(client, message.channel)
 
 	if command == MGuessCommands.SKIP:
 		await message_guess.cmd_mguess_skip(message)
 
-	if command == MGuessCommands.HINT:
-		await message_guess.cmd_mguess_hint(message)
+	if command == MGuessCommands.HINTS:
+		await message_guess.cmd_mguess_hints(message)
+
+	if command == MGuessCommands.MESSAGE:
+		await message_guess.cmd_mguess_message(message)
 
 	if command == MGuessCommands.GUESS:
 		await message_guess.cmd_mguess_guess(message, args_unnormalized)

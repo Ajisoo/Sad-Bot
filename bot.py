@@ -2,7 +2,6 @@ import datetime
 import asyncio
 import random
 import re
-import threading
 
 import discord
 from discord.ext import tasks
@@ -64,8 +63,6 @@ async def on_ready():
 	now = datetime.now()
 	if now.date() == PATCH_DAY.date():
 		await bot_spam_channel.send(PATCH_MESSAGE_HEADER + PATCH_MESSAGE)
-
-	# await message_guess.cmd_mguess_dingdong(client)
 
 	os.makedirs(API_KEY_DIR, exist_ok=True)
 	missing_key = False

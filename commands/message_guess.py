@@ -157,7 +157,7 @@ async def cmd_mguess_dingdong(client):
     chan = client.get_channel(MGUESS_PLAY_CHANNEL_ID)
     dingdong = await chan.send(textwrap.dedent(
         f"""
-        Ding dong bing bong...
+        \\*Ding dong, bing bong...\\*
         Mm, ahem,
         This is a channel announcement. It is now {dt.datetime.now().strftime("%I%p")}.
         As such, it is officially **nighttime**.
@@ -172,7 +172,7 @@ async def cmd_mguess_first_new_game(client, channel):
     Sends messages initiating the first guessing game. This is triggered
     when three people react to the initial "dingdong" message.
     """
-    await channel.send("\\*Ding dong dong ding\\*")
+    await channel.send("\\*Ding dong, dong ding\\*")
     time.sleep(MGUESS_SUPERDRAMATIC_DELAY)
     await channel.send("A body has been discovered!")
     time.sleep(MGUESS_SUPERDRAMATIC_DELAY)
@@ -330,7 +330,7 @@ async def cmd_mguess_new_game(client, channel, punish_on_fail):
         
     start_ts = dt.datetime.now()
     v_msg, k_msg = await choose_random_message(False)
-    # v_msg, k_msg = await _choose_fixed_message_pair(client)
+    # v_msg, k_msg = await _choose_fixed_message_pair(client) # CHANGEME
     mulligan_count = 0
     while v_msg is None:  # mulligan
         mulligan_count += 1

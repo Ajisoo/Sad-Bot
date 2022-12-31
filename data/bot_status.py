@@ -1,11 +1,15 @@
+import datetime as dt
+
+import discord
 from discord.ext import tasks, commands as c
 
 from commands import message_guess
 
 class BotStatus(c.Cog):
 
-	def __init__(self, discord_client):
+	def __init__(self, discord_client, guild):
 		self.client = discord_client
+		self.guild = guild
 		self.g_valid = True
 		self.g_answer = ""
 		self.g_answer_raw = ""
@@ -28,9 +32,14 @@ class BotStatus(c.Cog):
 		self.umq_last_song_fn = None
 		self.umq_last_song_ts = None
 
+		if guild.get_channel(message_guess.MGUESS_PLAY_CHANNEL_ID) is not None:
+			self.ny23_gag.start()
+
+	def cog_unload(self):
+		self.ny23_gag.cancel()
+
 	# Scheduled job for new years 2023 gag
-	@tasks.loop(time=message_guess.MGUESS_DINGDONG_SEND_DT.time())
+	@tasks.loop(time=message_guess.MGUESS_DINGDONG_SEND_DT.timetz())
 	async def ny23_gag(self):
-		print("running scheduled")
 		if message_guess.MGUESS_DINGDONG_SEND_DT.date() == dt.date.today():
 			await message_guess.cmd_mguess_dingdong(self.client)

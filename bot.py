@@ -42,7 +42,7 @@ def update_ga_leaderboard_file_name():
 async def on_ready():
 	global bots, IN_PROD, burner_channel
 	for guild in client.guilds:
-		bots[guild.id] = BotStatus(client)
+		bots[guild.id] = BotStatus(client, guild)
 		if guild.id == LOUNGE_GUILD_ID:
 			IN_PROD = True
 

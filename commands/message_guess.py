@@ -18,7 +18,8 @@ from globals import (
     TEST_SPAM_CHANNEL_ID,
 )
 
-MGUESS_PLAY_CHANNEL_ID = TEST_SPAM_CHANNEL_ID
+MGUESS_PLAY_CHANNEL_ID = 900855182311706644
+# MGUESS_PLAY_CHANNEL_ID = TEST_SPAM_CHANNEL_ID # CHANGEME
 MGUESS_HINT_BLACKLISTED_ROLE_IDS = [
     900626991189987349,
     831263181279854602,
@@ -48,8 +49,8 @@ else:
         834817573748605009,
     ]
 
-# CHANGEME
-MGUESS_DINGDONG_SEND_DT = dt.datetime.now().astimezone() + dt.timedelta(seconds=10) # dt.datetime(2022, 12, 31, hour=22, minute=0, second=0)
+MGUESS_DINGDONG_SEND_DT = dt.datetime(2022, 12, 31, hour=22, minute=0, second=0)
+# MGUESS_DINGDONG_SEND_DT = dt.datetime.now().astimezone() + dt.timedelta(seconds=10) # CHANGEME
 MGUESS_REACT_THRESH = 3
 MGUESS_ALLOWED_GUESSES = 5
 
@@ -66,17 +67,19 @@ class MGuessCommands:
     HINTS = "mhints"
     MESSAGE = "mmessage"
     GUESS = "mguess"
+    HELP = "mhelp"
 
 MGUESS_HELP_MESSAGE = textwrap.dedent(
     f"""
     Gather evidence to find the sender of the message (the search function is cheating)!
 
     To aid in your investigation, {BOT_NAME} will take the following commands:
-    - `{BOT_PREFIX}{MGuessCommands.NEW}`: Start a new case, or review the facts of the current case.
     - `{BOT_PREFIX}{MGuessCommands.GUESS}`: Submit a guess for the sender of the message. Either their current nickname or tag is accepted (no need to ping the suspect).
+    - `{BOT_PREFIX}{MGuessCommands.NEW}`: Start a new case.
     - `{BOT_PREFIX}{MGuessCommands.MESSAGE}`: Show the victim's message again.
     - `{BOT_PREFIX}{MGuessCommands.HINTS}`: Show all hints currently given.
-    - `{BOT_PREFIX}{MGuessCommands.SKIP}`: Give up on the current case. If you issue this command, _you_ will be named the blackened!
+    - `{BOT_PREFIX}{MGuessCommands.SKIP}`: Give up on the current case.
+    - `{BOT_PREFIX}{MGuessCommands.HELP}`: See this message again.
     """
 )
 
@@ -169,15 +172,19 @@ async def cmd_mguess_first_new_game(client, channel):
     Sends messages initiating the first guessing game. This is triggered
     when three people react to the initial "dingdong" message.
     """
-    # await channel.send("\\*Ding dong dong ding\\*")
-    # time.sleep(MGUESS_SUPERDRAMATIC_DELAY)
-    # await channel.send("A body has been discovered!")
-    # time.sleep(MGUESS_SUPERDRAMATIC_DELAY)
-    # await channel.send(f"Everybody, please gather in {channel.mention}!")
-    if curr_state.game_started:
-        await channel.send(f"A game is already in progress! Use {BOT_PREFIX}{MGuessCommands.SKIP} to skip before starting a new one.")
-        return
+    await channel.send("\\*Ding dong dong ding\\*")
+    time.sleep(MGUESS_SUPERDRAMATIC_DELAY)
+    await channel.send("A body has been discovered!")
+    time.sleep(MGUESS_SUPERDRAMATIC_DELAY)
+    await channel.send(f"Everybody, please gather in {channel.mention}!")
+    time.sleep(MGUESS_SUPERDRAMATIC_DELAY)
     await cmd_mguess_new_game(client, channel, punish_on_fail=True)
+    await channel.send(MGUESS_HELP_MESSAGE)
+
+
+async def cmd_mguess_help(message):
+    if not await _gag_started_check(message.channel): return
+    await message.channel.send(MGUESS_HELP_MESSAGE)
 
 
 def _make_embed(title, msg, include_channel=True):
@@ -187,9 +194,9 @@ def _make_embed(title, msg, include_channel=True):
         timestamp=msg.created_at
     )
     if include_channel:
-        embed.set_footer(text=f"From {msg.author.nick or msg.author.name} in #{msg.channel.name}")
+        embed.set_footer(text=f"From {msg.author.name} in #{msg.channel.name}")
     else:
-        embed.set_footer(text=f"From {msg.author.nick or msg.author.name}")
+        embed.set_footer(text=f"From {msg.author.name}")
     return embed
 
 
@@ -236,30 +243,44 @@ async def _message_pool_after_random(channel):
 async def _choose_fixed_message_pair(client):
     """Returns a fixed pair of (victim, killer) for testing."""
     channel = client.get_channel(486266124351307789)
-    v_id = 1058631334614020166
-    k_id = 1058631421289308160
+    v_id = 1058653171066617937
+    k_id = 1058653186262577192
     return [await channel.fetch_message(v_id), await channel.fetch_message(k_id)]
 
 
 async def cmd_mguess_new_game(client, channel, punish_on_fail):
     global curr_state
+    if not await _gag_started_check(channel): return
+    if curr_state.game_started:
+        await channel.send(
+            f"A game is already in progress. Finish the current game, or"
+            + f" use `{BOT_PREFIX}{MGuessCommands.SKIP}` before starting a new one."
+        )
+        return
+
     await channel.send("Starting a new mystery...")
     async def choose_random_message(victim_first):
         """
-        Chooses a random message to be a 'victim.'
+        Randomly chooses a pair of 'victim' and 'killer' messages.
 
-        Currently, this first chooses a random channel ID, retrieves all its messages within
-        the past year, and then randomly picks one after consuming the entire iterator.
+        Currently, this first chooses a random channel ID, picks a random timestamp from the year,
+        then retrieves the first 300 messages in the channel from after that date. A random message
+        from this corpus is then chosen as the 'victim'.
 
-        This may not be feasible in production, so here's a couple possible alternatives:
-        1. **Prefetch all messages to disk.** When the initial "ding dong bing bong" is sent,
+        Rejected alternatives include the following:
+        1. **Directly fetch all messages:** This would be too expensive on the main server.
+        2. **Prefetch all messages to disk.** When the initial "ding dong bing bong" is sent,
            we can save all messages from all channels to disk and call it a day. This also has the
            advantage of letting us spare computational power to pre-filter messages by sender and
            content, thus easily skipping over images and such and removing the need to mulligan.
-        2. **Sample using the "around" flag.** The bot API provides an "around" flag that will
+           However, since the bot is being run on a pi, we might not even have enough disk space
+           to handle the prefetch, and it might end up being prohibitively slow.
+        3. **Sample using the "around" flag.** The bot API provides an "around" flag that will
            pull all messages from near the specified timestamp. We can generate a uniform random
            timestamp between 1/1 and 12/31 (perhaps generating date/time separately to favor more
-           active times of day).
+           active times of day). The problem is that in channels with sparse activity, this can
+           result in an empty list of messages being returned, and may require extensive
+           mulliganing, thus inflating the runtime.
 
         TODO Extra persistent state needs to be added regardless to prevent the (unlikely) event
         of repeat messages, or at least repeated consecutive victims/killers.
@@ -277,7 +298,6 @@ async def cmd_mguess_new_game(client, channel, punish_on_fail):
 
         Reasons for failure include:
         - Nobody else messaged the channel after the victim did,
-        - The selected message was on the blacklist (e.g. unattributable remarks like "k"),
         - Not enough messages were found in the channel at the chosen time
         """
         channel_id = random.choice(MGUESS_SOURCE_CHANNEL_IDS)
@@ -346,6 +366,14 @@ async def cmd_mguess_new_game(client, channel, punish_on_fail):
         prompt_s += f"\nHowever, if you cannot identify the killer by then, then everyone who guessed incorrectly will be timed out instead!"
     await channel.send(prompt_s, embed=_make_embed("The victim's message:", v_msg, include_channel=False))
 
+async def _gag_started_check(channel):
+    if dt.datetime.now().astimezone() < MGUESS_DINGDONG_SEND_DT:
+        # Technically doesn't account for time between dingdong send and react thresh
+        embed = discord.Embed(title="Hmm? I don't know what that means.", colour=0xFFFFFF)
+        embed.set_image(url="https://static.wikia.nocookie.net/danganronpa/images/a/ad/Danganronpa_1_Monokuma_Halfbody_Sprite_11.png/revision/latest?cb=20170520215152")
+        await channel.send(embed=embed)
+        return False
+    return True
 
 async def _ready_check(channel):
     if not curr_state.game_started:
@@ -355,6 +383,7 @@ async def _ready_check(channel):
 
 async def cmd_mguess_guess(message, args):
     channel = message.channel
+    if not await _gag_started_check(channel): return
     if not await _ready_check(channel): return
     all_members = [m async for m in message.guild.fetch_members()]
     # Nicknames need to be space-normalized since `args` gets preprocessed
@@ -378,13 +407,13 @@ async def cmd_mguess_guess(message, args):
             """
         ))
     else:
-        # Check guess vs. nicknames first, then usernames
+        # Check guess vs. usernames first, then nicknames
         guess = " ".join(args).strip().lower()
         try:
-            idx = member_nicks.index(guess)
+            idx = member_names.index(guess)
         except ValueError:
             try:
-                idx = member_names.index(guess)
+                idx = member_nicks.index(guess)
             except ValueError:
                 await channel.send(f"**{guess}**? I don't know a **{guess}** in this server. Please try again.")
                 return
@@ -412,6 +441,7 @@ async def _on_correct_guess(message, guess_member):
         if not timed_out:
             time.sleep(MGUESS_UNDRAMATIC_DELAY)
             await channel.send(f"...or at least they would have been if I had permissions.")
+        await channel.send(f"Use `{BOT_PREFIX}{MGuessCommands.NEW}` to start a new game!")
     curr_state = MGuessState()
 
 
@@ -438,16 +468,22 @@ async def _new_hint(message):
     elif new_hint_e == MGuessHint.K_MSG_ENCLOSED_QUIP:
         # If no quip was in the message, then this should have been invalidated at message choice time
         q = _find_quip(k_msg.clean_content)
-        assert q is not None
-        hint_s = f'The murderer said "{q}" in their message!'
+        try:
+            assert q is not None  # This assertion may fail if the message was edited mid-game
+            hint_s = f'The murderer said "{q}" in their message!'
+        except AssertionError:
+            hint_s = f"The message was edited after the game started! {k_msg.author.name} is the killer, and a dirty cheater."
     elif new_hint_e == MGuessHint.K_MSG_ENCLOSED_SPECIAL:
         # If no special char was in the message, then this should have been invalidated at message choice time
         e = _find_special(k_msg.clean_content)
-        assert e is not None
-        if isinstance(e, int):
-            hint_s = f'The murderer said "{str(await guild.fetch_emoji(e))}" in their message!'
-        else:
-            hint_s = f'The murderer said "{e}" in their message!'
+        try:
+            assert e is not None  # This assertion may fail if the message was edited mid-game
+            if isinstance(e, int):
+                hint_s = f'The murderer said "{str(await guild.fetch_emoji(e))}" in their message!'
+            else:
+                hint_s = f'The murderer said "{e}" in their message!'
+        except AssertionError:
+            hint_s = f"The message was edited after the game started! {k_msg.author.name} is the killer, and a dirty cheater."
     elif new_hint_e == MGuessHint.K_MSG_DT:
         dt_formatted = k_msg.created_at.astimezone().strftime("%B %d at %I:%M %p %Z")
         hint_s = f"The murderer sent their message on {dt_formatted}!"
@@ -459,9 +495,10 @@ async def _new_hint(message):
             hint_s = "The murderer's message got zero reacts!"
         else:
             hint_s = "The murderer's message got these reacts: "
-            hint_s += " | ".join([str(r.emoji) + "x" + r.count for r in reacts])
+            hint_s += " | ".join([str(r.emoji) + "x" + str(r.count) for r in reacts])
     elif new_hint_e == MGuessHint.K_REACT_SOMEBODY:
         # If the react list is empty, then K_REACT_FULL_LIST should also be invalidated
+        # This is also the case if there's only a single react to the message
         reacts = k_msg.reactions
         if not reacts:
             curr_state.given_hints.add(MGuessHint.K_REACT_FULL_LIST)
@@ -472,6 +509,8 @@ async def _new_hint(message):
             for r in reacts:
                 async for u in r.users():
                     reacted_users[u].append(r.emoji)
+            if sum(len(v) for v in reacted_users.values()) == 1:
+                curr_state.given_hints.add(MGuessHint.K_REACT_FULL_LIST)
             picked_u = random.choice(list(reacted_users.keys()))
             picked_emoji = reacted_users[u]
             hint_s = f"{u.nick or u.name} put these reactions on the murderer's message: "
@@ -492,6 +531,7 @@ async def _new_hint(message):
 
 
 async def cmd_mguess_hints(message):
+    if not await _gag_started_check(message.channel): return
     if not await _ready_check(message.channel): return
     nothing = random.choice([
         "`None`", "`null`", "`undefined`", "Nada.", "Zilch.", "Absolutely nothing!", "???", "『　　』",
@@ -499,17 +539,18 @@ async def cmd_mguess_hints(message):
         "The hint is that which cannot be named.",
     ])
     value = "\n".join("- " + l for l in curr_state.hint_text_list) if curr_state.hint_text_list else nothing
-    embed = discord.Embed(title="Hints", description=value)
+    embed = discord.Embed(title="Hints", description=.astimezone()value)
     embed.set_footer(text="A new hint is revealed after an incorrect guess.")
     await message.channel.send("Here's the story so far:", embed=embed)
 
 
 async def cmd_mguess_message(message):
+    if not await _gag_started_check(message.channel): return
     if not await _ready_check(message.channel): return
     v_msg = await message.guild.get_channel(curr_state.channel_id).fetch_message(curr_state.victim_msg_id)
     await message.channel.send(
         "Here's the victim's message again.",
-        embed=_make_embed(v_msg, include_channel=MGuessHint.CHANNEL in curr_state.given_hints)
+        embed=_make_embed("The victim's message:", v_msg, include_channel=MGuessHint.CHANNEL in curr_state.given_hints)
     )
 
 
@@ -533,7 +574,7 @@ async def _on_wrong_guess(message, guess_member):
         usernames_str = ", ".join(u.nick or u.name for u in users[:-1]) + ", and " + (users[-1].nick or users[-1].name)
         if len(users) == 1:
             u = users[0]
-            bad_msg += f"\n{u.nick or u.name}, it looks like YOU were the killer all along!"
+            bad_msg += f"\n{u.nick or u.name}, it looks like YOU were guilty all along!"
         else:
             bad_msg += f"\n{usernames_str}, you are ALL the killers!"
         k_msg = await message.guild.get_channel(curr_state.channel_id).fetch_message(curr_state.killer_msg_id)
@@ -554,6 +595,7 @@ async def _on_wrong_guess(message, guess_member):
             if not timed_out:
                 time.sleep(MGUESS_UNDRAMATIC_DELAY)
                 await channel.send(f"...or at least they would have been if I had permissions.")
+            await channel.send(f"Use `{BOT_PREFIX}{MGuessCommands.NEW}` to start a new game!")
         curr_state = MGuessState()
     else:
         if remaining_guesses == 1:
@@ -572,6 +614,7 @@ async def _on_wrong_guess(message, guess_member):
 async def cmd_mguess_skip(message):
     global curr_state
     channel = message.channel
+    if not await _gag_started_check(channel): return
     if not await _ready_check(channel): return
     k_msg = await message.guild.get_channel(curr_state.channel_id).fetch_message(curr_state.killer_msg_id)
     await channel.send("All right, fine. We're skipping this one.", embed=_make_embed("**Here's the killer's murderous message:**", k_msg))

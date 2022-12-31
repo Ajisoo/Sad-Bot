@@ -259,7 +259,7 @@ async def on_message(message: discord.Message):
 	MGuessCommands = message_guess.MGuessCommands
 
 	if command == MGuessCommands.NEW:
-		await message_guess.cmd_mguess_first_new_game(client, message.channel)
+		await message_guess.cmd_mguess_new_game(client, message.channel, punish_on_fail=False)
 
 	if command == MGuessCommands.SKIP:
 		await message_guess.cmd_mguess_skip(message)
@@ -272,6 +272,9 @@ async def on_message(message: discord.Message):
 
 	if command == MGuessCommands.GUESS:
 		await message_guess.cmd_mguess_guess(message, args_unnormalized)
+
+	if command == MGuessCommands.HELP:
+		await message_guess.cmd_mguess_help(message)
 
 	if command in ['guess_splash', 'gs']:
 		await guess_util.cmd_gs_start(bot, message, args)

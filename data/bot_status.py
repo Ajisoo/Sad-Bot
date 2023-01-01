@@ -31,15 +31,3 @@ class BotStatus(c.Cog):
 					break
 		self.umq_last_song_fn = None
 		self.umq_last_song_ts = None
-
-		if guild.get_channel(message_guess.MGUESS_PLAY_CHANNEL_ID) is not None:
-			self.ny23_gag.start()
-
-	def cog_unload(self):
-		self.ny23_gag.cancel()
-
-	# Scheduled job for new years 2023 gag
-	@tasks.loop(time=message_guess.MGUESS_DINGDONG_SEND_DT.timetz())
-	async def ny23_gag(self):
-		if message_guess.MGUESS_DINGDONG_SEND_DT.date() == dt.date.today():
-			await message_guess.cmd_mguess_dingdong(self.client)

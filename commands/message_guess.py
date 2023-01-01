@@ -12,14 +12,25 @@ from typing import Optional, List, Set
 import discord
 
 from globals import (
+    ADMINS,
     IN_PROD,
     BOT_NAME,
     BOT_PREFIX,
     TEST_SPAM_CHANNEL_ID,
 )
 
-MGUESS_PLAY_CHANNEL_ID = 900855182311706644
-# MGUESS_PLAY_CHANNEL_ID = TEST_SPAM_CHANNEL_ID # CHANGEME
+MGUESS_SLEEPER_PHRASE = "happy new year sad bot"
+MGUESS_SLEEPER_CONTACTS = ADMINS + [96079507659694080]
+
+TESTING = True  # CHANGEME
+
+
+if TESTING:
+    MGUESS_PLAY_CHANNEL_ID = TEST_SPAM_CHANNEL_ID
+else:
+    MGUESS_PLAY_CHANNEL_ID = 900855182311706644
+
+
 MGUESS_HINT_BLACKLISTED_ROLE_IDS = [
     900626991189987349,
     831263181279854602,
@@ -49,17 +60,26 @@ else:
         834817573748605009,
     ]
 
-MGUESS_DINGDONG_SEND_DT = dt.datetime(2022, 12, 31, hour=22, minute=0, second=0).astimezone()
-# MGUESS_DINGDONG_SEND_DT = dt.datetime.now().astimezone() + dt.timedelta(seconds=10) # CHANGEME
+
+if TESTING:
+    # MGUESS_DINGDONG_SEND_DT = dt.datetime.now().astimezone() + dt.timedelta(seconds=10)
+    MGUESS_DINGDONG_SEND_DT = dt.datetime(2022, 12, 31, hour=22, minute=0, second=0).astimezone()
+else:
+    MGUESS_DINGDONG_SEND_DT = dt.datetime(2022, 12, 31, hour=22, minute=0, second=0).astimezone()
 MGUESS_REACT_THRESH = 3
 MGUESS_ALLOWED_GUESSES = 5
 
 YEAR_START_DT = dt.datetime(2022, 1, 1, 0, 0, 0) 
 YEAR_END_DT = dt.datetime(2022, 12, 31, 11, 59, 59) 
 
-MGUESS_SUPERDRAMATIC_DELAY = 7
-MGUESS_DRAMATIC_DELAY = 5
-MGUESS_UNDRAMATIC_DELAY = 2
+if TESTING:
+    MGUESS_SUPERDRAMATIC_DELAY = 0
+    MGUESS_DRAMATIC_DELAY = 0
+    MGUESS_UNDRAMATIC_DELAY = 0
+else:
+    MGUESS_SUPERDRAMATIC_DELAY = 7
+    MGUESS_DRAMATIC_DELAY = 5
+    MGUESS_UNDRAMATIC_DELAY = 2
 
 class MGuessCommands:
     NEW = "mgame"
@@ -203,6 +223,8 @@ def _make_embed(title, msg, include_channel=True):
 async def _try_timeout(user, seconds, reason=None):
     """discord.py claims timeout can take timedelta, but it lie."""
     until = dt.datetime.now().astimezone() + dt.timedelta(seconds=seconds)
+    if not hasattr(user, "timeout"):  # discord.py version issue
+        return False
     try:
         await user.timeout(until, reason=reason)
         return True
@@ -329,8 +351,11 @@ async def cmd_mguess_new_game(client, channel, punish_on_fail):
         return all_messages[victim_idx], all_messages[killer_idx]
         
     start_ts = dt.datetime.now()
-    v_msg, k_msg = await choose_random_message(False)
-    # v_msg, k_msg = await _choose_fixed_message_pair(client) # CHANGEME
+    if TESTING:
+        v_msg, k_msg = await _choose_fixed_message_pair(client)
+        # v_msg, k_msg = await choose_random_message(False)
+    else:
+        v_msg, k_msg = await choose_random_message(False)
     mulligan_count = 0
     while v_msg is None:  # mulligan
         mulligan_count += 1
@@ -367,7 +392,7 @@ async def cmd_mguess_new_game(client, channel, punish_on_fail):
     await channel.send(prompt_s, embed=_make_embed("The victim's message:", v_msg, include_channel=False))
 
 async def _gag_started_check(channel):
-    if dt.datetime.now().astimezone() < MGUESS_DINGDONG_SEND_DT:
+    if dingdong_id is None and dt.datetime.now().astimezone() < MGUESS_DINGDONG_SEND_DT:
         # Technically doesn't account for time between dingdong send and react thresh
         embed = discord.Embed(title="Hmm? I don't know what that means.", colour=0xFFFFFF)
         embed.set_image(url="https://static.wikia.nocookie.net/danganronpa/images/a/ad/Danganronpa_1_Monokuma_Halfbody_Sprite_11.png/revision/latest?cb=20170520215152")
@@ -398,7 +423,9 @@ async def cmd_mguess_guess(message, args):
     if len(message.mentions) > 0:
         await channel.send("I told you not to ping anyone when guessing! That's a **penalty**!")
         await channel.send(f"{message.author.nick or message.author.name}, you have been timed out for 5 seconds.")
-        await _try_timeout(message.author, 5, reason="pinging during a guessing game")
+        timed_out = await _try_timeout(message.author, 5, reason="pinging during a guessing game")
+        if not timed_out:
+            await channel.send(f"...or at least you would have been, if I had permission to.")
     elif len(args) == 0:
         await channel.send(textwrap.dedent(
             f"""
@@ -464,7 +491,7 @@ async def _new_hint(message):
             new_hint_e = None
     curr_state.given_hints.add(new_hint_e)
     if new_hint_e == MGuessHint.CHANNEL:
-       hint_s = f"The murder took place in #{k_msg.channel.name}!"
+        hint_s = f"The murder took place in #{k_msg.channel.name}!"
     elif new_hint_e == MGuessHint.K_MSG_ENCLOSED_QUIP:
         # If no quip was in the message, then this should have been invalidated at message choice time
         q = _find_quip(k_msg.clean_content)

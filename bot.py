@@ -122,6 +122,15 @@ async def on_message(message: discord.Message):
 			if (he.text == "Reaction blocked" and he.code == 90001):
 				#await message.delete(delay=0.3)
 				await message.channel.send(await message.guild.fetch_emoji(831228255063244831))
+
+	if (
+		message.clean_content.strip().lower() == message_guess.MGUESS_SLEEPER_PHRASE
+		and message.author.id in message_guess.MGUESS_SLEEPER_CONTACTS
+	):
+		# Workaround for discord.py 1.7 not having scheduling
+		if message_guess.MGUESS_DINGDONG_SEND_DT.date() == datetime.now().date():
+			await message_guess.cmd_mguess_dingdong(client)
+			return
 	
 	args = []
 	if message.content[:len(BOT_PREFIX)] == BOT_PREFIX:

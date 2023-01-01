@@ -2,6 +2,7 @@ import datetime
 import asyncio
 import random
 import re
+import threading
 
 import discord
 from discord.ext import tasks
@@ -398,13 +399,22 @@ async def on_raw_reaction_add(payload):
 	if franklin is not None:
 		await franklin.react(processed_emoji, payload.member)
 
+dingdong_ran = False
+dingdong_lock = threading.Lock()
+
 @client.event
 async def on_reaction_add(reaction, _user):
+	global dingdong_ran
 	# Handle dingdongbingbong
 	message = reaction.message
 	if message.id == message_guess.dingdong_id:
-		if len(message.reactions) >= message_guess.MGUESS_REACT_THRESH:
+		dingdong_lock.acquire()
+		if len(message.reactions) >= message_guess.MGUESS_REACT_THRESH and not dingdong_ran:
+			dingdong_ran = True
+			dingdong_lock.release()
 			await message_guess.cmd_mguess_first_new_game(client, message.channel)
+		else:
+			dingdong_lock.release()
 
 # Currently only used for $harem scrolling
 @client.event

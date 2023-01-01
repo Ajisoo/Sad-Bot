@@ -351,6 +351,7 @@ async def cmd_mguess_new_game(client, channel, punish_on_fail):
         return all_messages[victim_idx], all_messages[killer_idx]
         
     start_ts = dt.datetime.now()
+    print("MGUESS: starting random message choice at", start_ts)
     if TESTING:
         v_msg, k_msg = await _choose_fixed_message_pair(client)
         # v_msg, k_msg = await choose_random_message(False)

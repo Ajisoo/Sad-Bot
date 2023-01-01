@@ -22,7 +22,7 @@ from globals import (
 MGUESS_SLEEPER_PHRASE = "happy new year sad bot"
 MGUESS_SLEEPER_CONTACTS = ADMINS + [96079507659694080]
 
-TESTING = True  # CHANGEME
+TESTING = False  # CHANGEME
 
 
 if TESTING:

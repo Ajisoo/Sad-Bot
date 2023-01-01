@@ -265,7 +265,7 @@ async def on_message(message: discord.Message):
 
 	MGuessCommands = message_guess.MGuessCommands
 
-	if command == MGuessCommands.NEW:
+	if command == MGuessCommands.NEW or command == "mgamr":
 		await message_guess.cmd_mguess_new_game(client, message.channel, punish_on_fail=False)
 
 	if command == MGuessCommands.SKIP:

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_HOME="/home/ajisoo/DiscordBot"
+PROJECT_HOME="~/DiscordBot"
 LOCAL="local"
 PID_FILE="$LOCAL/pid"
 LOG_FILE="$LOCAL/logs.txt"

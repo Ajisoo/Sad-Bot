@@ -169,6 +169,21 @@ async def on_message(message: discord.Message):
 		else:
 			await message.channel.send("Please apply for privileges to use this command.")
 
+	if command in ['beef', 'wrong']:
+		try:
+			vc = await message.author.voice.channel.connect()
+
+		except Exception:
+
+			vc = client.voice_clients[0]
+		vc.play(
+			discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=os.path.join(CONTENT_FOLDER, 'beef.mp3')))
+		while vc.is_playing():
+			await asyncio.sleep(0.1)
+		# disconnect after the player has finished
+		vc.stop()
+		await vc.disconnect()
+
 	if command == 'ga_refresh':
 		await guess_util.cmd_ga_refresh(bot, message, args)
 

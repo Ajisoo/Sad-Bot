@@ -175,10 +175,9 @@ async def on_message(message: discord.Message):
 
 		except Exception:
 			vc = client.voice_clients[0]
+		vc.play(discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=os.path.join(CONTENT_FOLDER, 'beef.mp3')))
 		vc.source = discord.PCMVolumeTransformer(vc.source)
 		vc.source.volume = 0.6
-		vc.play(
-			discord.FFmpegPCMAudio(executable="./ffmpeg.exe", source=os.path.join(CONTENT_FOLDER, 'beef.mp3')))
 		while vc.is_playing():
 			await asyncio.sleep(0.1)
 		# disconnect after the player has finished

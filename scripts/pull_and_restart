@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_HOME="/home/ajisoo/DiscordBot"
+PROJECT_HOME="/home/pi/DiscordBot"
 LOCAL="local"
 PID_FILE="$LOCAL/pid"
 LOG_FILE="$LOCAL/logs.txt"
@@ -15,5 +15,7 @@ fi
 
 git pull &>> "$LOG_FILE"
 
+source ./venv/bin/activate
+python3 -m pip install -r requirements.txt
 python3 bot.py &>> "$LOG_FILE" &
 echo "$!" > "$PID_FILE"

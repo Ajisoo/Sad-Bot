@@ -3,6 +3,11 @@ __pycache__/*
 */__pycache__/*
 content/*
 local/*
+venv/*
+
+.DS_Store
+*.swp
 
 bot.key
+api_keys/
 ffmpeg.exe

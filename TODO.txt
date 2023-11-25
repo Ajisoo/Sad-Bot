@@ -1,0 +1,44 @@
+--- DONE ---
+1. add probability distributions for champ rolling
+1.5. add a way to pre-process this info and store it in a file every time refresh is called, so it doesn't have to be calculated every time someone rolls
+2. add place to store who has what splash pieces 
+7. DEBUGGING: add a way to force a specific champ roll 
+9. update people's progress on their collection
+3. add special message for when someone completes a splash 
+12. "divorce" option
+2.7. limit rolls per hour
+13. info command (shows full champion)
+1. show other people's harems with ($harem <@otherperson>)
+6. store dupes of same piece (if someone has one and rolls another, they'll have two - alter data structure for this)
+3. allow search by id for skin info also
+4. trading? (IN TESTING PHASE RIGHT NOW)
+5. use reactable embed for champ splash list instead of text
+BUG: `$harem @tag` was showing message sender's name as title instead
+2. add sorting by rarity/name on the harem list
+    2.5. add rarity icons to harem list
+    2.7 UPON NEXT BOT RESTART, ADD RARITY TO EVERYONE'S HAREMS
+3. add first time setup for 10 year anniversary skins 
+    - append anniversary_skins.json to skins.json
+    - recalculate rarity dists
+    - add 10 year anniversary skins to splashes folder 
+4. on refresh, 
+    - append anniversary_skins.json to skins.json BEFORE rarity dists is calculated
+    - add 10 year anniversary skins to splashes folder 
+--- END DONE ----
+4. use an embed for trading
+9. stretch goal: do animation for progress pic a la roll color
+7. add guild key to roll-timer, so roll timer isn't user-dependent but rather server-dependent
+   but also we're mainly using this just on Lounge anyways
+2.5. store completed splashes also
+5. trading up system 
+8. stretch goal: add some sort of 'quality' for each roll
+6. split bios into 4 pieces as well
+???. change harem.json architecture to {user_id:champ_id:{A?,B?,C?,D?}} where A-D are counts?
+
+11???. make everything non-dupe 
+    - (note: should forced rolls be allowed to create dupes?)
+    - no longer store multiple copies of a skin in harems.json
+    - add a 'rolled' set so even through refreshes, we know what's already taken
+    - implementation: 
+        1. we remove it from pool: note: upon refreshes, immediately update the pool to reflect rolled set
+        2. add to rolled set and if someone rolls something in rolled set, we simply keep rolling until they get unclaimed one

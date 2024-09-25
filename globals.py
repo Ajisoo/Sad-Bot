@@ -186,3 +186,5 @@ REACTION_MAP2 = {
 	8: "8⃣",
 	9: "9⃣",
 }
+
+MH_WILDS_RELEASE_DATE = datetime(2025, 2, 27)

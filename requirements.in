@@ -4,3 +4,4 @@ ffmpeg-python
 requests
 Pillow
 pynacl
+apscheduler

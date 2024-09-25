@@ -3,6 +3,7 @@ import asyncio
 import random
 import re
 import threading
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import discord
 from discord.ext import tasks
@@ -37,6 +38,31 @@ def update_ga_leaderboard_file_name():
 
 	os.rename(os.path.join(GA_FOLDER, "leaderboard.txt"), GA_LEADERBOARD_FILE)
 
+@client.event
+async def update_mh_wilds_name():
+	daysTillWilds = (MH_WILDS_RELEASE_DATE - datetime.now()).days
+	nickname = f'Days till MH Wilds: {daysTillWilds}'
+	if daysTillWilds == 1:
+		nickname = "MH Wilds tomorrow!"
+	elif daysTillWilds == 0:
+		nickname = "MH Wilds!"
+	else:
+		# Deprecate this feature once we hit this
+		pass
+	try:
+		# Jaison is the MH fan.
+		member = client.get_guild(TEST_SERVER_GUILD_ID).get_member(262490582276898816)
+		if member:
+			await member.edit(nick=nickname)
+		else:
+			print(f'Member with ID {user_id} not found in the guild.')	
+	except discord.Forbidden:
+		print(f'Cannot change nickname for {member.name}. Permission denied.')
+	except Exception as e:
+		print(f'Failed to update nickname for user ID {user_id}: {e}')
+
+scheduler = AsyncIOScheduler()
+scheduler.add_job(update_mh_wilds_name, 'cron', hour=0, minute=0)
 
 @client.event
 async def on_ready():
@@ -73,6 +99,8 @@ async def on_ready():
 			print("- MISSING API KEY:", f"{key_prefix}.key")
 	if missing_key:
 		print("===== WARNING: At least one API key is missing (see above) =====")
+	await update_mh_wilds_name()
+	scheduler.start()
 		
 
 @client.event

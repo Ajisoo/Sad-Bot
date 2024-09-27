@@ -51,7 +51,7 @@ async def update_mh_wilds_name():
 		pass
 	try:
 		# Jaison is the MH fan.
-		member = client.get_guild(TEST_SERVER_GUILD_ID).get_member(262490582276898816)
+		member = client.get_guild(LOUNGE_GUILD_ID).get_member(262490582276898816)
 		if member:
 			await member.edit(nick=nickname)
 		else:

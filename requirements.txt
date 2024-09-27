@@ -56,7 +56,7 @@ soupsieve==2.2.1
     # via beautifulsoup4
 typing-extensions==3.7.4.3
     # via aiohttp
-tzlocal==5.2
+tzlocal==5.1
     # via apscheduler
 urllib3==1.26.4
     # via requests

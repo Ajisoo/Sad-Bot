@@ -41,7 +41,7 @@ def update_ga_leaderboard_file_name():
 @client.event
 async def update_mh_wilds_name():
 	daysTillWilds = (MH_WILDS_RELEASE_DATE - datetime.now()).days
-	nickname = f'Days till MH Wilds: {daysTillWilds}'
+	nickname = f'{daysTillWilds} days till MH Wilds'
 	if daysTillWilds == 1:
 		nickname = "MH Wilds tomorrow!"
 	elif daysTillWilds == 0:

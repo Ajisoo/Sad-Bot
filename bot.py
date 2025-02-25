@@ -47,7 +47,7 @@ async def update_mh_wilds_name():
 		nickname = "MH Wilds tomorrow!"
 	elif daysTillWilds == 0:
 		nickname = "MH Wilds! :D"
-	else if daysTillWilds < 0:
+	elif daysTillWilds < 0:
 		# Deprecate this feature once we hit this
 		return
 	try:

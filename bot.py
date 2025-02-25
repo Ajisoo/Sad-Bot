@@ -40,15 +40,16 @@ def update_ga_leaderboard_file_name():
 
 @client.event
 async def update_mh_wilds_name():
-	daysTillWilds = (MH_WILDS_RELEASE_DATE - datetime.now()).days
+	# We add 1 as 0 days 23 hours and 59 seconds effectively means a whole day of waiting.
+	daysTillWilds = (MH_WILDS_RELEASE_DATE - datetime.now()).days + 1
 	nickname = f'{daysTillWilds} days till MH Wilds'
 	if daysTillWilds == 1:
 		nickname = "MH Wilds tomorrow!"
 	elif daysTillWilds == 0:
-		nickname = "MH Wilds!"
-	else:
+		nickname = "MH Wilds! :D"
+	else if daysTillWilds < 0:
 		# Deprecate this feature once we hit this
-		pass
+		return
 	try:
 		# Jaison is the MH fan.
 		member = client.get_guild(LOUNGE_GUILD_ID).get_member(262490582276898816)

@@ -8,7 +8,7 @@ cd "$PROJECT_HOME"
 
 pid=$(pgrep -f -o "python3 bot.py")
 
-if [[ -z "$pid" ]]; then
+if [[ -n "$pid" ]]; then
 	kill -9 "$pid"
 fi
 

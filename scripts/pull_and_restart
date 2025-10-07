@@ -16,4 +16,4 @@ git pull &>> "$LOG_FILE"
 
 source ./my-venv/bin/activate
 python3 -m pip install -r requirements.txt
-python3 bot.py &>> "$LOG_FILE" &
+python3 bot.py 2>&1 | tee -a "$LOG_FILE"

@@ -4,6 +4,7 @@ import random
 import re
 import threading
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from typing import Optional
 
 import discord
 from discord.ext import tasks
@@ -16,6 +17,7 @@ from commands import (
 	roll_splashes,
 	message_guess,
 	apex_util,
+	timer_util
 )
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
@@ -116,6 +118,9 @@ async def on_message(message: discord.Message):
 
 	now = datetime.now()
 
+	timer_in_seconds: Optional[int] = timer_util.message_timer(message.content.lower())
+	if timer_in_seconds is not None:
+		await message.channel.send('Starting timer:\n' + timer_util.get_future_time(timer_in_seconds))
 
 	if message.author.status == discord.Status.dnd:
 		try:

@@ -5,6 +5,8 @@ import time
 
 word_to_number_dict = dict(two=2, three=3, four=4, five=5, six=6, seven=7, eight=8, nine=9, ten=10)
 
+max_timer_seconds = 30 * 24 * 60 * 60  # 30 days in seconds
+
 '''
 Message timer regexes
 '''
@@ -75,6 +77,10 @@ def message_timer(message: str) -> Optional[int]:
 				num_seconds = num_units * 3600
 			elif match.group('d') is not None:
 				num_seconds = num_units * 86400
+
+			if num_seconds > max_timer_seconds:
+				print("Timer exceeds maximum allowed duration of 30 days.")
+				return None
 
 			return num_seconds
 	except Exception as e:

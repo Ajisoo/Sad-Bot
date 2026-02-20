@@ -20,7 +20,8 @@ optional_profanity_token = r'(\s+(damn))?'
 time_as_word_regex = r'''
 		\s+
 		(
-			(?P<word_few>a\s+(few|couple)?) |
+			(?P<word_few>a\s+few) |
+			(?P<word_two>a\s+couple) |
 			(?P<word_one>an?|one)           |
 			(?P<word_number>two|three|four|five|six|seven|eight|nine|ten)
 		)
@@ -60,9 +61,11 @@ def message_timer(message: str) -> Optional[int]:
 			# Determine the number of units
 			num_units = 0
 			if match.group('word_few') is not None:
-				num_units = randint(2,3)
+				num_units = 3
 			elif match.group('word_one') is not None:
 				num_units = 1
+			elif match.group('word_two') is not None:
+				num_units = 2
 			elif match.group('word_number') is not None:
 				num_units = word_to_number_dict[match.group('word_number')]
 			elif match.group('time_as_int') is not None:

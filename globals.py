@@ -19,6 +19,10 @@ ADMINS = [
 
 ESSAY_MODE_ADMINS = ADMINS + [190248352053460993] # christian bc he requested this
 
+TIMER_BLACKLIST = [
+	188670149103058944
+]
+
 BOT_PREFIX = "$"
 
 BOT_KEY_FILE = "bot.key"

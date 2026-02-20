@@ -119,7 +119,7 @@ async def on_message(message: discord.Message):
 	now = datetime.now()
 
 	timer_in_seconds: Optional[int] = timer_util.message_timer(message.content.lower())
-	if timer_in_seconds is not None:
+	if timer_in_seconds is not None and message.author.id not in TIMER_BLACKLIST:
 		await message.channel.send('Starting timer:\n' + timer_util.get_future_time(timer_in_seconds))
 
 	if message.author.status == discord.Status.dnd:

@@ -3,11 +3,9 @@ import asyncio
 import random
 import re
 import threading
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from typing import Optional
 
 import discord
-from discord.ext import tasks
 
 from data.bot_status import BotStatus
 from commands import (
@@ -17,7 +15,8 @@ from commands import (
 	roll_splashes,
 	message_guess,
 	apex_util,
-	timer_util
+	timer_util,
+    atm_util
 )
 from commands.tictactoe_util import cmd_tictactoe
 from Franklin import get_franklin, Franklin
@@ -39,33 +38,6 @@ def update_ga_leaderboard_file_name():
 		return
 
 	os.rename(os.path.join(GA_FOLDER, "leaderboard.txt"), GA_LEADERBOARD_FILE)
-
-@client.event
-async def update_mh_wilds_name():
-	# We add 1 as 0 days 23 hours and 59 seconds effectively means a whole day of waiting.
-	daysTillWilds = (MH_WILDS_RELEASE_DATE - datetime.now()).days + 1
-	nickname = f'{daysTillWilds} days till MH Wilds'
-	if daysTillWilds == 1:
-		nickname = "MH Wilds tomorrow!"
-	elif daysTillWilds == 0:
-		nickname = "MH Wilds! :D"
-	elif daysTillWilds < 0:
-		# Deprecate this feature once we hit this
-		return
-	try:
-		# Jaison is the MH fan.
-		member = client.get_guild(LOUNGE_GUILD_ID).get_member(262490582276898816)
-		if member:
-			await member.edit(nick=nickname)
-		else:
-			print(f'Member with ID {user_id} not found in the guild.')	
-	except discord.Forbidden:
-		print(f'Cannot change nickname for {member.name}. Permission denied.')
-	except Exception as e:
-		print(f'Failed to update nickname for user ID {user_id}: {e}')
-
-scheduler = AsyncIOScheduler()
-scheduler.add_job(update_mh_wilds_name, 'cron', hour=0, minute=0)
 
 @client.event
 async def on_ready():
@@ -102,8 +74,6 @@ async def on_ready():
 			print("- MISSING API KEY:", f"{key_prefix}.key")
 	if missing_key:
 		print("===== WARNING: At least one API key is missing (see above) =====")
-	await update_mh_wilds_name()
-	scheduler.start()
 		
 
 @client.event
@@ -134,29 +104,10 @@ async def on_message(message: discord.Message):
 		if now.month == 3 and now.day == 14:
 			await message.add_reaction('🥧')
 
-	if len(message.content) < bot.essay_mode_minimum and bot.essay_mode_on and bot.essay_mode_minimum > 0:
-		try:
-			emji = await message.guild.fetch_emoji(883078527203827763) # feel better
-			await message.add_reaction(emji)
-		except Exception:
-			pass
-		await message.delete(delay=0.3)
-
 	if now.month == 12 and now.day == 25:
 		reactions = ['🎅', '🤶', '❄️', '⛄', '🎄', '🎁', '☃️']
 		weights = [500, 500, 500, 500, 500, 500, 1]
 		await message.add_reaction(random.choices(reactions, weights=weights, k=1)[0])
-	
-	if (message.guild.id == LOUNGE_GUILD_ID and JAIL_ROLE in [y.id for y in message.author.roles]):
-		try:
-			if (message.guild.id == TEST_SERVER_GUILD_ID): # test server
-				await message.add_reaction(await message.guild.fetch_emoji(834785299292487701))
-			else:
-				await message.add_reaction(await message.guild.fetch_emoji(831228255063244831))  # shork reacc for jail
-		except discord.HTTPException as he:
-			if (he.text == "Reaction blocked" and he.code == 90001):
-				#await message.delete(delay=0.3)
-				await message.channel.send(await message.guild.fetch_emoji(831228255063244831))
 
 	if (
 		message.clean_content.strip().lower() == message_guess.MGUESS_SLEEPER_PHRASE
@@ -190,18 +141,21 @@ async def on_message(message: discord.Message):
 	if command == "help":
 		await message.author.send(HELP_DEFAULT_MESSAGE)
 
-	if command == "essaymode":
-		if message.author.id in ESSAY_MODE_ADMINS:
-			if args[0] == "on" and int(args[1]) > 0:
-				bot.essay_mode_on = True
-				bot.essay_mode_minimum = int(args[1])
-				await message.add_reaction('✅')
-			if args[0] == "off":
-				bot.essay_mode_on = False
-				bot.essay_mode_minimum = 0
-				await message.add_reaction('✅')
+	if command in ['atm']:
+		result = await atm_util.cmd_status()
+		if result is None:
+			await message.channel.send("<@182707904367820800> issue pls fix")
+		elif result:
+			embed = discord.Embed(
+				title="Release is LIVE!",
+				description="Click below to view the latest files.",
+				url="https://www.curseforge.com/minecraft/modpacks/all-the-mons/files/all?page=1&pageSize=20&showAlphaFiles=hide",
+				color=0x00ff00
+			)
+
+			await message.channel.send(embed=embed)
 		else:
-			await message.channel.send("Please apply for privileges to use this command.")
+			await message.channel.send("still beta :(")
 
 	if command in ['beef', 'wrong']:
 		try:
@@ -394,9 +348,6 @@ async def on_message(message: discord.Message):
 	#TODO: add command to see current trade on you?
 	if command == 'punish' and message.author.id in ADMINS:
 		await roll_splashes.punish(bot, message, args)
-
-	if command in ['test'] and only_for_testing_server(message.guild.id):
-		await guess_util.upload_splashes_to_burner_channel(burner_channel)
 
 	if command in ['create_poll', 'poll']:
 		if len(args) == 0:
